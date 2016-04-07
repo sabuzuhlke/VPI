@@ -19,8 +19,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="ConsumeREST_main" target="1.8" />
-      <module name="ConsumeREST_test" target="1.8" />
+      <module name="VPI_main" target="1.8" />
+      <module name="VPI_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

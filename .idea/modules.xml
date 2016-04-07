@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ConsumeREST.iml" filepath="$PROJECT_DIR$/.idea/modules/ConsumeREST.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ConsumeREST_main.iml" filepath="$PROJECT_DIR$/.idea/modules/ConsumeREST_main.iml" group="ConsumeREST" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ConsumeREST_test.iml" filepath="$PROJECT_DIR$/.idea/modules/ConsumeREST_test.iml" group="ConsumeREST" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VPI.iml" filepath="$PROJECT_DIR$/.idea/modules/VPI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VPI_main.iml" filepath="$PROJECT_DIR$/.idea/modules/VPI_main.iml" group="VPI" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VPI_test.iml" filepath="$PROJECT_DIR$/.idea/modules/VPI_test.iml" group="VPI" />
     </modules>
   </component>
 </project>
