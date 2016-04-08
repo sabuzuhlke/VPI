@@ -1,5 +1,5 @@
 import VPI.Application;
-import VPI.Organisation;
+import VPI.PDOrganisationResponse;
 import VPI.OrganisationService;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,12 +51,12 @@ public class OrganisationServiceTests {
         OrganisationService OS = new OrganisationService((RestTemplate) restTemplate, server, apiKey);
         String companyName = "TestPostCompany";
         Integer visibility = 3;
-        Organisation postResponse = (Organisation) OS.post(companyName, visibility);
+        PDOrganisationResponse postResponse = (PDOrganisationResponse) OS.post(companyName, visibility);
         assertTrue(postResponse.getSuccess());
 
         //get same org using returned id, check name is equivalent to supplied name
         Long id = postResponse.getData().getId();
-        Organisation o = (Organisation) OS.get(id);
+        PDOrganisationResponse o = (PDOrganisationResponse) OS.get(id);
         assertTrue(o.getData().getName().equals(companyName));
 
         //delete posted organisation
@@ -64,19 +64,19 @@ public class OrganisationServiceTests {
         OS.delete(id);
 
         //get and check active flag set to false
-        o = (Organisation) OS.get(id);
+        o = (PDOrganisationResponse) OS.get(id);
         assertTrue(!o.getData().getActive_flag());
     }
 
     @Test
     public void canUpdateOrgAddress() {
         OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
-        Organisation org;
+        PDOrganisationResponse org;
         String companyName = "TestAddressCompany";
         Integer visibility = 3;
 
         //POST
-        Organisation postResponse = (Organisation) OS.post(companyName, visibility);
+        PDOrganisationResponse postResponse = (PDOrganisationResponse) OS.post(companyName, visibility);
 
         Long id = postResponse.getData().getId();
         String newAddress = "test address";
@@ -91,7 +91,7 @@ public class OrganisationServiceTests {
         OS.delete(id);
 
         //GET and check active flag set to false
-        org = (Organisation) OS.get(id);
+        org = (PDOrganisationResponse) OS.get(id);
         assertTrue(!org.getData().getActive_flag());
 
     }

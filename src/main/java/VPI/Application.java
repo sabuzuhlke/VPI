@@ -33,7 +33,7 @@ public class Application implements CommandLineRunner {
         OS = new OrganisationService(restTemplate, server, apiKey);
         try {
             Long id = new Long(1);
-            Organisation o = (Organisation) OS.get(id);
+            PDOrganisationResponse o = (PDOrganisationResponse) OS.get(id);
 
             log.info(o.toString());
 

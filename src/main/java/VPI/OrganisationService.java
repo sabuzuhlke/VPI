@@ -4,9 +4,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by sabu on 07/04/2016.
  */
@@ -23,11 +20,11 @@ public class OrganisationService {
     }
 //----------------------------------------------------------------------------------POST
     public PDResponse post(String companyName, Integer visibleTo) {
-        Organisation org = null;
+        PDOrganisationResponse org = null;
         try {
-            OrganisationPost post = new OrganisationPost(companyName, visibleTo);
+            Organisation post = new Organisation(companyName, visibleTo);
             String uri = server + "organizations" + apiKey;
-            org = restTemplate.postForObject(uri, post, Organisation.class);
+            org = restTemplate.postForObject(uri, post, PDOrganisationResponse.class);
         } catch (Exception e) {
             System.out.println(e.toString());
         }
@@ -35,11 +32,11 @@ public class OrganisationService {
     }
 
     public PDResponse post(String companyName, String address, Integer visibleTo) {
-        Organisation org = null;
+        PDOrganisationResponse org = null;
         try {
-            OrganisationPost post = new OrganisationPost(companyName,address, visibleTo);
+            Organisation post = new Organisation(companyName,address, visibleTo);
             String uri = server + "organizations" + apiKey;
-            org = restTemplate.postForObject(uri, post, Organisation.class);
+            org = restTemplate.postForObject(uri, post, PDOrganisationResponse.class);
         } catch (Exception e) {
             System.out.println(e.toString());
         }
@@ -47,25 +44,31 @@ public class OrganisationService {
     }
 
 //----------------------------------------------------------------------------------PUT
-    public Organisation updateAddress(Long id, String address) {
-        Organisation org;
-        Organisation resOrganisation = new Organisation();
+    public PDOrganisationResponse updateAddress(Long id, String address) {
+        PDOrganisationResponse org;
+        PDOrganisationResponse resOrganisation = new PDOrganisationResponse();
 
 
         try {
             //GET organisation From Pipedrive
-            org = (Organisation) this.get(id);
+            org = (PDOrganisationResponse) this.get(id);
             //Update with new Address
-            OrganisationPost newOrg = new OrganisationPost(org.getData().getName(), address);
+            System.out.println("org: " + org.toString());
+            Organisation newOrg = new Organisation(id, org.getData().getName(),org.getData().getVisible_to()
+                                                , address, true, org.getData().getCompany_id()
+                                                , org.getData().getOwner_id());
             System.out.println(newOrg.toString());
 
             //PUT Org with new address to PipeDrive
             String uri = server + "organizations/" + id + apiKey;
 
-            RequestEntity<OrganisationPost> req = new RequestEntity<>(newOrg, HttpMethod.PUT, new URI(uri));
+            RequestEntity<Organisation> req = new RequestEntity<>(newOrg, HttpMethod.PUT, new URI(uri));
 
-            ResponseEntity<Organisation> res = restTemplate.exchange(req,Organisation.class);
+            System.out.println("Request: " + req.toString());
 
+            ResponseEntity<PDOrganisationResponse> res = restTemplate.exchange(req, PDOrganisationResponse.class);
+            System.out.println("PUT response code: " + res.getStatusCode().toString());
+            System.out.println("PUT response: " + res.toString());
             resOrganisation = res.getBody();
 
         } catch (Exception e) {
@@ -75,10 +78,10 @@ public class OrganisationService {
     }
 //----------------------------------------------------------------------------------GET
     public PDResponse get(Long id) {
-        Organisation org = null;
+        PDOrganisationResponse org = null;
         try {
             String uri = server + "organizations/" + id + apiKey;
-            org = restTemplate.getForObject(uri, Organisation.class);
+            org = restTemplate.getForObject(uri, PDOrganisationResponse.class);
         } catch (Exception e) {
             System.out.println(e.toString());
         }
