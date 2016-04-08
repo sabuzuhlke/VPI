@@ -93,7 +93,6 @@ public class OrganisationServiceTests {
         //GET and check active flag set to false
         org = (Organisation) OS.get(id);
         assertTrue(!org.getData().getActive_flag());
-        System.out.println("There you go");
 
     }
 }
