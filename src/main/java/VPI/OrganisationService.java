@@ -21,7 +21,7 @@ public class OrganisationService {
         this.apiKey = apiKey;
         this.server = server;
     }
-
+//----------------------------------------------------------------------------------POST
     public PDResponse post(String companyName, Integer visibleTo) {
         Organisation org = null;
         try {
@@ -33,6 +33,7 @@ public class OrganisationService {
         }
         return org;
     }
+
     public PDResponse post(String companyName, String address, Integer visibleTo) {
         Organisation org = null;
         try {
@@ -45,25 +46,7 @@ public class OrganisationService {
         return org;
     }
 
-    public PDResponse get(Long id) {
-        Organisation org = null;
-        try {
-            String uri = server + "organizations/" + id + apiKey;
-            org = restTemplate.getForObject(uri, Organisation.class);
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-        return org;
-    }
-
-    public void delete(Long id){
-        try {
-            restTemplate.delete(server + "organizations/" + id + apiKey);
-        } catch (Exception e) {
-            System.out.println("DELETE Exception: " + e.toString());
-        }
-    }
-
+//----------------------------------------------------------------------------------PUT
     public Organisation updateAddress(Long id, String address) {
         Organisation org;
         Organisation resOrganisation = new Organisation();
@@ -89,6 +72,25 @@ public class OrganisationService {
             System.out.println(e.toString());
         }
         return resOrganisation;
+    }
+//----------------------------------------------------------------------------------GET
+    public PDResponse get(Long id) {
+        Organisation org = null;
+        try {
+            String uri = server + "organizations/" + id + apiKey;
+            org = restTemplate.getForObject(uri, Organisation.class);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        return org;
+    }
+//----------------------------------------------------------------------------------DELETE
+    public void delete(Long id){
+        try {
+            restTemplate.delete(server + "organizations/" + id + apiKey);
+        } catch (Exception e) {
+            System.out.println("DELETE Exception: " + e.toString());
+        }
     }
 
 
