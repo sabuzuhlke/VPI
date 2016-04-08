@@ -8,10 +8,20 @@ public class OrganisationPost {
 
     private String name;
     private Integer visible_to;
+    private String address;
 
-    public OrganisationPost(String name, Integer visible_to) {
+    public OrganisationPost(String name, String address, Integer visible_to) {
         this.name = name;
         this.visible_to = visible_to;
+        this.address = address;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getName() {
@@ -32,6 +42,6 @@ public class OrganisationPost {
 
     @Override
     public String toString() {
-        return "Company Name: " + name;
+        return "Company Name: " + name + ", Address: " + address;
     }
 }
