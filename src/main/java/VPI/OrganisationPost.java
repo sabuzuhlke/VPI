@@ -15,6 +15,14 @@ public class OrganisationPost {
         this.visible_to = visible_to;
         this.address = address;
     }
+    public OrganisationPost(String name, String address) {
+        this.name = name;
+        this.address = address;
+    }
+    public OrganisationPost(String name, Integer visible_to) {
+        this.name = name;
+        this.visible_to = visible_to;
+    }
 
     public String getAddress() {
         return address;

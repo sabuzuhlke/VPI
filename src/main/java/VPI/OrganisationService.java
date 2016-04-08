@@ -1,6 +1,11 @@
 package VPI;
 
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import java.net.URI;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by sabu on 07/04/2016.
@@ -48,25 +53,31 @@ public class OrganisationService {
         }
     }
 
-    public void updateAddress(Long id, String address) {
+    public Organisation updateAddress(Long id, String address) {
         Organisation org;
+        Organisation resOrganisation = new Organisation();
+
+
         try {
+            //GET organisation From Pipedrive
             org = (Organisation) this.get(id);
-            org.getData().setAddress(address);
-            OrgData od = new OrgData(
-                    org.getData().getId(),
-                    org.getData().getCompany_id(),
-                    org.getData().getOwner_id(),
-                    org.getData().getActive_flag(),
-                    org.getData().getName(),
-                    address);
-            Organisation newOrg = new Organisation(od);
+            //Update with new Address
+            OrganisationPost newOrg = new OrganisationPost(org.getData().getName(), address);
             System.out.println(newOrg.toString());
+
+            //PUT Org with new address to PipeDrive
             String uri = server + "organizations/" + id + apiKey;
-            restTemplate.put(uri, newOrg);
+
+            RequestEntity<OrganisationPost> req = new RequestEntity<>(newOrg, HttpMethod.PUT, new URI(uri));
+
+            ResponseEntity<Organisation> res = restTemplate.exchange(req,Organisation.class);
+
+            resOrganisation = res.getBody();
+
         } catch (Exception e) {
             System.out.println(e.toString());
         }
+        return resOrganisation;
     }
 
 

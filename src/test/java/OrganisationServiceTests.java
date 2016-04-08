@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
+
 /**
  * Created by sabu on 06/04/2016.
  */
@@ -66,21 +67,32 @@ public class OrganisationServiceTests {
         o = (Organisation) OS.get(id);
         assertTrue(!o.getData().getActive_flag());
     }
-/*
+
     @Test
     public void canUpdateOrgAddress() {
-        OrganisationService OS = new OrganisationService((RestTemplate) restTemplate, server, apiKey);
+        OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
+        Organisation org;
         String companyName = "TestAddressCompany";
         Integer visibility = 3;
+
+        //POST
         Organisation postResponse = (Organisation) OS.post(companyName, visibility);
 
         Long id = postResponse.getData().getId();
         String newAddress = "test address";
-        OS.updateAddress(id, newAddress);
+        //PUT
+        org = OS.updateAddress(id, newAddress);
 
-        Organisation o = (Organisation) OS.get(id);
-        System.out.println(o.toString());
-        assertTrue(o.getData().getAddress().equals(newAddress));
+        System.out.println("TEST print: " + org.toString());
+        assertTrue(org.getData().getAddress().equals(newAddress));
 
-    }*/
+        //DELETE posted organisation
+        idsDeleted.add(id);
+        OS.delete(id);
+
+        //GET and check active flag set to false
+        org = (Organisation) OS.get(id);
+        assertTrue(!org.getData().getActive_flag());
+
+    }
 }
