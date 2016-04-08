@@ -33,6 +33,17 @@ public class OrganisationService {
         }
         return org;
     }
+    public PDResponse post(String companyName, String address, Integer visibleTo) {
+        Organisation org = null;
+        try {
+            OrganisationPost post = new OrganisationPost(companyName,address, visibleTo);
+            String uri = server + "organizations" + apiKey;
+            org = restTemplate.postForObject(uri, post, Organisation.class);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        return org;
+    }
 
     public PDResponse get(Long id) {
         Organisation org = null;
