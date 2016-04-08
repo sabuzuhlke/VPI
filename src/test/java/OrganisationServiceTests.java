@@ -1,4 +1,5 @@
 import VPI.Application;
+import VPI.PDDeleteResponse;
 import VPI.PDOrganisationResponse;
 import VPI.OrganisationService;
 import org.junit.Before;
@@ -48,7 +49,7 @@ public class OrganisationServiceTests {
     @Test
     public void canPostOrganisation() {
         //Post org, check response says success
-        OrganisationService OS = new OrganisationService((RestTemplate) restTemplate, server, apiKey);
+        OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
         String companyName = "TestPostCompany";
         Integer visibility = 3;
         PDOrganisationResponse postResponse = (PDOrganisationResponse) OS.post(companyName, visibility);
@@ -62,10 +63,23 @@ public class OrganisationServiceTests {
         //delete posted organisation
         idsDeleted.add(id);
         OS.delete(id);
+    }
 
-        //get and check active flag set to false
-        o = (PDOrganisationResponse) OS.get(id);
-        assertTrue(!o.getData().getActive_flag());
+    @Test
+    public void canDeleteOrganisation(){
+
+        PDDeleteResponse delRes;
+        OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
+        String companyName = "TestDeleteCompany";
+        Integer visibility = 3;
+        PDOrganisationResponse postResponse = (PDOrganisationResponse) OS.post(companyName, visibility);
+        assertTrue(postResponse.getSuccess());
+
+        delRes = OS.delete(postResponse.getData().getId());
+        System.out.println(" TEST DELETE RES: " + delRes.getSuccess());
+        assertTrue(delRes.getSuccess());
+        assertEquals(delRes.getData().getId(), postResponse.getData().getId());
+
     }
 
     @Test
@@ -83,16 +97,22 @@ public class OrganisationServiceTests {
         //PUT
         org = OS.updateAddress(id, newAddress);
 
-        System.out.println("TEST print: " + org.toString());
         assertTrue(org.getData().getAddress().equals(newAddress));
 
         //DELETE posted organisation
         idsDeleted.add(id);
         OS.delete(id);
 
-        //GET and check active flag set to false
-        org = (PDOrganisationResponse) OS.get(id);
-        assertTrue(!org.getData().getActive_flag());
+    }
 
+    @Test
+    public void deletedAllOrganisations(){
+        OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
+        PDOrganisationResponse org;
+        for(Integer i = 0; i < idsDeleted.size(); i++){
+            org = (PDOrganisationResponse) OS.get(idsDeleted.get(i));
+            System.out.println("Is Org " + idsDeleted.get(i) + " deleted?" + org.getData().getActive_flag());
+            assertTrue(!org.getData().getActive_flag());
+        }
     }
 }

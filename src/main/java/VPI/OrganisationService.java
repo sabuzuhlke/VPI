@@ -104,20 +104,24 @@ public class OrganisationService {
         return org;
     }
 //----------------------------------------------------------------------------------DELETE
-    public void delete(Long id){
+    public PDDeleteResponse delete(Long id){
         RequestEntity<Organisation> req;
-        ResponseEntity<PDOrganisationResponse> res;
+        ResponseEntity<PDDeleteResponse> res;
+        PDDeleteResponse delRes = null;
 
         try {
             String uri = server + "organizations/" + id + apiKey;
             //restTemplate.delete(server + "organizations/" + id + apiKey);
 
             req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
-            res = restTemplate.exchange(req, PDOrganisationResponse.class);
+            res = restTemplate.exchange(req, PDDeleteResponse.class);
+
+            delRes = res.getBody();
 
         } catch (Exception e) {
             System.out.println("DELETE Exception: " + e.toString());
         }
+        return delRes;
     }
 
 
