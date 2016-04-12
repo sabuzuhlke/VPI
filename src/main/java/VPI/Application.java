@@ -9,7 +9,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
-
 /**
  * Created by sabu on 06/04/2016.
  */
@@ -20,8 +19,6 @@ public class Application implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
     private static final String server = "https://api.pipedrive.com/v1/";
     private static final String apiKey = "?api_token=eefa902bdca498a342552b837663f38b566bce5a";
-    private RestTemplate restTemplate;
-    private OrganisationService OS;
 
     public static void main(String args[]) {
         SpringApplication.run(Application.class);
@@ -29,14 +26,10 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        restTemplate = new RestTemplate();
-        OS = new OrganisationService(restTemplate, server, apiKey);
+        RestTemplate restTemplate = new RestTemplate();
+        OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
         try {
-            Long id = new Long(1);
-            PDOrganisationResponse o = (PDOrganisationResponse) OS.get(id);
-
-            log.info(o.toString());
-
+            //DO STUFF HERE
         } catch (Exception e) {
             log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());
         }

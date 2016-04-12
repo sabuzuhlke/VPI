@@ -1,9 +1,10 @@
 package VPI;
 
+import java.time.LocalDateTime;
+
 /**
  * Created by sabu on 06/04/2016.
  */
-
 public class Organisation {
 
     private String name;
@@ -13,6 +14,8 @@ public class Organisation {
     private Long id;
     private Long company_id;
     private Owner owner_id;
+    //Last Update Fields
+    private String update_time;
 
     public Organisation(String name, String address, Integer visible_to) {
         this.name = name;
@@ -39,6 +42,20 @@ public class Organisation {
         this.id = id;
         this.company_id = company_id;
         this.owner_id = owner_id;
+    }
+
+    //use this function when reading update time from object imported from pipedrive
+    public LocalDateTime readDateFromPDOrganisation() {
+        String[] dAndT = this.update_time.split(" ");
+        return LocalDateTime.parse(dAndT[0] + "T" + dAndT[1]);
+    }
+
+    public String getUpdate_time() {
+        return update_time;
+    }
+
+    public void setUpdate_time(String update_time) {
+        this.update_time = update_time;
     }
 
     public String getName() {

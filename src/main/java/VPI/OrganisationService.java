@@ -32,7 +32,6 @@ public class OrganisationService {
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
             org = res.getBody();
 
-
         } catch (Exception e) {
             System.out.println(e.toString());
         }
@@ -66,9 +65,14 @@ public class OrganisationService {
             org = (PDOrganisationResponse) this.get(id);
 
             //Update with new Address
-            Organisation newOrg = new Organisation(id, org.getData().getName(),org.getData().getVisible_to()
-                                                , address, true, org.getData().getCompany_id()
-                                                , org.getData().getOwner_id()
+            Organisation newOrg = new Organisation(
+                    id,
+                    org.getData().getName(),
+                    org.getData().getVisible_to(),
+                    address,
+                    true,
+                    org.getData().getCompany_id(),
+                    org.getData().getOwner_id()
             );
 
             //PUT Org with new address to PipeDrive
