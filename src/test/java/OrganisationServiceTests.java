@@ -90,6 +90,7 @@ public class OrganisationServiceTests {
 
         //POST
         PDOrganisationResponse postResponse = (PDOrganisationResponse) OS.post(companyName, visibility);
+        assertTrue(postResponse.getSuccess());
 
         Long id = postResponse.getData().getId();
         String newAddress = "test address";
