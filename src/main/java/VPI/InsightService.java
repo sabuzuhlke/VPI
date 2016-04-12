@@ -7,7 +7,6 @@ import java.net.Authenticator;
 import java.net.URI;
 import java.util.List;
 
-
 /**
  * Created by gebo on 12/04/2016.
  */
@@ -15,14 +14,10 @@ public class InsightService {
 
     private RestTemplate restTemplate;
     private String server;
-    private String userName;
-    private String pwd;
 
     public InsightService(RestTemplate restTemplate, String server, String userName, String pwd) {
         this.restTemplate = restTemplate;
         this.server = server;
-        this.userName = userName;
-        this.pwd = pwd;
         //Authenticate with NTLM as Insight API uses that
         NTLMAuthenticator authenticator = new NTLMAuthenticator(userName,pwd);
         Authenticator.setDefault(authenticator);
@@ -44,7 +39,7 @@ public class InsightService {
 
         }
         catch (Exception e){
-            System.out.println("Could not GETALL organisations from insight: " + e.toString());
+            System.out.println("Could not GET all organisations from insight: " + e.toString());
         }
         return res;
     }
@@ -64,7 +59,7 @@ public class InsightService {
 
         }
         catch (Exception e){
-            System.out.println("Could not GET organisation" + Id + " from insight: " + e.toString());
+            System.out.println("Could not GET organisation " + Id + " from insight: " + e.toString());
         }
         return res;
 
