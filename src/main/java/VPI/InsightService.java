@@ -23,6 +23,7 @@ public class InsightService {
         this.server = server;
         this.userName = userName;
         this.pwd = pwd;
+        //Authenticate with NTLM as Insight API uses that
         NTLMAuthenticator authenticator = new NTLMAuthenticator(userName,pwd);
         Authenticator.setDefault(authenticator);
     }
