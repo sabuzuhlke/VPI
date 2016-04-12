@@ -51,14 +51,14 @@ public class PipedriveOrganisationServiceTests {
         ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
         assertTrue(postResponse.getBody().getSuccess());
 
-        //get same org using returned id, check name is equivalent to supplied name
+        //getOrganisation same org using returned id, check name is equivalent to supplied name
         Long id = postResponse.getBody().getData().getId();
-        ResponseEntity<PDOrganisationResponse> o = PS.get(id);
+        ResponseEntity<PDOrganisationResponse> o = PS.getOrganisation(id);
         assertTrue(o.getBody().getData().getName().equals(companyName));
 
-        //delete posted organisation
+        //deleteOrganisation posted organisation
         idsDeleted.add(id);
-        PS.delete(id);
+        PS.deleteOrganisation(id);
     }
 
     @Test
@@ -70,7 +70,7 @@ public class PipedriveOrganisationServiceTests {
         ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
         assertTrue(postResponse.getBody().getSuccess());
 
-        delRes = PS.delete(postResponse.getBody().getData().getId());
+        delRes = PS.deleteOrganisation(postResponse.getBody().getData().getId());
         assertTrue(delRes.getBody().getSuccess());
         assertEquals(delRes.getBody().getData().getId(), postResponse.getBody().getData().getId());
 
@@ -89,13 +89,13 @@ public class PipedriveOrganisationServiceTests {
         Long id = postResponse.getBody().getData().getId();
         String newAddress = "test address";
         //PUT
-        org = PS.updateAddress(id, newAddress);
+        org = PS.updateOrganisationAddress(id, newAddress);
 
         assertTrue(org.getBody().getData().getAddress().equals(newAddress));
 
         //DELETE posted organisation
         idsDeleted.add(id);
-        PS.delete(id);
+        PS.deleteOrganisation(id);
 
     }
 
@@ -103,7 +103,7 @@ public class PipedriveOrganisationServiceTests {
     public void deletedAllOrganisations(){
         ResponseEntity<PDOrganisationResponse> org;
         for(Integer i = 0; i < idsDeleted.size(); i++){
-            org = PS.get(idsDeleted.get(i));
+            org = PS.getOrganisation(idsDeleted.get(i));
             System.out.println("Is Org " + idsDeleted.get(i) + " deleted?" + org.getBody().getData().getActive_flag());
             assertTrue(!org.getBody().getData().getActive_flag());
         }
@@ -113,7 +113,7 @@ public class PipedriveOrganisationServiceTests {
     public void canGetAllOrganisations(){
         ResponseEntity<PDOrganisationItemsResponse> res;
         PDOrganisationItemsResponse organisations;
-        res = PS.getAll();
+        res = PS.getAllOrganisations();
         assertEquals(res.getStatusCode(), HttpStatus.OK);
         organisations = res.getBody();
         //The following asserts that the more_items_in_collection field of the response is false -- Meaning that there are no more organisations to return

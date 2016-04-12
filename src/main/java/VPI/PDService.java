@@ -55,7 +55,7 @@ public class PDService {
     }
 
 //----------------------------------------------------------------------------------PUT
-    public ResponseEntity<PDOrganisationResponse> updateAddress(Long id, String address) {
+    public ResponseEntity<PDOrganisationResponse> updateOrganisationAddress(Long id, String address) {
         PDOrganisationResponse org;
         PDOrganisationResponse resOrganisation = new PDOrganisationResponse();
         RequestEntity<PDOrganisation> req;
@@ -64,7 +64,7 @@ public class PDService {
 
         try {
             //GET organisation From Pipedrive
-            org = this.get(id).getBody();
+            org = this.getOrganisation(id).getBody();
 
             //Update with new Address
             PDOrganisation newOrg = new PDOrganisation(
@@ -90,7 +90,7 @@ public class PDService {
         return res;
     }
 //----------------------------------------------------------------------------------GET
-    public ResponseEntity<PDOrganisationResponse> get(Long id) {
+    public ResponseEntity<PDOrganisationResponse> getOrganisation(Long id) {
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDOrganisationResponse> res = null;
 
@@ -105,7 +105,7 @@ public class PDService {
         }
         return res;
     }
-    public ResponseEntity<PDOrganisationItemsResponse> getAll(){
+    public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations(){
         RequestEntity<String> req;
         ResponseEntity<PDOrganisationItemsResponse> res = null;
         String uri = server + "organizations/" + apiKey;
@@ -120,13 +120,13 @@ public class PDService {
         return res;
     }
 //----------------------------------------------------------------------------------DELETE
-    public ResponseEntity<PDDeleteResponse> delete(Long id){
+    public ResponseEntity<PDDeleteResponse> deleteOrganisation(Long id){
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDDeleteResponse> res = null;
 
         try {
             String uri = server + "organizations/" + id + apiKey;
-            //restTemplate.delete(server + "organizations/" + id + apiKey);
+            //restTemplate.deleteOrganisation(server + "organizations/" + id + apiKey);
 
             req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
             res = restTemplate.exchange(req, PDDeleteResponse.class);
