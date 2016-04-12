@@ -23,17 +23,15 @@ public class InsightService {
         Authenticator.setDefault(authenticator);
     }
 
-
     public ResponseEntity<ICompanyItems> getAllOrganisations(){
 
         String apiPath = "/api/v1/customers";
-        String body = "{}";
         RequestEntity<String> req;
         ResponseEntity<ICompanyItems> res = null;
 
         try {
 
-            req = new RequestEntity<>(body, HttpMethod.GET, new URI(server + apiPath));
+            req = new RequestEntity<>(HttpMethod.GET, new URI(server + apiPath));
 
             res = restTemplate.exchange(req, ICompanyItems.class);
 
@@ -47,13 +45,12 @@ public class InsightService {
     public ResponseEntity<ICompany> getOrganisation(Integer Id){
 
         String apiPath = "/api/v1/customers/" + Id.toString();
-        String body = "{}";
         RequestEntity<String> req;
         ResponseEntity<ICompany> res = null;
 
         try {
 
-            req = new RequestEntity<>(body,HttpMethod.GET,new URI(server + apiPath));
+            req = new RequestEntity<>(HttpMethod.GET,new URI(server + apiPath));
 
             res = restTemplate.exchange(req, ICompany.class);
 
