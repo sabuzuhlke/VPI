@@ -6,10 +6,10 @@ package VPI;
 
 public class PDOrganisationResponse extends PDResponse {
 
-    private Organisation data;
+    private PDOrganisation data;
 
 
-    public PDOrganisationResponse(Organisation data) {
+    public PDOrganisationResponse(PDOrganisation data) {
         this.data = data;
 
     }
@@ -17,11 +17,11 @@ public class PDOrganisationResponse extends PDResponse {
     public PDOrganisationResponse() {
     }
 
-    public Organisation getData() {
+    public PDOrganisation getData() {
         return data;
     }
 
-    public void setData(Organisation data) {
+    public void setData(PDOrganisation data) {
         this.data = data;
     }
 

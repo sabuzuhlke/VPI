@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 /**
  * Created by sabu on 06/04/2016.
  */
-public class Organisation {
+public class PDOrganisation {
 
     private String name;
     private Integer visible_to;
@@ -17,24 +17,24 @@ public class Organisation {
     //Last Update Fields
     private String update_time;
 
-    public Organisation(String name, String address, Integer visible_to) {
+    public PDOrganisation(String name, String address, Integer visible_to) {
         this.name = name;
         this.visible_to = visible_to;
         this.address = address;
     }
-    public Organisation(String name, String address) {
+    public PDOrganisation(String name, String address) {
         this.name = name;
         this.address = address;
     }
-    public Organisation(String name, Integer visible_to) {
+    public PDOrganisation(String name, Integer visible_to) {
         this.name = name;
         this.visible_to = visible_to;
     }
 
-    public Organisation() {
+    public PDOrganisation() {
     }
 
-    public Organisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, Owner owner_id) {
+    public PDOrganisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, Owner owner_id) {
         this.name = name;
         this.visible_to = visible_to;
         this.address = address;

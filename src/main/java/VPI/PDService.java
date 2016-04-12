@@ -7,65 +7,67 @@ import java.net.URI;
 /**
  * Created by sabu on 07/04/2016.
  */
-public class OrganisationService {
+public class PDService {
 
     private RestTemplate restTemplate;
     private String server;
     private String apiKey;
 
-    public OrganisationService(RestTemplate restTemplate, String server, String apiKey) {
+    public PDService(RestTemplate restTemplate, String server, String apiKey) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
         this.server = server;
     }
 //----------------------------------------------------------------------------------POST
-    public PDResponse post(String companyName, Integer visibleTo) {
-        PDOrganisationResponse org = null;
-        RequestEntity<Organisation> req;
-        ResponseEntity<PDOrganisationResponse> res;
+    public ResponseEntity<PDOrganisationResponse> postOrganisation(String companyName, Integer visibleTo) {
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDOrganisationResponse> res = null;
 
         try {
-            Organisation post = new Organisation(companyName, visibleTo);
+            PDOrganisation post = new PDOrganisation(companyName, visibleTo);
             String uri = server + "organizations" + apiKey;
 
             req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
-            org = res.getBody();
 
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-        return org;
+        return res;
     }
 
-    public PDResponse post(String companyName, String address, Integer visibleTo) {
-        PDOrganisationResponse org = null;
+    public ResponseEntity<PDOrganisationResponse> postOrganisationWithAddress(String companyName, String address, Integer visibleTo) {
+
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDOrganisationResponse> res = null;
+
         try {
-            Organisation post = new Organisation(companyName,address, visibleTo);
+            PDOrganisation post = new PDOrganisation(companyName,address, visibleTo);
             String uri = server + "organizations" + apiKey;
 
+            req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req, PDOrganisationResponse.class);
 
-            org = restTemplate.postForObject(uri, post, PDOrganisationResponse.class);
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-        return org;
+        return res;
     }
 
 //----------------------------------------------------------------------------------PUT
-    public PDOrganisationResponse updateAddress(Long id, String address) {
+    public ResponseEntity<PDOrganisationResponse> updateAddress(Long id, String address) {
         PDOrganisationResponse org;
         PDOrganisationResponse resOrganisation = new PDOrganisationResponse();
-        RequestEntity<Organisation> req;
-        ResponseEntity<PDOrganisationResponse> res;
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDOrganisationResponse> res = null;
 
 
         try {
             //GET organisation From Pipedrive
-            org = (PDOrganisationResponse) this.get(id);
+            org = this.get(id).getBody();
 
             //Update with new Address
-            Organisation newOrg = new Organisation(
+            PDOrganisation newOrg = new PDOrganisation(
                     id,
                     org.getData().getName(),
                     org.getData().getVisible_to(),
@@ -81,18 +83,16 @@ public class OrganisationService {
             req = new RequestEntity<>(newOrg, HttpMethod.PUT, new URI(uri));
 
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
-            resOrganisation = res.getBody();
 
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-        return resOrganisation;
+        return res;
     }
 //----------------------------------------------------------------------------------GET
-    public PDResponse get(Long id) {
-        PDOrganisationResponse org = null;
-        RequestEntity<Organisation> req;
-        ResponseEntity<PDOrganisationResponse> res;
+    public ResponseEntity<PDOrganisationResponse> get(Long id) {
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDOrganisationResponse> res = null;
 
         try {
             String uri = server + "organizations/" + id + apiKey;
@@ -100,12 +100,10 @@ public class OrganisationService {
             req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
 
-            org = res.getBody();
-
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-        return org;
+        return res;
     }
     public ResponseEntity<PDOrganisationItemsResponse> getAll(){
         RequestEntity<String> req;
@@ -122,10 +120,9 @@ public class OrganisationService {
         return res;
     }
 //----------------------------------------------------------------------------------DELETE
-    public PDDeleteResponse delete(Long id){
-        RequestEntity<Organisation> req;
-        ResponseEntity<PDDeleteResponse> res;
-        PDDeleteResponse delRes = null;
+    public ResponseEntity<PDDeleteResponse> delete(Long id){
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDDeleteResponse> res = null;
 
         try {
             String uri = server + "organizations/" + id + apiKey;
@@ -134,28 +131,10 @@ public class OrganisationService {
             req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
             res = restTemplate.exchange(req, PDDeleteResponse.class);
 
-            delRes = res.getBody();
-
         } catch (Exception e) {
             System.out.println("DELETE Exception: " + e.toString());
         }
-        return delRes;
+        return res;
     }
 
-
-    public String getServer() {
-        return server;
-    }
-
-    public void setServer(String server) {
-        this.server = server;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
 }

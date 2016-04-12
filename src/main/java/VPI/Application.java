@@ -20,7 +20,7 @@ public class Application implements CommandLineRunner {
     private static final String apiKey = "?api_token=eefa902bdca498a342552b837663f38b566bce5a";
     private static final String insightServer = "http://insight.zuehlke.com";
     private RestTemplate restTemplate;
-    private OrganisationService OS;
+    private PDService PS;
     private InsightService IS;
     private MyCredentials credentials;
 
@@ -32,8 +32,13 @@ public class Application implements CommandLineRunner {
     public void run(String... args) throws Exception {
         this.credentials = new MyCredentials();
         restTemplate = new RestTemplate();
-        OS = new OrganisationService(restTemplate, server, apiKey);
-        IS = new InsightService(restTemplate,insightServer,this.credentials.getUserName(),this.credentials.getPass());
+        PS = new PDService(restTemplate, server, apiKey);
+        IS = new InsightService(
+                restTemplate,
+                insightServer,
+                this.credentials.getUserName(),
+                this.credentials.getPass()
+        );
 
         try {
             //IS.getOrganisation(53);

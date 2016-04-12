@@ -5,19 +5,20 @@ import java.util.List;
 /**
  * Created by gebo on 12/04/2016.
  */
-public class PDOrganisationItemsResponse {
-    private List<Organisation> items;
+public class PDOrganisationItemsResponse extends PDResponse{
+
+    private List<PDOrganisation> data;
     private PDAdditionalData additional_data;
 
     public PDOrganisationItemsResponse() {
     }
 
-    public List<Organisation> getItems() {
-        return items;
+    public List<PDOrganisation> getData() {
+        return data;
     }
 
-    public void setItems(List<Organisation> items) {
-        this.items = items;
+    public void setData(List<PDOrganisation> data) {
+        this.data = data;
     }
 
     public PDAdditionalData getAdditional_data() {
