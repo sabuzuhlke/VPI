@@ -19,7 +19,7 @@ public class MyCredentials {
         try{
 
             File file = new File("creds.txt");
-            System.out.println("Found file: " + file.getAbsolutePath());
+            //System.out.println("Found file: " + file.getAbsolutePath());
 
             FileReader reader = new FileReader(file.getAbsolutePath());
             BufferedReader breader = new BufferedReader(reader);

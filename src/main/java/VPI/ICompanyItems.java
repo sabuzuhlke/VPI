@@ -1,20 +1,35 @@
 package VPI;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by sabu on 12/04/2016.
  */
 public class ICompanyItems {
 
-    private ICompany[] Items;
+    private List<ICompany> Items;
 
     public ICompanyItems() {
     }
 
-    public ICompany[] getItems() {
+    public List<ICompany> getItems() {
         return Items;
     }
 
-    public void setItems(ICompany[] items) {
+    @JsonProperty("Items")
+    public void setItems(List<ICompany> items) {
         Items = items;
+    }
+
+    @Override
+    public String toString(){
+        String retString = "";
+        for(int i = 0; i < Items.size(); i++ ){
+            retString += Items.get(i).toString();
+        }
+        return retString;
     }
 }

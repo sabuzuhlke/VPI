@@ -1,12 +1,11 @@
 package VPI;
 
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.Authenticator;
 import java.net.URI;
-
+import java.util.List;
 
 
 /**
@@ -29,26 +28,48 @@ public class InsightService {
     }
 
 
-    public void getAllOrganisations(){
+    public ICompanyItems getAllOrganisations(){
 
         String apiPath = "/api/v1/customers";
         String body = "{}";
         RequestEntity<String> req = null;
-        ResponseEntity<String> res = null;
+        ResponseEntity<ICompanyItems> res = null;
 
         try {
 
-            req = new RequestEntity<String>(body, HttpMethod.GET, new URI(server + apiPath));
-            System.out.println("GETALL req headers: " + req.getHeaders().toString());
+            req = new RequestEntity<>(body, HttpMethod.GET, new URI(server + apiPath));
 
-            res = restTemplate.exchange(req,String.class);
+            res = restTemplate.exchange(req, ICompanyItems.class);
 
+            List<ICompany> reslist = res.getBody().getItems();
 
-            System.out.println("GETALL insight orgs returned: " + res.toString());
         }
         catch (Exception e){
             System.out.println("Could not GETALL organisations from insight: " + e.toString());
         }
+        return res.getBody();
+    }
+
+    public ICompany getOrganisation(Integer Id){
+
+        String apiPath = "/api/v1/customers/" + Id.toString();
+        String body = "{}";
+        RequestEntity<String> req;
+        ResponseEntity<ICompany> res = null;
+
+        try {
+
+            req = new RequestEntity<>(body,HttpMethod.GET,new URI(server + apiPath));
+
+            res = restTemplate.exchange(req, ICompany.class);
+
+            System.out.println("GET insight org returned: " + res.getBody().toString());
+
+        }
+        catch (Exception e){
+            System.out.println("Could not GET organisation" + Id + " from insight: " + e.toString());
+        }
+        return res.getBody();
 
     }
 }

@@ -1,83 +1,101 @@
 package VPI;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by sabu on 12/04/2016.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class ICompany {
 
+    private String longitude;
+    private String latitude;
     private String Name;
-    private String Longitude;
-    private String Latitude;
-    private String Role;
-    private String RoleText;
-    private Object[] Services;
-    private String Industry;
-    private Long Id;
+    private String role;
+    private String roleText;
+    //private Object[] Services;
+    private String industry;
+    private Long id;
 
     public ICompany() {
     }
 
     public String getIndustry() {
-        return Industry;
+        return industry;
     }
 
     public void setIndustry(String industry) {
-        Industry = industry;
+        this.industry = industry;
     }
 
     public String getName() {
         return Name;
     }
 
+    @JsonProperty("Name")
     public void setName(String name) {
-        Name = name;
+        this.Name = name;
     }
+
 
     public String getLongitude() {
-        return Longitude;
+        return longitude;
     }
 
+    @JsonProperty("Longitude")
     public void setLongitude(String longitude) {
-        Longitude = longitude;
+        this.longitude = longitude;
     }
 
     public String getLatitude() {
-        return Latitude;
+        return latitude;
     }
 
+    @JsonProperty("Latitude")
     public void setLatitude(String latitude) {
-        Latitude = latitude;
+        this.latitude = latitude;
     }
 
     public String getRole() {
-        return Role;
+        return role;
     }
 
+    @JsonProperty("Role")
     public void setRole(String role) {
-        Role = role;
+        this.role = role;
     }
 
     public String getRoleText() {
-        return RoleText;
+        return roleText;
     }
 
+    @JsonProperty("RoleText")
     public void setRoleText(String roleText) {
-        RoleText = roleText;
+        this.roleText = roleText;
     }
 
-    public Object[] getServices() {
+   /* public Object[] getServices() {
         return Services;
     }
 
     public void setServices(Object[] services) {
         Services = services;
-    }
+    }*/
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
+    @JsonProperty("Id")
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
+    }
+
+    @Override
+    public String toString(){
+        return "ICOMPANY: " + Name + " " + id;
     }
 }

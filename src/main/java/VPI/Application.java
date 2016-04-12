@@ -38,8 +38,8 @@ public class Application implements CommandLineRunner {
         IS = new InsightService(restTemplate,insightServer,this.credentials.getUserName(),this.credentials.getPass());
 
         try {
+            //IS.getOrganisation(53);
             IS.getAllOrganisations();
-
         } catch (Exception e) {
             log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());
         }
