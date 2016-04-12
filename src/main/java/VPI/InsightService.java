@@ -15,8 +15,8 @@ public class InsightService {
 
     private RestTemplate restTemplate;
     private String server;
-    String userName;
-    String pwd;
+    private String userName;
+    private String pwd;
 
     public InsightService(RestTemplate restTemplate, String server, String userName, String pwd) {
         this.restTemplate = restTemplate;
@@ -29,11 +29,11 @@ public class InsightService {
     }
 
 
-    public ICompanyItems getAllOrganisations(){
+    public ResponseEntity<ICompanyItems> getAllOrganisations(){
 
         String apiPath = "/api/v1/customers";
         String body = "{}";
-        RequestEntity<String> req = null;
+        RequestEntity<String> req;
         ResponseEntity<ICompanyItems> res = null;
 
         try {
@@ -42,16 +42,14 @@ public class InsightService {
 
             res = restTemplate.exchange(req, ICompanyItems.class);
 
-            List<ICompany> reslist = res.getBody().getItems();
-
         }
         catch (Exception e){
             System.out.println("Could not GETALL organisations from insight: " + e.toString());
         }
-        return res.getBody();
+        return res;
     }
 
-    public ICompany getOrganisation(Integer Id){
+    public ResponseEntity<ICompany> getOrganisation(Integer Id){
 
         String apiPath = "/api/v1/customers/" + Id.toString();
         String body = "{}";
@@ -64,13 +62,11 @@ public class InsightService {
 
             res = restTemplate.exchange(req, ICompany.class);
 
-            System.out.println("GET insight org returned: " + res.getBody().toString());
-
         }
         catch (Exception e){
             System.out.println("Could not GET organisation" + Id + " from insight: " + e.toString());
         }
-        return res.getBody();
+        return res;
 
     }
 }
