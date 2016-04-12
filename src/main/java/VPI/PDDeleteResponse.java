@@ -22,4 +22,23 @@ public class PDDeleteResponse extends PDResponse{
     public void setData(PDDeleteResponseId data) {
         this.data = data;
     }
+
+    public class PDDeleteResponseId {
+        private Long id;
+
+        public PDDeleteResponseId(Long id) {
+            this.id = id;
+        }
+
+        public PDDeleteResponseId() {
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
 }

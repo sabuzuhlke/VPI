@@ -8,6 +8,7 @@ public class PDOrganisationResponse extends PDResponse {
 
     private Organisation data;
 
+
     public PDOrganisationResponse(Organisation data) {
         this.data = data;
 
@@ -24,8 +25,11 @@ public class PDOrganisationResponse extends PDResponse {
         this.data = data;
     }
 
+
     @Override
     public String toString() {
         return "Our " + super.getSuccess() + " organisation: " + data;
     }
+
+
 }

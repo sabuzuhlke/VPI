@@ -1,7 +1,4 @@
-import VPI.Application;
-import VPI.PDDeleteResponse;
-import VPI.PDOrganisationResponse;
-import VPI.OrganisationService;
+import VPI.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,6 +7,8 @@ import org.springframework.boot.test.OutputCapture;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
@@ -26,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
-public class OrganisationServiceTests {
+public class PipedriveOrganisationServiceTests {
 
     @Rule
     public OutputCapture capture = new OutputCapture();
@@ -113,5 +112,27 @@ public class OrganisationServiceTests {
             System.out.println("Is Org " + idsDeleted.get(i) + " deleted?" + org.getData().getActive_flag());
             assertTrue(!org.getData().getActive_flag());
         }
+    }
+
+    @Test
+    public void canGetAllOrganisations(){
+        OrganisationService OS = new OrganisationService(restTemplate, server, apiKey);
+        ResponseEntity<PDOrganisationItemsResponse> res;
+        PDOrganisationItemsResponse organisations;
+        try{
+            res = OS.getAll();
+            assertEquals(res.getStatusCode(), HttpStatus.OK);
+            organisations = res.getBody();
+            //The following asserts that the more_items_in_collection field of the response is false -- Meaning that there are no more organisations to return
+            assertTrue(!organisations.getAdditional_data().getPagination().getMore_items_in_collection());
+            assertTrue(organisations.getItems().get(1) != null);
+            assertEquals("NASA",organisations.getItems().get(1).getName());
+
+
+        }
+        catch(Exception e){
+            System.out.println("canGetAllOrganisations encountered exception: " + e.toString());
+        }
+
     }
 }

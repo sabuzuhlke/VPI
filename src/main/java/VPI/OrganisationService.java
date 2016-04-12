@@ -107,6 +107,20 @@ public class OrganisationService {
         }
         return org;
     }
+    public ResponseEntity<PDOrganisationItemsResponse> getAll(){
+        RequestEntity<String> req;
+        ResponseEntity<PDOrganisationItemsResponse> res = null;
+        String uri = server + "organizations/" + apiKey;
+        try{
+            req = new RequestEntity<String>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req,PDOrganisationItemsResponse.class);
+
+        }
+        catch(Exception e){
+            System.out.println("Exception when getting all organisations from PipeDrive: " + e);
+        }
+        return res;
+    }
 //----------------------------------------------------------------------------------DELETE
     public PDDeleteResponse delete(Long id){
         RequestEntity<Organisation> req;
