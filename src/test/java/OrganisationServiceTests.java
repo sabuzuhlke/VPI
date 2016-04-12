@@ -76,7 +76,6 @@ public class OrganisationServiceTests {
         assertTrue(postResponse.getSuccess());
 
         delRes = OS.delete(postResponse.getData().getId());
-        System.out.println(" TEST DELETE RES: " + delRes.getSuccess());
         assertTrue(delRes.getSuccess());
         assertEquals(delRes.getData().getId(), postResponse.getData().getId());
 

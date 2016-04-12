@@ -20,8 +20,11 @@ public class Application implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
     private static final String server = "https://api.pipedrive.com/v1/";
     private static final String apiKey = "?api_token=eefa902bdca498a342552b837663f38b566bce5a";
+    private static final String insightServer = "http://insight.zuehlke.com";
     private RestTemplate restTemplate;
     private OrganisationService OS;
+    private InsightService IS;
+    private MyCredentials credentials;
 
     public static void main(String args[]) {
         SpringApplication.run(Application.class);
@@ -29,13 +32,13 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        this.credentials = new MyCredentials();
         restTemplate = new RestTemplate();
         OS = new OrganisationService(restTemplate, server, apiKey);
-        try {
-            Long id = new Long(1);
-            PDOrganisationResponse o = (PDOrganisationResponse) OS.get(id);
+        IS = new InsightService(restTemplate,insightServer,this.credentials.getUserName(),this.credentials.getPass());
 
-            log.info(o.toString());
+        try {
+            IS.getAllOrganisations();
 
         } catch (Exception e) {
             log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());
