@@ -1,8 +1,5 @@
 package VPI;
 
-/**
- * Created by gebo on 08/04/2016.
- */
 public class PDDeleteResponse extends PDResponse{
 
     private PDDeleteResponseId data;

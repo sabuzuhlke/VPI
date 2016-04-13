@@ -1,9 +1,5 @@
 package VPI;
 
-/**
- * Created by sabu on 06/04/2016.
- */
-
 public class PDOrganisationResponse extends PDResponse {
 
     private PDOrganisation data;

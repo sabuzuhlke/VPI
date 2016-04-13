@@ -17,11 +17,6 @@ import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
-
-/**
- * Created by sabu on 06/04/2016.
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
@@ -107,9 +102,9 @@ public class PipedriveOrganisationServiceTests {
     @Test
     public void deletedAllOrganisations(){
         ResponseEntity<PDOrganisationResponse> org;
-        for(Integer i = 0; i < idsDeleted.size(); i++){
-            org = PS.getOrganisation(idsDeleted.get(i));
-            System.out.println("Is Org " + idsDeleted.get(i) + " deleted?" + org.getBody().getData().getActive_flag());
+        for(Long i : idsDeleted){
+            org = PS.getOrganisation(i);
+            System.out.println("Is Org " + i + " deleted?" + org.getBody().getData().getActive_flag());
             assertTrue(!org.getBody().getData().getActive_flag());
         }
     }

@@ -3,12 +3,7 @@ package VPI;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.SequenceInputStream;
-import java.net.URL;
 
-/**
- * Created by gebo on 12/04/2016.
- */
 public class MyCredentials {
 
     private String pass = "";
@@ -19,7 +14,6 @@ public class MyCredentials {
         try{
 
             File file = new File("creds.txt");
-            //System.out.println("Found file: " + file.getAbsolutePath());
 
             FileReader reader = new FileReader(file.getAbsolutePath());
             BufferedReader breader = new BufferedReader(reader);

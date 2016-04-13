@@ -5,32 +5,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-/**
- * Created by sabu on 12/04/2016.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 
-public class ICompanyItems {
+public class VOrganisationItems {
 
-    private List<ICompany> Items;
+    private List<VOrganisation> Items;
 
-    public ICompanyItems() {
-    }
-
-    public List<ICompany> getItems() {
-        return Items;
+    public VOrganisationItems() {
     }
 
     @JsonProperty("Items")
-    public void setItems(List<ICompany> items) {
+    public void setItems(List<VOrganisation> items) {
         Items = items;
+    }
+
+    public List<VOrganisation> getItems() {
+        return Items;
     }
 
     @Override
     public String toString(){
         String retString = "";
-        for(int i = 0; i < Items.size(); i++ ){
-            retString += Items.get(i).toString();
+        for(VOrganisation i : Items){
+            retString += i.toString();
         }
         return retString;
     }

@@ -1,6 +1,3 @@
-/**
- * Created by gebo on 13/04/2016.
- */
 import VPI.*;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,7 +15,7 @@ import java.util.List;
 @SpringApplicationConfiguration(Application.class)
 public class ComparatorTests {
 
-    private OrganisationComparator OC;
+    private Comparator OC;
 
     @Rule
     public OutputCapture capture = new OutputCapture();
@@ -26,18 +23,18 @@ public class ComparatorTests {
     @Before
     public void setUp() throws Exception {
 
-        this.OC = new OrganisationComparator();
+        this.OC = new Comparator();
 
     }
 
     @Test
     public void givenTwoMatchingItemsNoPutorPost(){
 
-        ICompany VOrg= new ICompany("MatchingName");
+        VOrganisation VOrg= new VOrganisation("MatchingName");
         PDOrganisation PDOrg = new PDOrganisation("MatchingName",3);
 
         List<PDOrganisation> PDorgs = new ArrayList<>();
-        List<ICompany> VOrgs = new ArrayList<>();
+        List<VOrganisation> VOrgs = new ArrayList<>();
 
         PDorgs.add(PDOrg);
         VOrgs.add(VOrg);
@@ -55,11 +52,11 @@ public class ComparatorTests {
 
     @Test
     public void givenTwoNonMatchingItemsNoPutButOnePost() {
-        ICompany VOrg= new ICompany("Name");
+        VOrganisation VOrg= new VOrganisation("Name");
         PDOrganisation PDOrg = new PDOrganisation("NonMatchingName",3);
 
         List<PDOrganisation> PDorgs = new ArrayList<>();
-        List<ICompany> VOrgs = new ArrayList<>();
+        List<VOrganisation> VOrgs = new ArrayList<>();
 
         PDorgs.add(PDOrg);
         VOrgs.add(VOrg);
@@ -98,19 +95,19 @@ public class ComparatorTests {
 
     public void setUpLists() {
         List<PDOrganisation> PDorgs = new ArrayList<>();
-        List<ICompany> VOrgs = new ArrayList<>();
+        List<VOrganisation> VOrgs = new ArrayList<>();
 
-        ICompany VOrg1= new ICompany("Name");
+        VOrganisation VOrg1= new VOrganisation("Name");
         PDOrganisation PDOrg1 = new PDOrganisation("NonMatchingName",3);
         PDorgs.add(PDOrg1);
         VOrgs.add(VOrg1);
 
-        ICompany VOrg2= new ICompany("MatchingName");
+        VOrganisation VOrg2= new VOrganisation("MatchingName");
         PDOrganisation PDOrg2 = new PDOrganisation("MatchingName",3);
         PDorgs.add(PDOrg2);
         VOrgs.add(VOrg2);
 
-        ICompany VOrg3= new ICompany("OtherName");
+        VOrganisation VOrg3= new VOrganisation("OtherName");
         VOrgs.add(VOrg3);
 
         OC.setPDOrganisations(PDorgs);

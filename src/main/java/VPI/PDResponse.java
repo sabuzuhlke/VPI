@@ -1,8 +1,5 @@
 package VPI;
 
-/**
- * Created by sabu on 07/04/2016.
- */
 public class PDResponse {
 
     private Boolean success;

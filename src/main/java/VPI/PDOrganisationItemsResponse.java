@@ -2,9 +2,6 @@ package VPI;
 
 import java.util.List;
 
-/**
- * Created by gebo on 12/04/2016.
- */
 public class PDOrganisationItemsResponse extends PDResponse{
 
     private List<PDOrganisation> data;

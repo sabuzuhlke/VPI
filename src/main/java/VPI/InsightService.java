@@ -5,11 +5,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.Authenticator;
 import java.net.URI;
-import java.util.List;
 
-/**
- * Created by gebo on 12/04/2016.
- */
 public class InsightService {
 
     private RestTemplate restTemplate;
@@ -23,17 +19,17 @@ public class InsightService {
         Authenticator.setDefault(authenticator);
     }
 
-    public ResponseEntity<ICompanyItems> getAllOrganisations(){
+    public ResponseEntity<VOrganisationItems> getAllOrganisations(){
 
         String apiPath = "/api/v1/customers";
         RequestEntity<String> req;
-        ResponseEntity<ICompanyItems> res = null;
+        ResponseEntity<VOrganisationItems> res = null;
 
         try {
 
             req = new RequestEntity<>(HttpMethod.GET, new URI(server + apiPath));
 
-            res = restTemplate.exchange(req, ICompanyItems.class);
+            res = restTemplate.exchange(req, VOrganisationItems.class);
 
         }
         catch (Exception e){
@@ -42,17 +38,17 @@ public class InsightService {
         return res;
     }
 
-    public ResponseEntity<ICompany> getOrganisation(Integer Id){
+    public ResponseEntity<VOrganisation> getOrganisation(Integer Id){
 
         String apiPath = "/api/v1/customers/" + Id.toString();
         RequestEntity<String> req;
-        ResponseEntity<ICompany> res = null;
+        ResponseEntity<VOrganisation> res = null;
 
         try {
 
             req = new RequestEntity<>(HttpMethod.GET,new URI(server + apiPath));
 
-            res = restTemplate.exchange(req, ICompany.class);
+            res = restTemplate.exchange(req, VOrganisation.class);
 
         }
         catch (Exception e){

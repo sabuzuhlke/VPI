@@ -1,6 +1,5 @@
 package VPI;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -9,9 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Created by sabu on 06/04/2016.
- */
 @SpringBootApplication
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Application implements CommandLineRunner {
@@ -20,8 +16,6 @@ public class Application implements CommandLineRunner {
     private static final String server = "https://api.pipedrive.com/v1/";
     private static final String apiKey = "?api_token=eefa902bdca498a342552b837663f38b566bce5a";
     private static final String insightServer = "http://insight.zuehlke.com";
-    private PDService PS;
-    private InsightService IS;
 
     public static void main(String args[]) {
         SpringApplication.run(Application.class);
@@ -31,8 +25,8 @@ public class Application implements CommandLineRunner {
     public void run(String... args) throws Exception {
         MyCredentials credentials = new MyCredentials();
         RestTemplate restTemplate = new RestTemplate();
-        PS = new PDService(restTemplate, server, apiKey);
-        IS = new InsightService(
+        PDService PS = new PDService(restTemplate, server, apiKey);
+        InsightService IS = new InsightService(
                 restTemplate,
                 insightServer,
                 credentials.getUserName(),

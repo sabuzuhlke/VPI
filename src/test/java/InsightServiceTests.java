@@ -1,6 +1,3 @@
-/**
- * Created by gebo on 12/04/2016.
- */
 import VPI.*;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +38,7 @@ public class InsightServiceTests {
 
     @Test
     public void canGetOrganisationsFromInsightAPI() {
-        ResponseEntity<ICompanyItems> res = IS.getAllOrganisations();
+        ResponseEntity<VOrganisationItems> res = IS.getAllOrganisations();
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(res.getBody().getItems().get(0) != null);
@@ -51,7 +48,7 @@ public class InsightServiceTests {
     @Test
     public void canGetSingleOrganisationFromInsightAPI() {
         Integer id = 55;
-        ResponseEntity<ICompany> res = IS.getOrganisation(id);
+        ResponseEntity<VOrganisation> res = IS.getOrganisation(id);
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(res.getBody().getName().equals("Interactive Objects Software GmbH"));

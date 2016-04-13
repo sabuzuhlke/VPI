@@ -1,10 +1,7 @@
 import VPI.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.OutputCapture;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.boot.test.WebIntegrationTest;
@@ -16,11 +13,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
-/**
- * Created by sabu on 13/04/2016.
- */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
@@ -28,7 +20,7 @@ public class SynchronisationTests {
 
     private PDService PS;
     private InsightService IS;
-    private OrganisationComparator C;
+    private Comparator C;
 
     @Before
     public void setUp() {
@@ -50,7 +42,7 @@ public class SynchronisationTests {
         );
 
         //create Comparator
-        C = new OrganisationComparator();
+        C = new Comparator();
     }
 
     @Test
@@ -83,12 +75,12 @@ public class SynchronisationTests {
     }
 
     public void setUpFakeInsightData() {
-        List<ICompany> VOrgs = new ArrayList<>();
+        List<VOrganisation> VOrgs = new ArrayList<>();
 
-        ICompany VOrg1= new ICompany("Name");
-        ICompany VOrg2= new ICompany("SomeOtherName");
-        ICompany VOrg3= new ICompany("OtherName");
-        ICompany VOrg4= new ICompany("AntherName");
+        VOrganisation VOrg1= new VOrganisation("Name");
+        VOrganisation VOrg2= new VOrganisation("SomeOtherName");
+        VOrganisation VOrg3= new VOrganisation("OtherName");
+        VOrganisation VOrg4= new VOrganisation("AntherName");
 
         VOrgs.add(VOrg1);
         VOrgs.add(VOrg2);
@@ -102,7 +94,7 @@ public class SynchronisationTests {
     public void syncDoesNotMakeDuplicateOrganisations() {
 
         //run synchronisation (GET ALL, Compare, POST NEW (Assumes no PUT))
-        List<ICompany> VOrgs = IS.getAllOrganisations().getBody().getItems();
+        List<VOrganisation> VOrgs = IS.getAllOrganisations().getBody().getItems();
         List<PDOrganisation> PDOrgs = PS.getAllOrganisations().getBody().getData();
 
         C.setPDOrganisations(PDOrgs);

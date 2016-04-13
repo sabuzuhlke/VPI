@@ -3,19 +3,16 @@ package VPI;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by gebo on 13/04/2016.
- */
-public class OrganisationComparator {
+public class Comparator {
 
     private List<PDOrganisation> PDOrganisations = null;
-    private List<ICompany> VOrganisations = null;
+    private List<VOrganisation> VOrganisations = null;
 
     private List<PDOrganisation> putList = null;
     private List<PDOrganisation> postList = null;
 
 
-    public OrganisationComparator() {
+    public Comparator() {
     }
 
 
@@ -23,7 +20,7 @@ public class OrganisationComparator {
         putList = new ArrayList<>();
         postList = new ArrayList<>();
 
-        for(ICompany c : VOrganisations) {
+        for(VOrganisation c : VOrganisations) {
             Boolean matched = false;
             for(PDOrganisation pd : PDOrganisations) {
                 if ((c.getName().equals(pd.getName())) || c.getName().toLowerCase().equals(pd.getName().toLowerCase())) {
@@ -54,11 +51,11 @@ public class OrganisationComparator {
         this.PDOrganisations = PDOrganisations;
     }
 
-    public List<ICompany> getVOrganisations() {
+    public List<VOrganisation> getVOrganisations() {
         return VOrganisations;
     }
 
-    public void setVOrganisations(List<ICompany> VOrganisations) {
+    public void setVOrganisations(List<VOrganisation> VOrganisations) {
         this.VOrganisations = VOrganisations;
     }
 
@@ -66,15 +63,8 @@ public class OrganisationComparator {
         return putList;
     }
 
-    public void setPutList(List<PDOrganisation> putList) {
-        this.putList = putList;
-    }
-
     public List<PDOrganisation> getPostList() {
         return postList;
     }
 
-    public void setPostList(List<PDOrganisation> postList) {
-        this.postList = postList;
-    }
 }

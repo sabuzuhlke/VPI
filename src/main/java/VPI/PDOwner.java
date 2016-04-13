@@ -1,15 +1,12 @@
 package VPI;
 
-/**
- * Created by sabu on 07/04/2016.
- */
-public class Owner {
+public class PDOwner {
 
     private Long id;
     private String name;
     private String email;
 
-    public Owner() {
+    public PDOwner() {
     }
 
     public Long getId() {

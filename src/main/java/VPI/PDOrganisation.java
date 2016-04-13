@@ -2,9 +2,6 @@ package VPI;
 
 import java.time.LocalDateTime;
 
-/**
- * Created by sabu on 06/04/2016.
- */
 public class PDOrganisation {
 
     private String name;
@@ -13,7 +10,7 @@ public class PDOrganisation {
     private Boolean active_flag;
     private Long id;
     private Long company_id;
-    private Owner owner_id;
+    private PDOwner owner_id;
     //Last Update Fields
     private String update_time;
 
@@ -34,14 +31,14 @@ public class PDOrganisation {
     public PDOrganisation() {
     }
 
-    public PDOrganisation(ICompany c) {
+    public PDOrganisation(VOrganisation c) {
         this.name = c.getName();
         this.visible_to = 3;
         this.active_flag = true;
         //this.address = c.getAddress();
     }
 
-    public PDOrganisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, Owner owner_id) {
+    public PDOrganisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, PDOwner owner_id) {
         this.name = name;
         this.visible_to = visible_to;
         this.address = address;
@@ -113,11 +110,11 @@ public class PDOrganisation {
         this.company_id = company_id;
     }
 
-    public Owner getOwner_id() {
+    public PDOwner getOwner_id() {
         return owner_id;
     }
 
-    public void setOwner_id(Owner owner_id) {
+    public void setOwner_id(PDOwner owner_id) {
         this.owner_id = owner_id;
     }
 

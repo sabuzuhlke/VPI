@@ -1,8 +1,5 @@
 package VPI;
 
-/**
- * Created by gebo on 12/04/2016.
- */
 public class PDAdditionalData {
 
     private PDPagination pagination;
