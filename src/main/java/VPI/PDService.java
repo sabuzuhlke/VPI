@@ -3,6 +3,8 @@ package VPI;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sabu on 07/04/2016.
@@ -22,10 +24,10 @@ public class PDService {
     public ResponseEntity<PDOrganisationResponse> postOrganisation(String companyName, Integer visibleTo) {
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDOrganisationResponse> res = null;
+        String uri = server + "organizations" + apiKey;
 
         try {
             PDOrganisation post = new PDOrganisation(companyName, visibleTo);
-            String uri = server + "organizations" + apiKey;
 
             req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
@@ -52,6 +54,35 @@ public class PDService {
             System.out.println(e.toString());
         }
         return res;
+    }
+
+    public ResponseEntity<PDOrganisationResponse> postOrganisation(PDOrganisation post) {
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDOrganisationResponse> res = null;
+        String uri = server + "organizations" + apiKey;
+        try {
+
+            req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req, PDOrganisationResponse.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        return res;
+    }
+
+    public List<Long> postOrganisationList(List<PDOrganisation> OrgsToPost) {
+        ResponseEntity<PDOrganisationResponse> res;
+        List<Long> idsPosted = new ArrayList<>();
+        for(PDOrganisation org : OrgsToPost) {
+            res = postOrganisation(org);
+            if (res.getStatusCode() == HttpStatus.CREATED) {
+                idsPosted.add(res.getBody().getData().getId());
+            } else {
+                System.out.println("Could not create organisation, server response: " + res.getStatusCode().toString());
+            }
+        }
+        return idsPosted;
     }
 
 //----------------------------------------------------------------------------------PUT
@@ -108,9 +139,9 @@ public class PDService {
     public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations(){
         RequestEntity<String> req;
         ResponseEntity<PDOrganisationItemsResponse> res = null;
-        String uri = server + "organizations/" + apiKey;
+        String uri = server + "organizations?start=0&limit=1000&" + apiKey.substring(1);
         try{
-            req = new RequestEntity<String>(HttpMethod.GET, new URI(uri));
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
             res = restTemplate.exchange(req,PDOrganisationItemsResponse.class);
 
         }
@@ -135,6 +166,16 @@ public class PDService {
             System.out.println("DELETE Exception: " + e.toString());
         }
         return res;
+    }
+
+    public List<Long> deleteOrganisationList(List<Long> idsToDelete) {
+        ResponseEntity<PDDeleteResponse> res;
+        List<Long> idsDeleted = new ArrayList<>();
+        for(Long id : idsToDelete) {
+            res = deleteOrganisation(id);
+            idsDeleted.add(res.getBody().getData().getId());
+        }
+        return idsDeleted;
     }
 
 }

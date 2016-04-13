@@ -36,6 +36,8 @@ public class PDOrganisation {
 
     public PDOrganisation(ICompany c) {
         this.name = c.getName();
+        this.visible_to = 3;
+        this.active_flag = true;
         //this.address = c.getAddress();
     }
 

@@ -62,6 +62,11 @@ public class PipedriveOrganisationServiceTests {
     }
 
     @Test
+    public void canPostOrganisationDirectly() {
+        PDOrganisation o = new PDOrganisation("tstname", 3);
+    }
+
+    @Test
     public void canDeleteOrganisation(){
 
         ResponseEntity<PDDeleteResponse> delRes;

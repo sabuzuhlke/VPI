@@ -26,7 +26,7 @@ public class OrganisationComparator {
         for(ICompany c : VOrganisations) {
             Boolean matched = false;
             for(PDOrganisation pd : PDOrganisations) {
-                if (c.getName().equals(pd.getName())) {
+                if ((c.getName().equals(pd.getName())) || c.getName().toLowerCase().equals(pd.getName().toLowerCase())) {
                     matched = true;
                     //check if other attirubtes are equal
                     //if so, remove from pd list, else create PUT

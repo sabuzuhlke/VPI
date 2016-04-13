@@ -1,5 +1,6 @@
 package VPI;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 /**
  * Created by sabu on 12/04/2016.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class ICompanyItems {
 
     private List<ICompany> Items;
