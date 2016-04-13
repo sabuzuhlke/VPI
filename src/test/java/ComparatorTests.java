@@ -116,7 +116,7 @@ public class ComparatorTests {
         ICompany VOrg3= new ICompany("OtherName");
         VOrgs.add(VOrg3);
 
-        return new Pair(PDorgs,VOrgs);
+        return new Pair<>(PDorgs,VOrgs);
 
     }
 
