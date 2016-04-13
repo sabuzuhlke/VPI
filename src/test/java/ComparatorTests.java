@@ -2,7 +2,6 @@
  * Created by gebo on 13/04/2016.
  */
 import VPI.*;
-import com.sun.tools.javac.util.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,10 +81,8 @@ public class ComparatorTests {
     @Test
     public void OCCorrectlySplitsListIntoAppropriatePutAndPostList() {
 
-        Pair<List<PDOrganisation>,List<ICompany>> lists = this.setUpLists();
+        this.setUpLists();
 
-        OC.setPDOrganisations(lists.fst);
-        OC.setVOrganisations(lists.snd);
 
         OC.compareOrgs();
 
@@ -99,7 +96,7 @@ public class ComparatorTests {
         OC.clear();
     }
 
-    public Pair<List<PDOrganisation>,List<ICompany>> setUpLists() {
+    public void setUpLists() {
         List<PDOrganisation> PDorgs = new ArrayList<>();
         List<ICompany> VOrgs = new ArrayList<>();
 
@@ -116,17 +113,15 @@ public class ComparatorTests {
         ICompany VOrg3= new ICompany("OtherName");
         VOrgs.add(VOrg3);
 
-        return new Pair<>(PDorgs,VOrgs);
+        OC.setPDOrganisations(PDorgs);
+        OC.setVOrganisations(VOrgs);
 
     }
 
     @Test
     public void canClearOCLists() {
 
-        Pair<List<PDOrganisation>,List<ICompany>> lists = this.setUpLists();
-
-        OC.setPDOrganisations(lists.fst);
-        OC.setVOrganisations(lists.snd);
+        this.setUpLists();
 
         OC.compareOrgs();
 
