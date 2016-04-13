@@ -22,11 +22,25 @@ public class Comparator {
 
         for(VOrganisation c : VOrganisations) {
             Boolean matched = false;
+            Boolean modified = false;
             for(PDOrganisation pd : PDOrganisations) {
                 if ((c.getName().equals(pd.getName())) || c.getName().toLowerCase().equals(pd.getName().toLowerCase())) {
                     matched = true;
                     //check if other attirubtes are equal
                     //if so, remove from pd list, else create PUT
+                    String cAddress = c.getFormattedAddress();
+                    if(!cAddress.equals(pd.getAddress())
+                            && (c.getStreet() != null)
+                            && (c.getCity() != null)
+                            && (c.getZip() != null)
+                            && (c.getCountry() != null)){
+                        pd.setAddress(cAddress);
+                        modified = true;
+                    }
+                    //More Comparisons
+                    if(modified){
+                        putList.add(pd);
+                    }
                 }
             }
             if(!matched){

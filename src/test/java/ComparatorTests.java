@@ -76,6 +76,34 @@ public class ComparatorTests {
     }
 
     @Test
+    public void willPUTButNotPOSTWhenNamesMatchButAddressesDiffer() {
+        List<PDOrganisation> PDorgs = new ArrayList<>();
+        List<VOrganisation> VOrgs = new ArrayList<>();
+
+        VOrganisation vorg = new VOrganisation("MatchingName");
+        vorg.setStreet("15 Road Avenue");
+        vorg.setCity("SinCity");
+        vorg.setCountry("Murica!");
+        vorg.setZip("666");
+        VOrgs.add(vorg);
+
+        PDOrganisation pdorg = new PDOrganisation("MatchingName", "42 Answer Street, SinCity, 654, Murica!");
+        PDorgs.add(pdorg);
+
+        OC.setPDOrganisations(PDorgs);
+        OC.setVOrganisations(VOrgs);
+
+        OC.compareOrgs();
+
+        assertTrue(OC.getPostList().isEmpty());
+        assertTrue(!OC.getPutList().isEmpty());
+        assertTrue(OC.getPutList().get(0) != null);
+        assertTrue(OC.getPutList().get(0).getAddress().equals("15 Road Avenue, SinCity, 666, Murica!"));
+
+        OC.clear();
+    }
+
+    @Test
     public void OCCorrectlySplitsListIntoAppropriatePutAndPostList() {
 
         this.setUpLists();
@@ -130,4 +158,6 @@ public class ComparatorTests {
         assertTrue(OC.getVOrganisations().isEmpty());
 
     }
+
+
 }

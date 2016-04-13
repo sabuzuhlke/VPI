@@ -19,6 +19,10 @@ public class VOrganisation {
     public VOrganisation() {
     }
 
+    public String getFormattedAddress(){
+        return street + ", " + city + ", " + zip + ", " + country;
+    }
+
     public VOrganisation(String name) {
         this.name = name;
     }
