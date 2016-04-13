@@ -34,6 +34,11 @@ public class PDOrganisation {
     public PDOrganisation() {
     }
 
+    public PDOrganisation(ICompany c) {
+        this.name = c.getName();
+        //this.address = c.getAddress();
+    }
+
     public PDOrganisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, Owner owner_id) {
         this.name = name;
         this.visible_to = visible_to;

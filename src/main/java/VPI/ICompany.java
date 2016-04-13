@@ -23,6 +23,10 @@ public class ICompany {
     public ICompany() {
     }
 
+    public ICompany(String name) {
+        Name = name;
+    }
+
     public String getIndustry() {
         return industry;
     }
