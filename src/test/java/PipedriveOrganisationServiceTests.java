@@ -32,7 +32,8 @@ public class PipedriveOrganisationServiceTests {
     @Before
     public void setUp() throws Exception {
         String server = "https://api.pipedrive.com/v1/";
-        String apiKey = "?api_token=eefa902bdca498a342552b837663f38b566bce5a";
+        MyCredentials creds = new MyCredentials();
+        String apiKey = creds.getApiKey();
         TestRestTemplate testRestTemplate = new TestRestTemplate();
         this.PS = new PDService(testRestTemplate, server, apiKey);
         this.idsDeleted = new ArrayList<>();

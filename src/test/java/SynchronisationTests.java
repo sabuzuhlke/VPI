@@ -25,15 +25,15 @@ public class SynchronisationTests {
     @Before
     public void setUp() {
         TestRestTemplate testRestTemplate = new TestRestTemplate();
+        MyCredentials creds = new MyCredentials();
 
         //set up PDService
         String server = "https://api.pipedrive.com/v1/";
-        String apiKey = "?api_token=eefa902bdca498a342552b837663f38b566bce5a";
+        String apiKey = creds.getApiKey();
         this.PS = new PDService(testRestTemplate, server, apiKey);
 
         //set up InsightService
         String iServer = "http://insight.zuehlke.com";
-        MyCredentials creds = new MyCredentials();
         this.IS = new InsightService(
                 testRestTemplate,
                 iServer,

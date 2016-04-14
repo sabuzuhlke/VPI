@@ -8,6 +8,7 @@ public class MyCredentials {
 
     private String pass = "";
     private String userName = "";
+    private String apiKey = "";
 
     public MyCredentials() {
         String line;
@@ -21,10 +22,11 @@ public class MyCredentials {
                 userName = line;
                 if((line = breader.readLine()) != null){
                     pass = line;
-                }
-                else System.out.println("Couldnt read password.");
-            }
-            else System.out.println("Couldnt read username nor Password.");
+                    if((line = breader.readLine()) != null) {
+                        apiKey = line;
+                    } else System.out.println("Couldnt read API key");
+                } else System.out.println("Couldnt read password.");
+            } else System.out.println("Couldnt read username nor Password.");
         }
         catch(Exception e){
             System.out.println("Could not open file: " +e.toString());
@@ -38,5 +40,9 @@ public class MyCredentials {
 
     public String getUserName() {
         return userName;
+    }
+
+    public String getApiKey() {
+        return apiKey;
     }
 }

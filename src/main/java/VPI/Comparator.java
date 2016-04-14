@@ -21,6 +21,7 @@ public class Comparator {
         postList = new ArrayList<>();
 
         for(VOrganisation c : VOrganisations) {
+            //personList = get(org/c/persons)
             Boolean matched = false;
             Boolean modified = false;
             for(PDOrganisation pd : PDOrganisations) {
