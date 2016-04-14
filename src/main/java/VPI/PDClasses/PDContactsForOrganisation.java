@@ -9,4 +9,14 @@ public class PDContactsForOrganisation extends PDResponse {
 
     private List<PDContactResponse> data;
 
+    public PDContactsForOrganisation() {
+    }
+
+    public List<PDContactResponse> getData() {
+        return data;
+    }
+
+    public void setData(List<PDContactResponse> data) {
+        this.data = data;
+    }
 }

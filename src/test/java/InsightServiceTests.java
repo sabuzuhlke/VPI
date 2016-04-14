@@ -55,6 +55,11 @@ public class InsightServiceTests {
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(res.getBody().getName().equals("Interactive Objects Software GmbH"));
-    }
+    }/*
+
+    @Test
+    public void canGetContactsForOrganisation() {
+
+    }*/
 
 }

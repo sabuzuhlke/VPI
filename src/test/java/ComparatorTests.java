@@ -160,6 +160,22 @@ public class ComparatorTests {
         assertTrue(OC.getVOrganisations().isEmpty());
 
     }
+ /*
+    @Test
+    public void givenNoMatchWillPostNewOrgWithContacts() {
 
+    }
+
+    @Test
+    public void givenMatchWillPostNewContactsToOrg() {
+
+    }
+
+    //TESTS FOR WHEN VCONTACT HAS ORGANISATIONS
+
+    @Test
+    public void givenMatchAndDifferentContactWillUpdateContact() {
+
+    }*/
 
 }

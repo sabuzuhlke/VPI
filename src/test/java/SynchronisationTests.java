@@ -72,6 +72,7 @@ public class SynchronisationTests {
         }
 
         List<Long> idsDeleted = PS.deleteOrganisationList(idsPosted);
+        System.out.println("idsPosted length: " + idsPosted.size() + ", idsDeleted length: " + idsDeleted.size());
         assertEquals(idsDeleted.size(), C.getPostList().size());
         assertEquals(idsDeleted, idsPosted);
 

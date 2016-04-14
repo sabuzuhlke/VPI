@@ -123,4 +123,24 @@ public class PipedriveOrganisationServiceTests {
         assertTrue(organisations.getData() != null);
         assertTrue(organisations.getData().get(1) != null);
     }
+
+    @Test
+    public void canGetContactsForOrganisation() {
+
+    }
+/*
+    @Test
+    public void canPostNewContactIntoOrganisation() {
+
+    }
+
+    @Test
+    public void canPostNewOrganisationWithContactsAttached() {
+
+    }
+
+    @Test
+    public void canPutContact() {
+
+    }*/
 }

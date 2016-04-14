@@ -8,6 +8,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -173,12 +174,31 @@ public class PDService {
     }
 
     public List<Long> deleteOrganisationList(List<Long> idsToDelete) {
-        ResponseEntity<PDDeleteResponse> res;
         List<Long> idsDeleted = new ArrayList<>();
-        for(Long id : idsToDelete) {
-            res = deleteOrganisation(id);
-            idsDeleted.add(res.getBody().getData().getId());
+        List<String> idsDeletedAsString;
+        PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
+        idsForReq.setIds(idsToDelete);
+
+        RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req;
+        ResponseEntity<PDBulkDeleteResponse> res;
+
+        String uri = server + "organizations/" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(idsForReq, HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req, PDBulkDeleteResponse.class);
+            idsDeletedAsString = res.getBody().getData().getId();
+            System.out.println(res.getBody().getData().getId().size());
+
+            for(String s : idsDeletedAsString) {
+                idsDeleted.add(Long.parseLong(s));
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
         }
+
         return idsDeleted;
     }
 
