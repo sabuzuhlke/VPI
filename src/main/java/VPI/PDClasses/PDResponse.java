@@ -1,4 +1,4 @@
-package VPI;
+package VPI.PDClasses;
 
 public class PDResponse {
 

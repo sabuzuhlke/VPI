@@ -1,5 +1,9 @@
-package VPI;
+package VPI.PDClasses;
 
+import VPI.PDClasses.PDDeleteResponse;
+import VPI.PDClasses.PDOrganisation;
+import VPI.PDClasses.PDOrganisationItemsResponse;
+import VPI.PDClasses.PDOrganisationResponse;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;

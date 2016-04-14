@@ -1,4 +1,4 @@
-package VPI;
+package VPI.VClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

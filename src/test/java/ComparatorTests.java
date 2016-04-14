@@ -1,4 +1,6 @@
 import VPI.*;
+import VPI.PDClasses.PDOrganisation;
+import VPI.VClasses.VOrganisation;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

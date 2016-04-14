@@ -1,5 +1,8 @@
 package VPI;
 
+import VPI.PDClasses.PDOrganisation;
+import VPI.VClasses.VOrganisation;
+
 import java.util.ArrayList;
 import java.util.List;
 

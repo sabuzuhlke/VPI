@@ -1,4 +1,8 @@
 import VPI.*;
+import VPI.PDClasses.PDOrganisation;
+import VPI.PDClasses.PDService;
+import VPI.VClasses.InsightService;
+import VPI.VClasses.VOrganisation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

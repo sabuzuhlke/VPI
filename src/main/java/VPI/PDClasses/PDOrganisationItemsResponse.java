@@ -1,8 +1,8 @@
-package VPI;
+package VPI.PDClasses;
 
 import java.util.List;
 
-public class PDOrganisationItemsResponse extends PDResponse{
+public class PDOrganisationItemsResponse extends PDResponse {
 
     private List<PDOrganisation> data;
     private PDAdditionalData additional_data;

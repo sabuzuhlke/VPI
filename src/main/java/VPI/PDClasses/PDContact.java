@@ -1,4 +1,4 @@
-package VPI;
+package VPI.PDClasses;
 
 /**
  * Created by gebo on 14/04/2016.

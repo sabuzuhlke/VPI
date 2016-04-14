@@ -1,6 +1,6 @@
-package VPI;
+package VPI.PDClasses;
 
-public class PDDeleteResponse extends PDResponse{
+public class PDDeleteResponse extends PDResponse {
 
     private PDDeleteResponseId data;
 

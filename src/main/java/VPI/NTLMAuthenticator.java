@@ -7,7 +7,7 @@ public class NTLMAuthenticator extends Authenticator{
     private final String userName;
     private final char[] pwd;
 
-    protected NTLMAuthenticator(final String userName, final String pwd) {
+    public NTLMAuthenticator(final String userName, final String pwd) {
         super();
         this.userName = userName;
         this.pwd = pwd.toCharArray();

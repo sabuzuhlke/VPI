@@ -1,5 +1,8 @@
-package VPI;
+package VPI.VClasses;
 
+import VPI.NTLMAuthenticator;
+import VPI.VClasses.VOrganisation;
+import VPI.VClasses.VOrganisationItems;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 

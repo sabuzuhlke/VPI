@@ -1,4 +1,6 @@
-package VPI;
+package VPI.PDClasses;
+
+import VPI.VClasses.VOrganisation;
 
 import java.time.LocalDateTime;
 

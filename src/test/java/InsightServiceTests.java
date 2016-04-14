@@ -1,4 +1,7 @@
 import VPI.*;
+import VPI.VClasses.InsightService;
+import VPI.VClasses.VOrganisation;
+import VPI.VClasses.VOrganisationItems;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

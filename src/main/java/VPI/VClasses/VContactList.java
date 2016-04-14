@@ -1,6 +1,7 @@
-package VPI;
+package VPI.VClasses;
 
-import java.util.LinkedHashMap;
+import VPI.VClasses.VContact;
+
 import java.util.List;
 
 /**
