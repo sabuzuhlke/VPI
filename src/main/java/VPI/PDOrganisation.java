@@ -13,6 +13,7 @@ public class PDOrganisation {
     private PDOwner owner_id;
     //Last Update Fields
     private String update_time;
+    private Integer people_count;
 
     public PDOrganisation(String name, String address, Integer visible_to) {
         this.name = name;
@@ -116,6 +117,14 @@ public class PDOrganisation {
 
     public void setOwner_id(PDOwner owner_id) {
         this.owner_id = owner_id;
+    }
+
+    public Integer getPeople_count() {
+        return people_count;
+    }
+
+    public void setPeople_count(Integer people_count) {
+        this.people_count = people_count;
     }
 
     @Override
