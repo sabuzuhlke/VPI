@@ -46,6 +46,7 @@ public class PipedriveOrganisationServiceTests {
         String companyName = "TestPostCompany";
         Integer visibility = 3;
         ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
+        assertTrue(postResponse.getStatusCode() == HttpStatus.CREATED);
         assertTrue(postResponse.getBody().getSuccess());
 
         //getOrganisation same org using returned id, check name is equivalent to supplied name
@@ -59,17 +60,13 @@ public class PipedriveOrganisationServiceTests {
     }
 
     @Test
-    public void canPostOrganisationDirectly() {
-        PDOrganisation o = new PDOrganisation("tstname", 3);
-    }
-
-    @Test
     public void canDeleteOrganisation(){
 
         ResponseEntity<PDDeleteResponse> delRes;
         String companyName = "TestDeleteCompany";
         Integer visibility = 3;
         ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
+        assertTrue(postResponse.getStatusCode() == HttpStatus.CREATED);
         assertTrue(postResponse.getBody().getSuccess());
 
         delRes = PS.deleteOrganisation(postResponse.getBody().getData().getId());
@@ -86,6 +83,7 @@ public class PipedriveOrganisationServiceTests {
 
         //POST
         ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
+        assertTrue(postResponse.getStatusCode() == HttpStatus.CREATED);
         assertTrue(postResponse.getBody().getSuccess());
 
         Long id = postResponse.getBody().getData().getId();
@@ -101,15 +99,7 @@ public class PipedriveOrganisationServiceTests {
 
     }
 
-    @Test
-    public void deletedAllOrganisations(){
-        ResponseEntity<PDOrganisationResponse> org;
-        for(Long i : idsDeleted){
-            org = PS.getOrganisation(i);
-            System.out.println("Is Org " + i + " deleted?" + org.getBody().getData().getActive_flag());
-            assertTrue(!org.getBody().getData().getActive_flag());
-        }
-    }
+
 
     @Test
     public void canGetAllOrganisations(){
@@ -125,8 +115,67 @@ public class PipedriveOrganisationServiceTests {
     }
 
     @Test
-    public void canGetContactsForOrganisation() {
+    public void canGetAndPostContactsForOrganisation() {
+        //post org
+        String companyName = "TestPostCompany";
+        Integer visibility = 3;
 
+        ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
+        assertTrue(postResponse.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(postResponse.getBody().getSuccess());
+        //post contact for org
+        Long org_id = postResponse.getBody().getData().getId();
+
+        PDContactSend contact = new PDContactSend(org_id, "Test Name", "Test@Test.test", "0987654321");
+        ResponseEntity<PDContactResponse> contactPostResponse = PS.postContactForOrganisation(contact);
+
+        assertTrue(contactPostResponse.getBody() != null);
+        assertTrue(contactPostResponse.getBody().getSuccess());
+        assertTrue(contactPostResponse.getBody().getData().getName().equals("Test Name"));
+        assertTrue(contactPostResponse.getBody().getData().getEmail()[0].getValue().equals("Test@Test.test"));
+        assertTrue(contactPostResponse.getBody().getData().getPhone()[0].getValue().equals("0987654321"));
+
+        //get contact for org
+        ResponseEntity<PDContactsForOrganisation> contactResponse = PS.getContactsForOrganisation(org_id);
+
+        assertTrue(contactResponse.getBody() != null);
+        assertTrue(contactResponse.getBody().getSuccess());
+
+        String name = contactResponse.getBody().getData().get(0).getName();
+        String email = contactResponse.getBody().getData().get(0).getEmail()[0].getValue();
+        String phone = contactResponse.getBody().getData().get(0).getPhone()[0].getValue();
+
+        Long recievedOrgId = contactResponse.getBody().getData().get(0).getOrg_id().getValue();
+        //check equal
+        assertTrue(name.equals("Test Name"));
+        assertTrue(email.equals("Test@Test.test"));
+        assertTrue(phone.equals("0987654321"));
+        assertEquals(recievedOrgId, org_id);
+
+        //delete org and person
+        Long contact_id = contactPostResponse.getBody().getData().getId();
+
+        ResponseEntity<PDDeleteResponse> delContRes = PS.deleteContact(contact_id);
+        idsDeleted.add(org_id);
+        ResponseEntity<PDDeleteResponse> delRes = PS.deleteOrganisation(org_id);
+
+        assertTrue(delContRes.getStatusCode() == HttpStatus.OK);
+        assertTrue(delContRes.getBody().getSuccess());
+        assertTrue(delRes.getStatusCode() == HttpStatus.OK);
+        assertTrue(delRes.getBody().getSuccess());
+
+        assertTrue(delContRes.getBody().getData().getId().equals(contact_id));
+        assertTrue(delRes.getBody().getData().getId().equals(org_id));
+    }
+
+    @Test
+    public void deletedAllOrganisations(){
+        ResponseEntity<PDOrganisationResponse> org;
+        for(Long i : idsDeleted){
+            org = PS.getOrganisation(i);
+            System.out.println("Is Org " + i + " deleted?" + org.getBody().getData().getActive_flag());
+            assertTrue(!org.getBody().getData().getActive_flag());
+        }
     }
 /*
     @Test

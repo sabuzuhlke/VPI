@@ -1,19 +1,11 @@
 package VPI.PDClasses;
 
-import VPI.PDClasses.PDDeleteResponse;
-import VPI.PDClasses.PDOrganisation;
-import VPI.PDClasses.PDOrganisationItemsResponse;
-import VPI.PDClasses.PDOrganisationResponse;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by sabu on 07/04/2016.
- */
 public class PDService {
 
     private RestTemplate restTemplate;
@@ -25,7 +17,7 @@ public class PDService {
         this.apiKey = apiKey;
         this.server = server;
     }
-//----------------------------------------------------------------------------------POST
+//---ORGANISATIONS-----------------------------------------------------------------POST
     public ResponseEntity<PDOrganisationResponse> postOrganisation(String companyName, Integer visibleTo) {
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDOrganisationResponse> res = null;
@@ -141,6 +133,7 @@ public class PDService {
         }
         return res;
     }
+
     public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations(){
         RequestEntity<String> req;
         ResponseEntity<PDOrganisationItemsResponse> res = null;
@@ -159,10 +152,9 @@ public class PDService {
     public ResponseEntity<PDDeleteResponse> deleteOrganisation(Long id){
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDDeleteResponse> res = null;
+        String uri = server + "organizations/" + id + apiKey;
 
         try {
-            String uri = server + "organizations/" + id + apiKey;
-            //restTemplate.deleteOrganisation(server + "organizations/" + id + apiKey);
 
             req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
             res = restTemplate.exchange(req, PDDeleteResponse.class);
@@ -200,6 +192,60 @@ public class PDService {
         }
 
         return idsDeleted;
+    }
+
+//---CONTACTS-----------------------------------------------------------------------POST
+    public ResponseEntity<PDContactResponse> postContactForOrganisation(PDContactSend contact) {
+        RequestEntity<PDContactSend> req;
+        ResponseEntity<PDContactResponse> res = null;
+        String uri = server + "persons" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(contact, HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req, PDContactResponse.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return res;
+    }
+
+//----------------------------------------------------------------------------------GET
+    public ResponseEntity<PDContactsForOrganisation> getContactsForOrganisation(Long org_id) {
+        RequestEntity<String> req;
+        ResponseEntity<PDContactsForOrganisation> res = null;
+        String uri = server + "organizations/" + org_id + "/persons?start=0&" + apiKey.substring(1);
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDContactsForOrganisation.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return res;
+    }
+
+//-----------------------------------------------------------------------------------DELETE
+    public ResponseEntity<PDDeleteResponse> deleteContact(Long id) {
+        RequestEntity<String> req;
+        ResponseEntity<PDDeleteResponse> res = null;
+        String uri = server + "persons/" + id + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req, PDDeleteResponse.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return res;
     }
 
 }

@@ -7,16 +7,16 @@ import java.util.List;
  */
 public class PDContactsForOrganisation extends PDResponse {
 
-    private List<PDContactResponse> data;
+    private List<PDContactReceived> data;
 
     public PDContactsForOrganisation() {
     }
 
-    public List<PDContactResponse> getData() {
+    public List<PDContactReceived> getData() {
         return data;
     }
 
-    public void setData(List<PDContactResponse> data) {
+    public void setData(List<PDContactReceived> data) {
         this.data = data;
     }
 }

@@ -3,15 +3,27 @@ package VPI.PDClasses;
 /**
  * Created by gebo on 14/04/2016.
  */
-public class PDContact {
+public class PDContactSend {
+
     private Long id;
     private String name;
     private Long org_id;
     private ContactDetail[] email;
     private ContactDetail[] phone;
-    private  Boolean visible_to;
+    private Integer visible_to;
 
-    public PDContact() {
+    public PDContactSend() {
+    }
+
+    public PDContactSend(Long org_id, String name, String email, String phone) {
+        this.org_id = org_id;
+        this.name = name;
+        ContactDetail emailDetail = new ContactDetail(email, true);
+        ContactDetail phoneDetail = new ContactDetail(phone, true);
+        this.email = new ContactDetail[1];
+        this.email[0] = emailDetail;
+        this.phone = new ContactDetail[1];
+        this.phone[0] = phoneDetail;
     }
 
     public Long getId() {
@@ -54,11 +66,11 @@ public class PDContact {
         this.phone = phone;
     }
 
-    public Boolean getVisible_to() {
+    public Integer getVisible_to() {
         return visible_to;
     }
 
-    public void setVisible_to(Boolean visible_to) {
+    public void setVisible_to(Integer visible_to) {
         this.visible_to = visible_to;
     }
 
@@ -67,28 +79,5 @@ public class PDContact {
         return "Number " + id + ":" + name;
     }
     //------------------------------------------------------------------ContactDetail
-    class ContactDetail {
-        private String value;
-        private Boolean primary;
-
-        public ContactDetail() {
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public Boolean getPrimary() {
-            return primary;
-        }
-
-        public void setPrimary(Boolean primary) {
-            this.primary = primary;
-        }
-    }
 
 }

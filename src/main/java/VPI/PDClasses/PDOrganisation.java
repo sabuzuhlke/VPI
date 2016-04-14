@@ -21,14 +21,17 @@ public class PDOrganisation {
         this.name = name;
         this.visible_to = visible_to;
         this.address = address;
+        this.active_flag = true;
     }
     public PDOrganisation(String name, String address) {
         this.name = name;
         this.address = address;
+        this.active_flag = true;
     }
     public PDOrganisation(String name, Integer visible_to) {
         this.name = name;
         this.visible_to = visible_to;
+        this.active_flag = true;
     }
 
     public PDOrganisation() {
