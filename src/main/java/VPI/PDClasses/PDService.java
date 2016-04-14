@@ -248,4 +248,24 @@ public class PDService {
         return res;
     }
 
+//-----------------------------------------------------------------------------------PUT
+    public ResponseEntity<PDContactResponse> updateContact(PDContactSend contact){
+        RequestEntity<PDContactSend> req;
+        ResponseEntity<PDContactResponse> res = null;
+        Long id = contact.getId();
+        String uri = server + "persons/" + id + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(contact, HttpMethod.PUT, new URI(uri));
+            res = restTemplate.exchange(req, PDContactResponse.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return res;
+    }
 }
+
+

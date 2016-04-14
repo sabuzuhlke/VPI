@@ -11,6 +11,7 @@ public class PDContactSend {
     private ContactDetail[] email;
     private ContactDetail[] phone;
     private Integer visible_to;
+    private Boolean active_flag;
 
     public PDContactSend() {
     }
@@ -24,6 +25,31 @@ public class PDContactSend {
         this.email[0] = emailDetail;
         this.phone = new ContactDetail[1];
         this.phone[0] = phoneDetail;
+        this.active_flag = true;
+    }
+
+    public void changePrimaryEmail(String newEmail){
+        for(ContactDetail e : this.email){
+            if(e.getPrimary()){
+                e.setValue(newEmail);
+            }
+        }
+    }
+
+    public void changePrimaryPhone(String newPhone){
+        for(ContactDetail p : this.phone){
+            if(p.getPrimary()){
+                p.setValue(newPhone);
+            }
+        }
+    }
+
+    public Boolean getActive_flag() {
+        return active_flag;
+    }
+
+    public void setActive_flag(Boolean active_flag) {
+        this.active_flag = active_flag;
     }
 
     public Long getId() {
