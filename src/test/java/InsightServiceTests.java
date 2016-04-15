@@ -3,10 +3,8 @@ import VPI.VClasses.InsightService;
 import VPI.VClasses.VOrganisation;
 import VPI.VClasses.VOrganisationItems;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.OutputCapture;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.boot.test.WebIntegrationTest;
@@ -19,10 +17,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
-public class InsightServiceTests {
-
-    @Rule
-    public OutputCapture capture = new OutputCapture();
+public class InsightServiceTests {;
 
     private InsightService IS;
 

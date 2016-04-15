@@ -41,7 +41,7 @@ public class PDOrganisation {
         this.name = c.getName();
         this.visible_to = 3;
         this.active_flag = true;
-        //this.address = c.getAddress();
+        this.address = c.getFormattedAddress();
     }
 
     public PDOrganisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, PDOwner owner_id) {

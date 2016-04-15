@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
-public class SynchronisationTests {
+public class SynchroniserIntegrationTests {
 
     private PDService PS;
     private InsightService IS;
