@@ -7,6 +7,9 @@ import VPI.VClasses.InsightService;
 import VPI.VClasses.VOrganisation;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by sabu on 15/04/2016.
  */
@@ -37,10 +40,10 @@ public class Synchroniser {
         importContacts();
     }
 
-    private void importOrganisations() {
+    public List<Long> importOrganisations() {
         getAllOrganisations();
         compareOrganisations();
-        pushOrganisations();
+        return pushOrganisations();
     }
 
     private void importContacts() {
@@ -93,17 +96,26 @@ public class Synchroniser {
 
     }
 
-    private void pushOrganisations() {
+    private List<Long> pushOrganisations() {
+        List<Long> idsPosted = PDS.postOrganisationList(organisations.postList);
+        List<Long> idsPutted = PDS.putOrganisationList(organisations.putList);
 
+        List<Long> idsPushed = new ArrayList<>(idsPosted);
+        idsPushed.addAll(idsPutted);
+        return idsPushed;
     }
 
-    private void pushContacts() {
-
+    private List<Long> pushContacts() {
+        return new ArrayList<>();
     }
 
     public void clear(){
         this.organisations = new Organisations();
         this.contacts = new Contacts();
+    }
+
+    public PDService getPDS() {
+        return this.PDS;
     }
 
 }

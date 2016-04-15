@@ -117,6 +117,22 @@ public class PDService {
         }
         return res;
     }
+
+    //TODO: Write Test for this
+    public List<Long> putOrganisationList(List<PDOrganisation> pds) {
+        ResponseEntity<PDOrganisationResponse> res;
+        List<Long> idsPutted = new ArrayList<>();
+        for(PDOrganisation org : pds) {
+            //TODO: Change call to updateOrganisationAdress() to take whole new org to be put
+            res = updateOrganisationAddress(org.getId(), org.getAddress());
+            if (res.getStatusCode() == HttpStatus.OK) {
+                idsPutted.add(res.getBody().getData().getId());
+            } else {
+                System.out.println("Could not update organisation, server response: " + res.getStatusCode().toString());
+            }
+        }
+        return idsPutted;
+    }
 //----------------------------------------------------------------------------------GET
     public ResponseEntity<PDOrganisationResponse> getOrganisation(Long id) {
         RequestEntity<PDOrganisation> req;
