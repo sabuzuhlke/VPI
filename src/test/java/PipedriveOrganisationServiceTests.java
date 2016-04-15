@@ -168,6 +168,55 @@ public class PipedriveOrganisationServiceTests {
         assertTrue(delRes.getBody().getData().getId().equals(org_id));
     }
 
+
+
+    @Test
+    public void canPutContact() {
+
+        //first Test no need to assert, taken care of in prev test
+        String companyName = "TestPostCompany";
+        Integer visibility = 3;
+
+        ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
+
+        //post contact for org
+        Long org_id = postResponse.getBody().getData().getId();
+
+        PDContactSend contact = new PDContactSend(org_id, "Test Name", "Test@Test.test", "0987654321");
+        ResponseEntity<PDContactResponse> contactPostResponse = PS.postContactForOrganisation(contact);
+
+        //modify contact
+        contact.changePrimaryEmail("loseweight@kfc.com");
+        contact.changePrimaryPhone("1234567890");
+        contact.setId(contactPostResponse.getBody().getData().getId());
+
+        //putagain
+        ResponseEntity<PDContactResponse> contactPutResponse = PS.updateContact(contact);
+        assertTrue(contactPutResponse.getStatusCode() == HttpStatus.OK);
+        assertTrue(contactPutResponse.getBody().getSuccess());
+        assertTrue(contactPutResponse.getBody().getData().getName().equals("Test Name"));
+        assertTrue(contactPutResponse.getBody().getData().getEmail()[0].getValue().equals("loseweight@kfc.com"));
+        assertTrue(contactPutResponse.getBody().getData().getPhone()[0].getValue().equals("1234567890"));
+
+
+        //delete org and person
+        Long contact_id = contactPostResponse.getBody().getData().getId();
+
+        ResponseEntity<PDDeleteResponse> delContRes = PS.deleteContact(contact_id);
+        idsDeleted.add(org_id);
+        ResponseEntity<PDDeleteResponse> delRes = PS.deleteOrganisation(org_id);
+
+        assertTrue(delContRes.getStatusCode() == HttpStatus.OK);
+        assertTrue(delContRes.getBody().getSuccess());
+        assertTrue(delRes.getStatusCode() == HttpStatus.OK);
+        assertTrue(delRes.getBody().getSuccess());
+
+        assertTrue(delContRes.getBody().getData().getId().equals(contact_id));
+        assertTrue(delRes.getBody().getData().getId().equals(org_id));
+
+
+    }
+
     @Test
     public void deletedAllOrganisations(){
         ResponseEntity<PDOrganisationResponse> org;
@@ -177,19 +226,5 @@ public class PipedriveOrganisationServiceTests {
             assertTrue(!org.getBody().getData().getActive_flag());
         }
     }
-/*
-    @Test
-    public void canPostNewContactIntoOrganisation() {
 
-    }
-
-    @Test
-    public void canPostNewOrganisationWithContactsAttached() {
-
-    }
-
-    @Test
-    public void canPutContact() {
-
-    }*/
 }
