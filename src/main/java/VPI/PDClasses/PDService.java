@@ -84,7 +84,7 @@ public class PDService {
 
 //----------------------------------------------------------------------------------PUT
     public ResponseEntity<PDOrganisationResponse> updateOrganisationAddress(Long id, String address) {
-        PDOrganisationResponse org;
+        PDOrganisationResponse orgr;
         PDOrganisationResponse resOrganisation = new PDOrganisationResponse();
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDOrganisationResponse> res = null;
@@ -92,17 +92,17 @@ public class PDService {
 
         try {
             //GET organisation From Pipedrive
-            org = this.getOrganisation(id).getBody();
+            orgr = this.getOrganisation(id).getBody();
 
             //Update with new Address
             PDOrganisation newOrg = new PDOrganisation(
                     id,
-                    org.getData().getName(),
-                    org.getData().getVisible_to(),
+                    orgr.getData().getName(),
+                    orgr.getData().getVisible_to(),
                     address,
                     true,
-                    org.getData().getCompany_id(),
-                    org.getData().getOwner_id()
+                    orgr.getData().getCompany_id(),
+                    orgr.getData().getOwner_id()
             );
 
             //PUT Org with new address to PipeDrive
@@ -118,13 +118,28 @@ public class PDService {
         return res;
     }
 
-    //TODO: Write Test for this
+    public ResponseEntity<PDOrganisationResponse> updateOrganisation(PDOrganisation org){
+
+        RequestEntity<PDOrganisation> req;
+        ResponseEntity<PDOrganisationResponse> res = null;
+
+        String uri = server + "organizations/" + org.getId() + apiKey;
+
+        try{
+            req = new RequestEntity<>(org,HttpMethod.PUT,new URI(uri));
+            res = restTemplate.exchange(req, PDOrganisationResponse.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        return res;
+    }
+
     public List<Long> putOrganisationList(List<PDOrganisation> pds) {
         ResponseEntity<PDOrganisationResponse> res;
         List<Long> idsPutted = new ArrayList<>();
         for(PDOrganisation org : pds) {
-            //TODO: Change call to updateOrganisationAdress() to take whole new org to be put
-            res = updateOrganisationAddress(org.getId(), org.getAddress());
+            res = updateOrganisation(org);
             if (res.getStatusCode() == HttpStatus.OK) {
                 idsPutted.add(res.getBody().getData().getId());
             } else {

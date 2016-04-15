@@ -99,6 +99,36 @@ public class PipedriveOrganisationServiceTests {
 
     }
 
+    @Test
+    public void canUpdateOrg() {
+        ResponseEntity<PDOrganisationResponse> orgr;
+        String companyName = "TestAddressCompany";
+        Integer visibility = 3;
+
+        //POST
+        ResponseEntity<PDOrganisationResponse> postResponse = PS.postOrganisation(companyName, visibility);
+        assertTrue(postResponse.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(postResponse.getBody().getSuccess());
+
+        PDOrganisation org = postResponse.getBody().getData();
+
+        String newAddress = "test address";
+
+        org.setAddress(newAddress);
+        //PUT
+        orgr = PS.updateOrganisation(org);
+
+        assertTrue(orgr.getStatusCode() == HttpStatus.OK);
+        assertTrue(orgr.getBody() != null);
+        assertTrue(orgr.getBody().getSuccess());
+        assertTrue(orgr.getBody().getData().getAddress().equals(newAddress));
+
+        //DELETE posted organisation
+        idsDeleted.add(org.getId());
+        PS.deleteOrganisation(org.getId());
+
+    }
+
 
 
     @Test
