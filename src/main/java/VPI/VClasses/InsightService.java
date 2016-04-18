@@ -8,6 +8,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.Authenticator;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class InsightService {
 
@@ -59,5 +61,10 @@ public class InsightService {
         }
         return res;
 
+    }
+
+    public ResponseEntity<VContactList> getContactsForOrganisation(Long orgId){
+
+        return new ResponseEntity<VContactList>(HttpStatus.ACCEPTED);
     }
 }

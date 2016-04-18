@@ -1,5 +1,6 @@
 import VPI.*;
 import VPI.PDClasses.ContactDetail;
+import VPI.PDClasses.OrgId;
 import VPI.PDClasses.PDContactReceived;
 import VPI.PDClasses.PDOrganisation;
 import VPI.VClasses.VContact;
@@ -29,7 +30,6 @@ public class SynchroniserUnitTests {
     @Test
     public void canClearSynchroniser() {
         assignJustVOrgList();
-        //TODO: write assignJustVContactList();
 
         PDOrganisation p = new PDOrganisation("Peter Griffin.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
         synchroniser.organisations.pdOrganisations.add(p);
@@ -285,6 +285,51 @@ public class SynchroniserUnitTests {
         clearSynchroniser();
     }
 
+    @Test
+    public void matchingContactListsReturnsEmptyPostAndPut() {
+        assignJustVContactList();
+        assignMatchingPDContacts();
+
+        synchroniser.compareContacts(
+                synchroniser.contacts.vContacts,
+                synchroniser.contacts.pdContacts
+        );
+
+        assertTrue(synchroniser.contacts.postList.isEmpty());
+        assertTrue(synchroniser.contacts.putList.isEmpty());
+
+        clearSynchroniser();
+    }
+
+    @Test
+    public void missingInfoAndUnresolvedInfoReturnsCorrectPostAndPut() {
+        assignJustVContactList();
+        assignPDContacts();
+
+        synchroniser.compareContacts(
+                synchroniser.contacts.vContacts,
+                synchroniser.contacts.pdContacts
+        );
+
+        assertTrue(synchroniser.contacts.postList.size() == 3);
+        assertTrue(synchroniser.contacts.postList.get(0).getName().equals("Robin"));
+        assertTrue(synchroniser.contacts.postList.get(1).getName().equals("Joker"));
+        assertTrue(synchroniser.contacts.postList.get(2).getName().equals("Penguin"));
+
+        assertTrue(synchroniser.contacts.putList.size() == 1);
+        assertTrue(synchroniser.contacts.putList.get(0).getName().equals("Batman"));
+        assertTrue(synchroniser.contacts.putList.get(0).getPhone().get(0).getValue().equals("0987654321"));
+        assertTrue(synchroniser.contacts.putList.get(0).getPhone().get(0).getPrimary());
+        assertTrue(synchroniser.contacts.putList.get(0).getPhone().get(1).getValue().equals("11111111"));
+        assertTrue(!synchroniser.contacts.putList.get(0).getPhone().get(1).getPrimary());
+        assertTrue(synchroniser.contacts.putList.get(0).getEmail().get(0).getValue().equals("BatSignal@night.com"));
+        assertTrue(synchroniser.contacts.putList.get(0).getEmail().get(0).getPrimary());
+        assertTrue(synchroniser.contacts.putList.get(0).getEmail().get(1).getValue().equals("notBruce@wayne.com"));
+        assertTrue(!synchroniser.contacts.putList.get(0).getEmail().get(1).getPrimary());
+
+        clearSynchroniser();
+    }
+
 //-----ResolveContactDetailsTests----------------------------------------------------------------------
 
     @Test
@@ -398,7 +443,11 @@ public class SynchroniserUnitTests {
         PDContactReceived c1 = new PDContactReceived();
         PDContactReceived c2 = new PDContactReceived();
 
+        OrgId org_id = new OrgId();
+        org_id.setValue(15L);
+
         c1.setName("Scarecrow");
+        c1.setOrg_id(org_id);
         c1.getEmail().add(new ContactDetail("Middle@field.gotham", true));
         c1.getPhone().add(new ContactDetail("777222777", true));
         c1.getEmail().add(new ContactDetail("senior@arkham.com", false));
@@ -407,6 +456,7 @@ public class SynchroniserUnitTests {
         synchroniser.contacts.pdContacts.add(c1);
 
         c2.setName("Batman");
+        c2.setOrg_id(org_id);
         c2.getEmail().add(new ContactDetail("BatSignal@night.com", false));
         c2.getEmail().add(new ContactDetail("notBruce@wayne.com", true));
         c2.getPhone().add(new ContactDetail("0987654321", false));
@@ -415,6 +465,71 @@ public class SynchroniserUnitTests {
         synchroniser.contacts.pdContacts.add(c2);
 
         return synchroniser.contacts.pdContacts.size();
+    }
+
+    public int assignMatchingPDContacts() {
+        OrgId org_id = new OrgId();
+        org_id.setValue(15L);
+
+        PDContactReceived c1 = new PDContactReceived();
+        c1.setOrg_id(org_id);
+        c1.setName("Batman");
+        ContactDetail e1 = new ContactDetail();
+        e1.setPrimary(true);
+        e1.setValue("BatSignal@night.com");
+        c1.getEmail().add(e1);
+        ContactDetail p1 = new ContactDetail();
+        p1.setPrimary(true);
+        p1.setValue("0987654321");
+        c1.getPhone().add(p1);
+        ContactDetail e12 = new ContactDetail();
+        e12.setPrimary(false);
+        e12.setValue("Bruce@wayne.com");
+        c1.getEmail().add(e12);
+        ContactDetail p12 = new ContactDetail();
+        p12.setPrimary(false);
+        p12.setValue("1234567890");
+        c1.getPhone().add(p12);
+
+        PDContactReceived c2 = new PDContactReceived();
+        c2.setOrg_id(org_id);
+        c2.setName("Robin");
+        ContactDetail e2 = new ContactDetail();
+        e2.setPrimary(true);
+        e2.setValue("Robin@night.com");
+        c2.getEmail().add(e2);
+
+        PDContactReceived c3 = new PDContactReceived();
+        c3.setOrg_id(org_id);
+        c3.setName("Joker");
+        ContactDetail e3 = new ContactDetail();
+        e3.setPrimary(true);
+        e3.setValue("joke@you.com");
+        c3.getEmail().add(e3);
+        ContactDetail p3 = new ContactDetail();
+        p3.setPrimary(true);
+        p3.setValue("123123");
+        c3.getPhone().add(p3);
+
+        PDContactReceived c4 = new PDContactReceived();
+        c4.setOrg_id(org_id);
+        c4.setName("Penguin");
+        ContactDetail e4 = new ContactDetail();
+        e4.setPrimary(true);
+        e4.setValue("Penguin@large.com");
+        c4.getEmail().add(e4);
+        ContactDetail p4 = new ContactDetail();
+        p4.setPrimary(true);
+        p4.setValue("321321");
+        c4.getPhone().add(p4);
+
+        synchroniser.contacts.pdContacts.add(c1);
+        synchroniser.contacts.pdContacts.add(c2);
+        synchroniser.contacts.pdContacts.add(c3);
+        synchroniser.contacts.pdContacts.add(c4);
+
+        return synchroniser.contacts.vContacts.size();
+
     }
 
     public int assignJustVContactList() {

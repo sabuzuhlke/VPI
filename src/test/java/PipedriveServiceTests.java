@@ -1,5 +1,7 @@
 import VPI.*;
 import VPI.PDClasses.*;
+import VPI.VClasses.VContact;
+import com.sun.org.apache.regexp.internal.RESyntaxException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -21,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
-public class PipedriveOrganisationServiceTests {
+public class PipedriveServiceTests {
 
     @Rule
     public OutputCapture capture = new OutputCapture();
@@ -245,6 +248,100 @@ public class PipedriveOrganisationServiceTests {
         assertTrue(delRes.getBody().getData().getId().equals(org_id));
 
 
+    }
+
+    @Test
+    public void canPostContactList(){
+
+        List<PDContactSend> contacts = assignMatchingPDContacts();
+        ResponseEntity<PDOrganisationResponse> Orgres;
+        ResponseEntity<PDDeleteResponse> delres;
+        List<Long> idsPosted;
+
+        Orgres = PS.postOrganisation("Yuuhuuu!",3);
+        assertTrue(Orgres.getStatusCode() == HttpStatus.CREATED);
+
+        Long orgid = Orgres.getBody().getData().getId();
+
+        for(int i = 0; i < contacts.size(); i++){
+            contacts.get(i).setOrg_id(orgid);
+        }
+
+        idsPosted = PS.postContactList(contacts);
+
+        assertTrue(idsPosted.size() == contacts.size());
+        List<Long> contactsDeleted = new ArrayList<>();
+
+        for(Long id : idsPosted){
+            delres = PS.deleteContact(id);
+            assertTrue(delres.getBody().getSuccess());
+            contactsDeleted.add(delres.getBody().getData().getId());
+        }
+
+        PS.deleteOrganisation(orgid);
+
+        assertEquals(idsPosted.size(),contactsDeleted.size());
+
+
+    }
+
+    public List<PDContactSend> assignMatchingPDContacts() {
+
+        PDContactSend c1 = new PDContactSend();
+        c1.setName("Batman");
+        ContactDetail e1 = new ContactDetail();
+        e1.setPrimary(true);
+        e1.setValue("BatSignal@night.com");
+        c1.getEmail().add(e1);
+        ContactDetail p1 = new ContactDetail();
+        p1.setPrimary(true);
+        p1.setValue("0987654321");
+        c1.getPhone().add(p1);
+        ContactDetail e12 = new ContactDetail();
+        e12.setPrimary(false);
+        e12.setValue("Bruce@wayne.com");
+        c1.getEmail().add(e12);
+        ContactDetail p12 = new ContactDetail();
+        p12.setPrimary(false);
+        p12.setValue("1234567890");
+        c1.getPhone().add(p12);
+
+        PDContactSend c2 = new PDContactSend();
+        c2.setName("Robin");
+        ContactDetail e2 = new ContactDetail();
+        e2.setPrimary(true);
+        e2.setValue("Robin@night.com");
+        c2.getEmail().add(e2);
+
+        PDContactSend c3 = new PDContactSend();
+        c3.setName("Joker");
+        ContactDetail e3 = new ContactDetail();
+        e3.setPrimary(true);
+        e3.setValue("joke@you.com");
+        c3.getEmail().add(e3);
+        ContactDetail p3 = new ContactDetail();
+        p3.setPrimary(true);
+        p3.setValue("123123");
+        c3.getPhone().add(p3);
+
+        PDContactSend c4 = new PDContactSend();
+        c4.setName("Penguin");
+        ContactDetail e4 = new ContactDetail();
+        e4.setPrimary(true);
+        e4.setValue("Penguin@large.com");
+        c4.getEmail().add(e4);
+        ContactDetail p4 = new ContactDetail();
+        p4.setPrimary(true);
+        p4.setValue("321321");
+        c4.getPhone().add(p4);
+
+        List<PDContactSend> pdContactSends = new ArrayList<>();
+        pdContactSends.add(c1);
+        pdContactSends.add(c2);
+        pdContactSends.add(c3);
+        pdContactSends.add(c4);
+
+        return pdContactSends;
     }
 
     @Test

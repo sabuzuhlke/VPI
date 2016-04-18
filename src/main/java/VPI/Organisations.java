@@ -17,10 +17,13 @@ public class Organisations {
     public List<PDOrganisation> postList;
     public List<PDOrganisation> putList;
 
+    public List<VOrganisation> matchedList;
+
     public Organisations() {
         this.pdOrganisations = new ArrayList<>();
         this.vOrganisations  = new ArrayList<>();
         this.postList        = new ArrayList<>();
         this.putList         = new ArrayList<>();
+        this.matchedList     = new ArrayList<>();
     }
 }

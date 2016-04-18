@@ -19,6 +19,8 @@ public class PDContactSend {
     private Boolean active_flag;
 
     public PDContactSend() {
+        this.email = new ArrayList<>();
+        this.phone = new ArrayList<>();
     }
 
     public PDContactSend(Long org_id, String name, String email, String phone) {

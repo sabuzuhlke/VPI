@@ -51,7 +51,7 @@ public class InsightServiceTests {;
         assertTrue(res.getBody() != null);
         assertTrue(res.getBody().getName().equals("Interactive Objects Software GmbH"));
     }/*
-
+TODO: finish insight contact tests when we have schema of incoming data
     @Test
     public void canGetContactsForOrganisation() {
 

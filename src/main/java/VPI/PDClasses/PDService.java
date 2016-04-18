@@ -241,6 +241,22 @@ public class PDService {
 
         return res;
     }
+//TODO: TEST!!!!!
+    public List<Long> postContactList(List<PDContactSend> contacts){
+        List<Long> idsPosted = new ArrayList<>();
+        ResponseEntity<PDContactResponse> res = null;
+
+        for(PDContactSend p : contacts){
+            res = postContactForOrganisation(p);
+            if (res.getStatusCode() == HttpStatus.CREATED) {
+                idsPosted.add(res.getBody().getData().getId());
+            } else {
+                System.out.println("Could not create contact, server response: " + res.getStatusCode().toString());
+            }
+        }
+        return idsPosted;
+
+    }
 
 //----------------------------------------------------------------------------------GET
     public ResponseEntity<PDContactsForOrganisation> getContactsForOrganisation(Long org_id) {
@@ -295,6 +311,22 @@ public class PDService {
         }
 
         return res;
+    }
+//TODO: TEST!!!!!
+    public List<Long> putContactList(List<PDContactSend> contacts){
+        ResponseEntity<PDContactResponse> res;
+        List<Long> idsPut = new ArrayList<>();
+
+        for(PDContactSend c : contacts){
+            res = updateContact(c);
+            if(res.getStatusCode() == HttpStatus.OK){
+
+                idsPut.add(res.getBody().getData().getId());
+            }else{
+                System.out.println("Could not create contact, server responded: " + res.getStatusCode());
+            }
+        }
+        return idsPut;
     }
 }
 
