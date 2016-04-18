@@ -1,5 +1,6 @@
 import VPI.*;
 import VPI.PDClasses.PDOrganisation;
+import VPI.VClasses.VContact;
 import VPI.VClasses.VOrganisation;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,8 +47,8 @@ public class ComparatorTests {
 
         OC.compareOrgs();
 
-        assertTrue(OC.getPutList().isEmpty());
-        assertTrue(OC.getPostList().isEmpty());
+        assertTrue(OC.getOrganisationPutList().isEmpty());
+        assertTrue(OC.getOrganisationPostList().isEmpty());
 
         OC.clear();
     }
@@ -68,10 +69,10 @@ public class ComparatorTests {
 
         OC.compareOrgs();
 
-        assertTrue(OC.getPutList().isEmpty());
-        assertTrue(!OC.getPostList().isEmpty());
-        assertTrue(OC.getPostList().get(0) != null);
-        assertTrue(OC.getPostList().get(0).getName().equals("Name"));
+        assertTrue(OC.getOrganisationPutList().isEmpty());
+        assertTrue(!OC.getOrganisationPostList().isEmpty());
+        assertTrue(OC.getOrganisationPostList().get(0) != null);
+        assertTrue(OC.getOrganisationPostList().get(0).getName().equals("Name"));
 
         OC.clear();
 
@@ -97,10 +98,10 @@ public class ComparatorTests {
 
         OC.compareOrgs();
 
-        assertTrue(OC.getPostList().isEmpty());
-        assertTrue(!OC.getPutList().isEmpty());
-        assertTrue(OC.getPutList().get(0) != null);
-        assertTrue(OC.getPutList().get(0).getAddress().equals("15 Road Avenue, SinCity, 666, Murica!"));
+        assertTrue(OC.getOrganisationPostList().isEmpty());
+        assertTrue(!OC.getOrganisationPutList().isEmpty());
+        assertTrue(OC.getOrganisationPutList().get(0) != null);
+        assertTrue(OC.getOrganisationPutList().get(0).getAddress().equals("15 Road Avenue, SinCity, 666, Murica!"));
 
         OC.clear();
     }
@@ -113,12 +114,12 @@ public class ComparatorTests {
 
         OC.compareOrgs();
 
-        assertTrue(!OC.getPostList().isEmpty());
-        assertTrue(OC.getPutList().isEmpty());
+        assertTrue(!OC.getOrganisationPostList().isEmpty());
+        assertTrue(OC.getOrganisationPutList().isEmpty());
 
-        assertTrue(OC.getPostList().size() == 2);
-        assertTrue(OC.getPostList().get(0).getName().equals("Name"));
-        assertTrue(OC.getPostList().get(1).getName().equals("OtherName"));
+        assertTrue(OC.getOrganisationPostList().size() == 2);
+        assertTrue(OC.getOrganisationPostList().get(0).getName().equals("Name"));
+        assertTrue(OC.getOrganisationPostList().get(1).getName().equals("OtherName"));
 
         OC.clear();
     }
@@ -154,18 +155,48 @@ public class ComparatorTests {
 
         OC.clear();
 
-        assertTrue(OC.getPostList().isEmpty());
-        assertTrue(OC.getPutList().isEmpty());
+        assertTrue(OC.getOrganisationPostList().isEmpty());
+        assertTrue(OC.getOrganisationPutList().isEmpty());
         assertTrue(OC.getPDOrganisations().isEmpty());
         assertTrue(OC.getVOrganisations().isEmpty());
 
     }
- /*
+
     @Test
     public void givenNoMatchWillPostNewOrgWithContacts() {
+        //create prerequisites --vorg, NO pdorg, vcontact
+        List<PDOrganisation> PDorgs = new ArrayList<>();
+        List<VOrganisation> VOrgs = new ArrayList<>();
+        List<VContact> VContacts = new ArrayList<>();
+        Long orgid = 1L;
+
+        VOrganisation VOrg1= new VOrganisation("Name");
+        VOrg1.setId(orgid);
+        PDOrganisation PDOrg1 = new PDOrganisation("NonMatchingName",3);
+        PDorgs.add(PDOrg1);
+        VOrgs.add(VOrg1);
+
+        VContact newContact = new VContact();
+        newContact.setName("Peter Griffin");
+        newContact.setOrg_id(orgid);
+        VContacts.add(newContact);
+
+        OC.setPDOrganisations(PDorgs);
+        OC.setVOrganisations(VOrgs);
+        OC.setVContacts(VContacts);
+        //
+        OC.compareOrgs();
+
+        assertTrue(OC.getContactPutList().isEmpty());
+        assertTrue(!OC.getContactPostList().isEmpty());
+        assertTrue(OC.getContactPostList().get(0) != null);
+        assertTrue(OC.getContactPostList().get(0).getName().equals("Peter Griffin"));
+        assertTrue(OC.getContactPostList().get(0).getOrg_id() == 1);
+
+
 
     }
-
+ /*
     @Test
     public void givenMatchWillPostNewContactsToOrg() {
 

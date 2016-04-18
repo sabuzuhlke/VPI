@@ -1,5 +1,7 @@
 package VPI.PDClasses;
 
+import VPI.VClasses.VContact;
+
 /**
  * Created by gebo on 14/04/2016.
  */
@@ -26,6 +28,27 @@ public class PDContactSend {
         this.phone = new ContactDetail[1];
         this.phone[0] = phoneDetail;
         this.active_flag = true;
+    }
+
+    public PDContactSend(VContact vcont){
+        this.id = vcont.getId();
+        this.name = vcont.getName();
+        this.org_id = vcont.getOrg_id();
+        //this.email = vcont.getEmail();
+        //this.phone = vcont.getPhone();
+        this.visible_to = 3;
+        this.active_flag = true;
+    }
+
+    public PDContactSend(PDContactReceived p){
+        this.id = p.getId();
+        this.name = p.getName();
+        this.org_id = p.getOrg_id().getValue();
+        this.email = p.getEmail();
+        this.phone = p.getPhone();
+        this.visible_to = p.getVisible_to();
+        this.active_flag = true;
+
     }
 
     public void changePrimaryEmail(String newEmail){

@@ -1,5 +1,6 @@
 package VPI.VClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -12,7 +13,18 @@ public class VContact {
     @JsonProperty("Full Name")
     private String name;
 
+    @JsonIgnore
+    private Long org_id;
+
     public VContact() {
+    }
+
+    public Long getOrg_id() {
+        return org_id;
+    }
+
+    public void setOrg_id(Long org_id) {
+        this.org_id = org_id;
     }
 
     public Long getId() {
