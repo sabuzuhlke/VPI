@@ -281,7 +281,10 @@ public class PipedriveServiceTests {
         PS.deleteOrganisation(orgid);
 
         assertEquals(idsPosted.size(),contactsDeleted.size());
+    }
 
+    @Test
+    public void canPutContactList() {
 
     }
 
