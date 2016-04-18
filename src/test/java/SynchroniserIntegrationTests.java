@@ -20,63 +20,55 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
-public class SynchronisationTests {
+public class SynchroniserIntegrationTests {
 
-    private PDService PS;
-    private InsightService IS;
-    private Comparator C;
+    private Synchroniser synchroniser;
+    private PDService PD;
 
     @Before
     public void setUp() {
-        TestRestTemplate testRestTemplate = new TestRestTemplate();
-        MyCredentials creds = new MyCredentials();
+        String PDServer = "https://api.pipedrive.com/v1/";
+        String VServer = "http://insight.zuehlke.com";
+        this.synchroniser = new Synchroniser(PDServer, VServer);
+    }
 
-        //set up PDService
-        String server = "https://api.pipedrive.com/v1/";
-        String apiKey = creds.getApiKey();
-        this.PS = new PDService(testRestTemplate, server, apiKey);
 
-        //set up InsightService
-        String iServer = "http://insight.zuehlke.com";
-        this.IS = new InsightService(
-                testRestTemplate,
-                iServer,
-                creds.getUserName(),
-                creds.getPass()
-        );
-
-        //create Comparator
-        C = new Comparator();
+    public void clearSynchroniser() {
+        synchroniser.clear();
     }
 
     @Test
-    public void willPostOrgsNotInPDToPD() {
-        this.setUpFakeInsightData();
-        List<PDOrganisation> PDOrgs = PS.getAllOrganisations().getBody().getData();
+    public void willPostandPutOrgsNotInPDToPD() {
+        //this.setUpFakeInsightData();
+        //List<PDOrganisation> PDOrgs = .getAllOrganisations().getBody().getData();
 
-        C.setPDOrganisations(PDOrgs);
+        synchroniser.getPDS().postOrganisation("Bentley Systems Germany GmbH", 3);
 
-        C.compareOrgs();
+        List<Long> idsPushed = synchroniser.importOrganisations();
+        assertEquals(idsPushed.size(),
+                synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
 
-        assertTrue(C.getOrganisationPutList().isEmpty());
-        assertTrue(!C.getOrganisationPostList().isEmpty());
+        assertTrue(synchroniser.organisations.putList.size() == 1);
+        assertTrue(synchroniser.organisations.putList.get(0).getName().equals("Bentley Systems Germany GmbH"));
 
-        List<Long> idsPosted = PS.postOrganisationList(C.getOrganisationPostList());
-        assertEquals(idsPosted.size(), C.getOrganisationPostList().size());
+        List<PDOrganisation> pdOrgs = synchroniser.getPDS().getAllOrganisations().getBody().getData();
 
-        int index = 0;
-        for(Long id : idsPosted) {
-            String name = PS.getOrganisation(id).getBody().getData().getName();
-            assertTrue(name.equals(C.getOrganisationPostList().get(index).getName()));
-            index++;
+        int matches = 0;
+        for(VOrganisation v : synchroniser.organisations.vOrganisations) {
+            for(PDOrganisation p : pdOrgs) {
+                if (v.getName().equals(p.getName())) {
+                    matches++;
+                }
+            }
         }
+        assertEquals(matches, idsPushed.size());
 
-        List<Long> idsDeleted = PS.deleteOrganisationList(idsPosted);
-        System.out.println("idsPosted length: " + idsPosted.size() + ", idsDeleted length: " + idsDeleted.size());
-        assertEquals(idsDeleted.size(), C.getOrganisationPostList().size());
-        assertEquals(idsDeleted, idsPosted);
+        List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPushed);
+        assertEquals(idsDeleted.size(),
+                synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
+        assertEquals(idsDeleted, idsPushed);
 
-        C.clear();
+        clearSynchroniser();
     }
 
     public void setUpFakeInsightData() {
@@ -92,9 +84,9 @@ public class SynchronisationTests {
         VOrgs.add(VOrg3);
         VOrgs.add(VOrg4);
 
-        C.setVOrganisations(VOrgs);
+        synchroniser.organisations.vOrganisations = VOrgs;
     }
-
+/*
     @Test
     public void syncDoesNotMakeDuplicateOrganisations() {
 
@@ -107,9 +99,9 @@ public class SynchronisationTests {
 
         C.compareOrgs();
 
-        int postListSize = C.getOrganisationPostList().size();
+        int postListSize = C.getPostList().size();
 
-        List<Long> idsPosted = PS.postOrganisationList(C.getOrganisationPostList());
+        List<Long> idsPosted = PS.postOrganisationList(C.getPostList());
         assertEquals(idsPosted.size(), postListSize);
 
         C.clear();
@@ -122,8 +114,8 @@ public class SynchronisationTests {
 
         C.compareOrgs();
 
-        assertTrue(C.getOrganisationPutList().isEmpty());
-        assertTrue(C.getOrganisationPostList().isEmpty());
+        assertTrue(C.getPutList().isEmpty());
+        assertTrue(C.getPostList().isEmpty());
 
         //delete posted organisations
         List<Long> idsDeleted = PS.deleteOrganisationList(idsPosted);
@@ -132,5 +124,5 @@ public class SynchronisationTests {
 
         C.clear();
 
-    }
+    }*/
 }

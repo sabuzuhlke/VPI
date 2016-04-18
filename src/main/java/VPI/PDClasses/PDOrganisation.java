@@ -1,6 +1,7 @@
 package VPI.PDClasses;
 
 import VPI.VClasses.VOrganisation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,8 @@ public class PDOrganisation {
     //Last Update Fields
     private String update_time;
     private Integer people_count;
+    @JsonIgnore
+    private Long v_id;
 
     public PDOrganisation(String name, String address, Integer visible_to) {
         this.name = name;
@@ -42,6 +45,7 @@ public class PDOrganisation {
         this.visible_to = 3;
         this.active_flag = true;
         this.address = c.getFormattedAddress();
+        this.v_id = c.getId();
     }
 
     public PDOrganisation(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, PDOwner owner_id) {
@@ -58,6 +62,14 @@ public class PDOrganisation {
     public LocalDateTime readDateFromPDOrganisation() {
         String[] dAndT = this.update_time.split(" ");
         return LocalDateTime.parse(dAndT[0] + "T" + dAndT[1]);
+    }
+
+    public Long getV_id() {
+        return v_id;
+    }
+
+    public void setV_id(Long v_id) {
+        this.v_id = v_id;
     }
 
     public String getUpdate_time() {

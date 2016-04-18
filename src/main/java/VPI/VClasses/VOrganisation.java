@@ -1,5 +1,6 @@
 package VPI.VClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -15,6 +16,8 @@ public class VOrganisation {
     private String role;
     private String roleText;
     private Long id;
+    @JsonIgnore
+    private Long pd_id;
 
     public VOrganisation() {
     }
@@ -65,6 +68,14 @@ public class VOrganisation {
     @JsonProperty("Country")
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public Long getPd_id() {
+        return pd_id;
+    }
+
+    public void setPd_id(Long pd_id) {
+        this.pd_id = pd_id;
     }
 
     public String getName() {
