@@ -38,8 +38,8 @@ public class PDContactSend {
 
     public PDContactSend(VContact vc) {
         this.name = vc.getName();
-        this.email = vc.getEmail();
-        this.phone = vc.getPhone();
+        this.email = vc.getEmailDetail();
+        this.phone = vc.getPhoneDetail();
         this.visible_to = 3;
         this.active_flag = true;
     }

@@ -35,6 +35,6 @@ public class PDOwner {
 
     @Override
     public String toString() {
-        return "Owner_id: " + id + ", name: " + name + ", email: " + email;
+        return "Owner_id: " + id + ", name: " + name + ", emailDetail: " + email;
     }
 }

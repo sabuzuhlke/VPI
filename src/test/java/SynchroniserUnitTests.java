@@ -267,10 +267,6 @@ public class SynchroniserUnitTests {
                 .getEmail().get(0).getValue().equals("BatSignal@night.com"));
         assertTrue(synchroniser.contacts.postList.get(0)
                 .getPhone().get(0).getValue().equals("0987654321"));
-        assertTrue(synchroniser.contacts.postList.get(0)
-                .getEmail().get(1).getValue().equals("Bruce@wayne.com"));
-        assertTrue(synchroniser.contacts.postList.get(0)
-                .getPhone().get(1).getValue().equals("1234567890"));
 
         assertTrue(synchroniser.contacts.postList.get(1).getName().equals("Robin"));
         assertTrue(synchroniser.contacts.postList.get(1)
@@ -352,10 +348,8 @@ public class SynchroniserUnitTests {
         Boolean mod = synchroniser.resolveContactDetails(v,p);
         assertTrue(mod);
         assertTrue(p.getEmail().get(0).getValue().equals("BatSignal@night.com"));
-        assertTrue(p.getEmail().get(1).getValue().equals("Bruce@wayne.com"));
 
         assertTrue(p.getPhone().get(0).getValue().equals("0987654321"));
-        assertTrue(p.getPhone().get(1).getValue().equals("1234567890"));
 
         clearSynchroniser();
     }
@@ -370,8 +364,8 @@ public class SynchroniserUnitTests {
         Boolean mod = synchroniser.resolveContactDetails(v,p);
 
         assertTrue(mod);
-        assertTrue(p.getEmail().size() == 4);
-        assertTrue(p.getPhone().size() == 4);
+        assertTrue(p.getEmail().size() == 3);
+        assertTrue(p.getPhone().size() == 3);
         assertTrue(p.getEmail().get(2).getValue().equals("BatSignal@night.com"));
         assertTrue(p.getEmail().get(2).getPrimary());
 
@@ -419,22 +413,18 @@ public class SynchroniserUnitTests {
 
         assertTrue(mod);
 
-        assertTrue(p.getPhone().size() == 3);
-        assertTrue(p.getEmail().size() == 3);
+        assertTrue(p.getPhone().size() == 2);
+        assertTrue(p.getEmail().size() == 2);
 
         assertTrue(p.getEmail().get(0).getValue().equals("BatSignal@night.com"));
         assertTrue(p.getEmail().get(0).getPrimary());
         assertTrue(p.getEmail().get(1).getValue().equals("notBruce@wayne.com"));
         assertTrue(!p.getEmail().get(1).getPrimary());
-        assertTrue(p.getEmail().get(2).getValue().equals("Bruce@wayne.com"));
-        assertTrue(!p.getEmail().get(2).getPrimary());
 
         assertTrue(p.getPhone().get(0).getValue().equals("0987654321"));
         assertTrue(p.getPhone().get(0).getPrimary());
         assertTrue(p.getPhone().get(1).getValue().equals("11111111"));
         assertTrue(!p.getPhone().get(1).getPrimary());
-        assertTrue(p.getPhone().get(2).getValue().equals("1234567890"));
-        assertTrue(!p.getPhone().get(2).getPrimary());
 
         clearSynchroniser();
     }
@@ -535,52 +525,24 @@ public class SynchroniserUnitTests {
     public int assignJustVContactList() {
         VContact c1 = new VContact();
         c1.setName("Batman");
-        ContactDetail e1 = new ContactDetail();
-        e1.setPrimary(true);
-        e1.setValue("BatSignal@night.com");
-        c1.email.add(e1);
-        ContactDetail p1 = new ContactDetail();
-        p1.setPrimary(true);
-        p1.setValue("0987654321");
-        c1.phone.add(p1);
-        ContactDetail e12 = new ContactDetail();
-        e12.setPrimary(false);
-        e12.setValue("Bruce@wayne.com");
-        c1.email.add(e12);
-        ContactDetail p12 = new ContactDetail();
-        p12.setPrimary(false);
-        p12.setValue("1234567890");
-        c1.phone.add(p12);
+        c1.setEmail("BatSignal@night.com");
+
+        c1.setPhone("0987654321");
 
         VContact c2 = new VContact();
         c2.setName("Robin");
-        ContactDetail e2 = new ContactDetail();
-        e2.setPrimary(true);
-        e2.setValue("Robin@night.com");
-        c2.email.add(e2);
+        c2.setEmail("Robin@night.com");
 
 
         VContact c3 = new VContact();
         c3.setName("Joker");
-        ContactDetail e3 = new ContactDetail();
-        e3.setPrimary(true);
-        e3.setValue("joke@you.com");
-        c3.email.add(e3);
-        ContactDetail p3 = new ContactDetail();
-        p3.setPrimary(true);
-        p3.setValue("123123");
-        c3.phone.add(p3);
+        c3.setEmail("joke@you.com");
+        c3.setPhone("123123");
 
         VContact c4 = new VContact();
         c4.setName("Penguin");
-        ContactDetail e4 = new ContactDetail();
-        e4.setPrimary(true);
-        e4.setValue("Penguin@large.com");
-        c4.email.add(e4);
-        ContactDetail p4 = new ContactDetail();
-        p4.setPrimary(true);
-        p4.setValue("321321");
-        c4.phone.add(p4);
+        c4.setEmail("Penguin@large.com");
+        c4.setPhone("321321");
 
         synchroniser.contacts.vContacts.add(c1);
         synchroniser.contacts.vContacts.add(c2);
