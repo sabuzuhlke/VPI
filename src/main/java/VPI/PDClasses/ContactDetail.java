@@ -27,4 +27,9 @@ public class ContactDetail {
     public void setPrimary(Boolean primary) {
         this.primary = primary;
     }
+
+    @Override
+    public String toString() {
+        return "Detail: " + value;
+    }
 }

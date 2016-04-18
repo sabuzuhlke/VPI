@@ -1,5 +1,10 @@
 package VPI.PDClasses;
 
+import VPI.VClasses.VContact;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by gebo on 14/04/2016.
  */
@@ -8,8 +13,8 @@ public class PDContactSend {
     private Long id;
     private String name;
     private Long org_id;
-    private ContactDetail[] email;
-    private ContactDetail[] phone;
+    private List<ContactDetail> email;
+    private List<ContactDetail> phone;
     private Integer visible_to;
     private Boolean active_flag;
 
@@ -21,15 +26,33 @@ public class PDContactSend {
         this.name = name;
         ContactDetail emailDetail = new ContactDetail(email, true);
         ContactDetail phoneDetail = new ContactDetail(phone, true);
-        this.email = new ContactDetail[1];
-        this.email[0] = emailDetail;
-        this.phone = new ContactDetail[1];
-        this.phone[0] = phoneDetail;
+        this.email = new ArrayList<>();
+        this.email.add(emailDetail);
+        this.phone = new ArrayList<>();
+        this.phone.add(phoneDetail);
         this.active_flag = true;
     }
 
+    public PDContactSend(VContact vc) {
+        this.name = vc.getName();
+        this.email = vc.getEmail();
+        this.phone = vc.getPhone();
+        this.visible_to = 3;
+        this.active_flag = true;
+    }
+
+    public PDContactSend(PDContactReceived pc) {
+        this.name = pc.getName();
+        this.id = pc.getId();
+        this.org_id = pc.getOrg_id().getValue();
+        this.email = pc.getEmail();
+        this.phone = pc.getPhone();
+        this.visible_to = pc.getVisible_to();
+        this.active_flag = pc.getActive_flag();
+    }
+
     public void changePrimaryEmail(String newEmail){
-        for(ContactDetail e : this.email){
+        for(ContactDetail e : email){
             if(e.getPrimary()){
                 e.setValue(newEmail);
             }
@@ -37,7 +60,7 @@ public class PDContactSend {
     }
 
     public void changePrimaryPhone(String newPhone){
-        for(ContactDetail p : this.phone){
+        for(ContactDetail p : phone){
             if(p.getPrimary()){
                 p.setValue(newPhone);
             }
@@ -76,19 +99,19 @@ public class PDContactSend {
         this.org_id = org_id;
     }
 
-    public ContactDetail[] getEmail() {
+    public List<ContactDetail> getEmail() {
         return email;
     }
 
-    public void setEmail(ContactDetail[] email) {
+    public void setEmail(List<ContactDetail> email) {
         this.email = email;
     }
 
-    public ContactDetail[] getPhone() {
+    public List<ContactDetail> getPhone() {
         return phone;
     }
 
-    public void setPhone(ContactDetail[] phone) {
+    public void setPhone(List<ContactDetail> phone) {
         this.phone = phone;
     }
 

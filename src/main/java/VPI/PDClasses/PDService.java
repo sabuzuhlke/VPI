@@ -122,7 +122,6 @@ public class PDService {
 
         RequestEntity<PDOrganisation> req;
         ResponseEntity<PDOrganisationResponse> res = null;
-
         String uri = server + "organizations/" + org.getId() + apiKey;
 
         try{

@@ -1,5 +1,8 @@
 package VPI.PDClasses;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by gebo on 14/04/2016.
  */
@@ -10,11 +13,13 @@ public class PDContactReceived {
     private PDOwner owner_id;
     private String name;
     private Boolean active_flag;
-    private ContactDetail[] phone;
-    private ContactDetail[] email;
+    private List<ContactDetail> phone;
+    private List<ContactDetail> email;
     private Integer visible_to;
 
     public PDContactReceived() {
+        this.phone = new ArrayList<>();
+        this.email = new ArrayList<>();
     }
 
     public Long getId() {
@@ -57,19 +62,19 @@ public class PDContactReceived {
         this.active_flag = active_flag;
     }
 
-    public ContactDetail[] getPhone() {
+    public List<ContactDetail> getPhone() {
         return phone;
     }
 
-    public void setPhone(ContactDetail[] phone) {
+    public void setPhone(List<ContactDetail> phone) {
         this.phone = phone;
     }
 
-    public ContactDetail[] getEmail() {
+    public List<ContactDetail> getEmail() {
         return email;
     }
 
-    public void setEmail(ContactDetail[] email) {
+    public void setEmail(List<ContactDetail> email) {
         this.email = email;
     }
 

@@ -162,8 +162,8 @@ public class PipedriveOrganisationServiceTests {
         assertTrue(contactPostResponse.getBody() != null);
         assertTrue(contactPostResponse.getBody().getSuccess());
         assertTrue(contactPostResponse.getBody().getData().getName().equals("Test Name"));
-        assertTrue(contactPostResponse.getBody().getData().getEmail()[0].getValue().equals("Test@Test.test"));
-        assertTrue(contactPostResponse.getBody().getData().getPhone()[0].getValue().equals("0987654321"));
+        assertTrue(contactPostResponse.getBody().getData().getEmail().get(0).getValue().equals("Test@Test.test"));
+        assertTrue(contactPostResponse.getBody().getData().getPhone().get(0).getValue().equals("0987654321"));
 
         //get contact for org
         ResponseEntity<PDContactsForOrganisation> contactResponse = PS.getContactsForOrganisation(org_id);
@@ -172,8 +172,8 @@ public class PipedriveOrganisationServiceTests {
         assertTrue(contactResponse.getBody().getSuccess());
 
         String name = contactResponse.getBody().getData().get(0).getName();
-        String email = contactResponse.getBody().getData().get(0).getEmail()[0].getValue();
-        String phone = contactResponse.getBody().getData().get(0).getPhone()[0].getValue();
+        String email = contactResponse.getBody().getData().get(0).getEmail().get(0).getValue();
+        String phone = contactResponse.getBody().getData().get(0).getPhone().get(0).getValue();
 
         Long recievedOrgId = contactResponse.getBody().getData().get(0).getOrg_id().getValue();
         //check equal
@@ -225,8 +225,8 @@ public class PipedriveOrganisationServiceTests {
         assertTrue(contactPutResponse.getStatusCode() == HttpStatus.OK);
         assertTrue(contactPutResponse.getBody().getSuccess());
         assertTrue(contactPutResponse.getBody().getData().getName().equals("Test Name"));
-        assertTrue(contactPutResponse.getBody().getData().getEmail()[0].getValue().equals("loseweight@kfc.com"));
-        assertTrue(contactPutResponse.getBody().getData().getPhone()[0].getValue().equals("1234567890"));
+        assertTrue(contactPutResponse.getBody().getData().getEmail().get(0).getValue().equals("loseweight@kfc.com"));
+        assertTrue(contactPutResponse.getBody().getData().getPhone().get(0).getValue().equals("1234567890"));
 
 
         //delete org and person

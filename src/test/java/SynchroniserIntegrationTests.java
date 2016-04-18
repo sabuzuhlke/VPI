@@ -38,13 +38,18 @@ public class SynchroniserIntegrationTests {
     }
 
     @Test
-    public void willPostOrgsNotInPDToPD() {
+    public void willPostandPutOrgsNotInPDToPD() {
         //this.setUpFakeInsightData();
         //List<PDOrganisation> PDOrgs = .getAllOrganisations().getBody().getData();
+
+        synchroniser.getPDS().postOrganisation("Bentley Systems Germany GmbH", 3);
 
         List<Long> idsPushed = synchroniser.importOrganisations();
         assertEquals(idsPushed.size(),
                 synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
+
+        assertTrue(synchroniser.organisations.putList.size() == 1);
+        assertTrue(synchroniser.organisations.putList.get(0).getName().equals("Bentley Systems Germany GmbH"));
 
         List<PDOrganisation> pdOrgs = synchroniser.getPDS().getAllOrganisations().getBody().getData();
 
