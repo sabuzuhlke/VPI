@@ -1,6 +1,7 @@
 import VPI.*;
 import VPI.PDClasses.*;
 import VPI.VClasses.VContact;
+import com.sun.org.apache.bcel.internal.generic.LoadClass;
 import com.sun.org.apache.regexp.internal.RESyntaxException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -285,6 +286,45 @@ public class PipedriveServiceTests {
 
     @Test
     public void canPutContactList() {
+        List<PDContactSend> contacts = assignMatchingPDContacts();
+        ResponseEntity<PDOrganisationResponse> Orgres;
+        ResponseEntity<PDDeleteResponse> delres;
+        List<Long> idsPosted = new ArrayList<>();
+        List<Long> idsPut = new ArrayList<>();
+        List<Long> contactsDeleted = new ArrayList<>();
+
+
+        Orgres = PS.postOrganisation("Gotham City",3);
+        assertTrue(Orgres.getStatusCode() == HttpStatus.CREATED);
+
+        Long orgid = Orgres.getBody().getData().getId();
+        for(int i = 0; i < contacts.size(); i++){
+            contacts.get(i).setOrg_id(orgid);
+        }
+        idsPosted = PS.postContactList(contacts);
+
+        contacts.get(0).getEmail().add(new  ContactDetail("BatMobile@batmail.com", true));
+        contacts.get(1).getEmail().add(new ContactDetail("Robin@day.com", false));
+        contacts.get(2).getEmail().add(new ContactDetail("smile@me.com", false));
+        contacts.get(3).getEmail().add(new ContactDetail("rat@inthepack.com",true));
+
+        contacts.get(0).setId(idsPosted.get(0));
+        contacts.get(1).setId(idsPosted.get(1));
+        contacts.get(2).setId(idsPosted.get(2));
+        contacts.get(3).setId(idsPosted.get(3));
+
+        idsPut = PS.putContactList(contacts);
+        assertTrue(idsPosted.size() == idsPut.size());
+
+        for(Long id : idsPosted){
+            delres = PS.deleteContact(id);
+            assertTrue(delres.getBody().getSuccess());
+            contactsDeleted.add(delres.getBody().getData().getId());
+        }
+
+        PS.deleteOrganisation(orgid);
+
+        assertEquals(idsPosted.size(),contactsDeleted.size());
 
     }
 

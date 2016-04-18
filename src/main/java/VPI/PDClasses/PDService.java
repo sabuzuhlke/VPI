@@ -323,7 +323,7 @@ public class PDService {
 
                 idsPut.add(res.getBody().getData().getId());
             }else{
-                System.out.println("Could not create contact, server responded: " + res.getStatusCode());
+                System.out.println("Could not UPDATE contact, server responded: " + res.getStatusCode());
             }
         }
         return idsPut;
