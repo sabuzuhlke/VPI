@@ -89,8 +89,8 @@ public class SynchroniserIntegrationTests {
 
         synchroniser.organisations.vOrganisations = VOrgs;
     }
-/*
-    @Test
+
+   /* @Test
     public void syncDoesNotMakeDuplicateOrganisations() {
 
         //run synchronisation (GET ALL, Compare, POST NEW (Assumes no PUT))
@@ -128,4 +128,24 @@ public class SynchroniserIntegrationTests {
         C.clear();
 
     }*/
+
+    //assumes none of th eorganisations are already on pipedrive
+    @Test
+    public void syncDoesNotMakeDuplicateOrganisations(){
+
+        List<Long> idsPosted = synchroniser.importOrganisations();
+        assertEquals(idsPosted.size(),synchroniser.organisations.postList.size());
+
+        synchroniser.clear();
+
+        synchroniser.importOrganisations();
+        assertTrue(synchroniser.organisations.postList.isEmpty());
+        assertTrue(synchroniser.organisations.putList.isEmpty());
+
+        List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPosted);
+        assertEquals(idsDeleted.size(), idsPosted.size());
+        assertEquals(idsDeleted, idsPosted);
+
+        synchroniser.clear();
+    }
 }
