@@ -7,6 +7,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 @SpringBootApplication
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Application implements CommandLineRunner {
@@ -22,9 +25,21 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Synchroniser synchroniser =  new Synchroniser(server, insightServer);
-
         try {
+
+            Synchroniser synchroniser =  new Synchroniser(server, insightServer);
+
+            Timer timer = new Timer();
+            TimerTask t = new TimerTask() {
+                @Override
+                public void run() {
+                    synchroniser.importToPipedrive();
+                    System.out.println("Running...");
+                }
+            };
+
+            timer.schedule(t, 0l, 1000*60);
+
             //DO STUFF HERE
             //synchroniser.importOrganisations();
         } catch (Exception e) {
