@@ -25,7 +25,6 @@ public class Application implements CommandLineRunner {
         Synchroniser synchroniser =  new Synchroniser(server, insightServer);
 
         try {
-            //DO STUFF HERE
             //synchroniser.importOrganisations();
         } catch (Exception e) {
             log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());
