@@ -35,8 +35,10 @@ public class Synchroniser {
     }
 
     public void importToPipedrive() {
-        importOrganisations();
-        importContacts();
+        List<Long> orgs_posted = importOrganisations();
+        System.out.println("Posted " + orgs_posted.size() + " organisations to Pipedrive");
+        //importContacts();
+        clear();
     }
 
     public List<Long> importOrganisations() {
