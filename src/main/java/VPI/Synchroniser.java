@@ -128,7 +128,7 @@ public class Synchroniser {
                 if(v.getName().equals(p.getName())) {
                     matched = true;
 
-                    //resolve email and phone lists of contact
+                    //resolve emailDetail and phoneDetail lists of contact
                     modified = resolveContactDetails(v,p);
                     if(modified) {
                         temp = p;
@@ -146,10 +146,10 @@ public class Synchroniser {
         }
 
     }
-
+//TODO: re-write due to simpler vcontact
     public Boolean resolveContactDetails(VContact v, PDContactReceived p){
         Boolean modified = false;
-        for (ContactDetail vph : v.getPhone()) {
+        for (ContactDetail vph : v.getPhoneDetail()) {
             Boolean matched = false;
             for(ContactDetail pph : p.getPhone()) {
                 if (vph.getValue().equals(pph.getValue())) {
@@ -173,7 +173,7 @@ public class Synchroniser {
             }
         }
 
-        for (ContactDetail ve : v.getEmail()) {
+        for (ContactDetail ve : v.getEmailDetail()) {
             Boolean matched = false;
             for(ContactDetail pe : p.getEmail()) {
                 if (ve.getValue().equals(pe.getValue())) {

@@ -53,6 +53,8 @@ public class SynchroniserIntegrationTests {
 
         List<PDOrganisation> pdOrgs = synchroniser.getPDS().getAllOrganisations().getBody().getData();
 
+
+
         int matches = 0;
         for(VOrganisation v : synchroniser.organisations.vOrganisations) {
             for(PDOrganisation p : pdOrgs) {
@@ -61,6 +63,7 @@ public class SynchroniserIntegrationTests {
                 }
             }
         }
+
         assertEquals(matches, idsPushed.size());
 
         List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPushed);
