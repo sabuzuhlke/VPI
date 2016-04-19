@@ -43,7 +43,7 @@ public class InsightService {
         return res;
     }
 
-    public ResponseEntity<VOrganisation> getOrganisation(Integer Id){
+    public ResponseEntity<VOrganisation> getOrganisation(Long Id){
 
         String apiPath = "/api/v1/customers/" + Id.toString();
         RequestEntity<String> req;
@@ -63,8 +63,53 @@ public class InsightService {
 
     }
 
-    public ResponseEntity<VContactList> getContactsForOrganisation(Long orgId){
+    public List<VOrganisation> getOrganisationList(List<Long> ids) {
+        List<VOrganisation> output = new ArrayList<>();
+        for(Long id: ids) {
+            ResponseEntity<VOrganisation> res = getOrganisation(id);
+            if (res.getStatusCode() == HttpStatus.OK) {
+                output.add(res.getBody());
+            } else {
+                System.out.println(res.getStatusCode());
+            }
+        }
+        return output;
+    }
 
-        return new ResponseEntity<VContactList>(HttpStatus.ACCEPTED);
+    public ResponseEntity<VContact[]> getContactsForOrganisation(Long orgId) {
+
+        String apiPath = "/api/v1/customers/" + orgId + "/contacts";
+        RequestEntity<String> req;
+        ResponseEntity<VContact[]> res = null;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(server + apiPath));
+
+            res = restTemplate.exchange(req, VContact[].class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return res;
+    }
+
+    public ResponseEntity<VProjectList> getProjectsForZUK() {
+
+        String apiPath = "/api/v1/projects?projectTypes=C&companies=4";
+        RequestEntity<String> req;
+        ResponseEntity<VProjectList> res = null;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(server + apiPath));
+
+            res = restTemplate.exchange(req, VProjectList.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        return res;
     }
 }

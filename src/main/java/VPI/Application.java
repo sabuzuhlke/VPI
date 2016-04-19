@@ -33,8 +33,8 @@ public class Application implements CommandLineRunner {
             TimerTask t = new TimerTask() {
                 @Override
                 public void run() {
-                    synchroniser.importToPipedrive();
                     System.out.println("Running...");
+                    synchroniser.importToPipedrive();
                 }
             };
 

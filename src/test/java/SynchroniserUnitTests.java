@@ -232,7 +232,7 @@ public class SynchroniserUnitTests {
 
 //--------------------------CONTACT-TESTS--------------------------------
 
-//TODO: FINISH Contact Test
+//TODO: FINISH Contact Test when unblocked
     @Test
     public void emptyContactListsReturnsEmptyPostAndPutLists() {
         assertTrue(synchroniser.contacts.pdContacts.isEmpty());

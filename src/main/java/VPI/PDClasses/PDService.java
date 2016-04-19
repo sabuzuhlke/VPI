@@ -241,7 +241,7 @@ public class PDService {
 
         return res;
     }
-//TODO: TEST!!!!!
+
     public List<Long> postContactList(List<PDContactSend> contacts){
         List<Long> idsPosted = new ArrayList<>();
         ResponseEntity<PDContactResponse> res = null;
@@ -312,7 +312,7 @@ public class PDService {
 
         return res;
     }
-//TODO: TEST!!!!!
+
     public List<Long> putContactList(List<PDContactSend> contacts){
         ResponseEntity<PDContactResponse> res;
         List<Long> idsPut = new ArrayList<>();
