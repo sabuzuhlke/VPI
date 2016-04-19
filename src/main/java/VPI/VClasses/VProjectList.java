@@ -2,6 +2,7 @@ package VPI.VClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ public class VProjectList {
     private List<VProject> Items;
 
     public VProjectList() {
-
+        Items = new ArrayList<>();
     }
 
     public List<VProject> getItems() {

@@ -37,42 +37,47 @@ public class SynchroniserIntegrationTests {
         synchroniser.clear();
     }
 //TODO: edit tests to account for new method of import
-//    @Test
-//    public void willPostandPutOrgsNotInPDToPD() {
-//        //this.setUpFakeInsightData();
-//        //List<PDOrganisation> PDOrgs = .getAllOrganisations().getBody().getData();
-//
-//        synchroniser.getPDS().postOrganisation("Bentley Systems Germany GmbH", 3);
-//
-//        List<Long> idsPushed = synchroniser.importOrganisations();
-//        assertEquals(idsPushed.size(),
-//                synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
-//
-//        assertTrue(synchroniser.organisations.putList.size() == 1);
-//        assertTrue(synchroniser.organisations.putList.get(0).getName().equals("Bentley Systems Germany GmbH"));
-//
-//        List<PDOrganisation> pdOrgs = synchroniser.getPDS().getAllOrganisations().getBody().getData();
-//
-//
-//
-//        int matches = 0;
-//        for(VOrganisation v : synchroniser.organisations.vOrganisations) {
-//            for(PDOrganisation p : pdOrgs) {
-//                if (v.getName().equals(p.getName())) {
-//                    matches++;
-//                }
-//            }
-//        }
-//
-//        assertEquals(matches, idsPushed.size());
-//
-//        List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPushed);
-//        assertEquals(idsDeleted.size(),
-//                synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
-//        assertEquals(idsDeleted, idsPushed);
-//
-//        clearSynchroniser();
-//    }
+    @Test
+    public void willPostandPutOrgsNotInPDToPD() {
+        //this.setUpFakeInsightData();
+        //List<PDOrganisation> PDOrgs = .getAllOrganisations().getBody().getData();
+        List<Long> ids = new ArrayList<>();
+        ids.add(20683L);
+        ids.add(17977L);
+        ids.add(53L);
+
+        synchroniser.getPDS().postOrganisation("Bentley Systems Germany GmbH", 3);
+
+        List<Long> idsPushed = synchroniser.importOrganisations(ids);
+        assertEquals(idsPushed.size(),
+                synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
+        //assertEquals(idsPushed.size(),3);
+
+        assertTrue(synchroniser.organisations.putList.size() == 1);
+        assertTrue(synchroniser.organisations.putList.get(0).getName().equals("Bentley Systems Germany GmbH"));
+
+        List<PDOrganisation> pdOrgs = synchroniser.getPDS().getAllOrganisations().getBody().getData();
+
+
+
+        int matches = 0;
+        for(VOrganisation v : synchroniser.organisations.vOrganisations) {
+            for(PDOrganisation p : pdOrgs) {
+                if (v.getName().equals(p.getName())) {
+                    matches++;
+                }
+            }
+        }
+
+        assertEquals(matches, idsPushed.size());
+
+        List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPushed);
+        assertEquals(idsDeleted.size(),
+                synchroniser.organisations.postList.size() + synchroniser.organisations.putList.size());
+        assertEquals(idsDeleted, idsPushed);
+
+        clearSynchroniser();
+    }
 
     public void setUpFakeInsightData() {
         List<VOrganisation> VOrgs = new ArrayList<>();
@@ -91,22 +96,37 @@ public class SynchroniserIntegrationTests {
     }
 
     //assumes none of th eorganisations are already on pipedrive
-//    @Test
-//    public void syncDoesNotMakeDuplicateOrganisations(){
-//
-//        List<Long> idsPosted = synchroniser.importOrganisations();
-//        assertEquals(idsPosted.size(),synchroniser.organisations.postList.size());
-//
-//        synchroniser.clear();
-//
-//        synchroniser.importOrganisations();
-//        assertTrue(synchroniser.organisations.postList.isEmpty());
-//        assertTrue(synchroniser.organisations.putList.isEmpty());
-//
-//        List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPosted);
-//        assertEquals(idsDeleted.size(), idsPosted.size());
-//        assertEquals(idsDeleted, idsPosted);
-//
-//        synchroniser.clear();
-//    }
+    @Test
+    public void syncDoesNotMakeDuplicateOrganisations(){
+
+        List<Long> ids = new ArrayList<>();
+        ids.add(20683L);
+        ids.add(17977L);
+
+        List<Long> idsPosted = synchroniser.importOrganisations(ids);
+        assertEquals(idsPosted.size(),synchroniser.organisations.postList.size());
+
+        synchroniser.clear();
+
+        synchroniser.importOrganisations(ids);
+        assertTrue(synchroniser.organisations.postList.isEmpty());
+        assertTrue(synchroniser.organisations.putList.isEmpty());
+
+        List<Long> idsDeleted = synchroniser.getPDS().deleteOrganisationList(idsPosted);
+        assertEquals(idsDeleted.size(), idsPosted.size());
+        assertEquals(idsDeleted, idsPosted);
+
+        synchroniser.clear();
+    }
+
+    @Test
+    public void importsZUKOrganisations(){
+        List<Long> orgs_pushed = synchroniser.importToPipedrive();
+        List<Long> orgs_imported = synchroniser.getProjectsForZUK();
+        assertEquals(orgs_pushed.size(),orgs_imported.size());
+
+        synchroniser.getPDS().deleteOrganisationList(orgs_pushed);
+
+        synchroniser.clear();
+    }
 }

@@ -34,7 +34,7 @@ public class Application implements CommandLineRunner {
                 @Override
                 public void run() {
                     System.out.println("Running...");
-                    synchroniser.importToPipedrive();
+                    //synchroniser.importToPipedrive();
                 }
             };
 

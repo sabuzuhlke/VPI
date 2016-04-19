@@ -34,15 +34,13 @@ public class Synchroniser {
         this.contacts      = new Contacts();
     }
 
-    public void importToPipedrive() {
+    public List<Long> importToPipedrive() {
         List<Long> org_ids = getProjectsForZUK();
-        Set<Long> no_dups = new HashSet<>(org_ids);
-        org_ids.clear();
-        org_ids.addAll(no_dups);
-        List<Long> orgs_posted = importOrganisations(org_ids);
-        System.out.println("Posted " + orgs_posted.size() + " organisations to Pipedrive");
+        List<Long> orgs_pushed = importOrganisations(org_ids);
+        System.out.println("Posted " + orgs_pushed.size() + " organisations to Pipedrive");
         //importContacts();
         clear();
+        return orgs_pushed;
     }
 
     public List<Long> getProjectsForZUK() {
@@ -50,11 +48,19 @@ public class Synchroniser {
         List<Long> org_ids_to_get = new ArrayList<>();
         for(VProject p : projs) {
             if (p.getOrganisation() != null) {
-                org_ids_to_get.add(p.getOrganisation().getId());
+                if(p.getOrganisation().getName() != null){
+                    org_ids_to_get.add(p.getOrganisation().getId());
+                }
+                else{
+                    System.out.println("Could not get Name of organisation for project: " + p.getName());
+                }
             } else {
                 System.out.println("Could not get organisation for project: " + p.getName());
             }
         }
+        Set<Long> no_dups = new HashSet<>(org_ids_to_get);
+        org_ids_to_get.clear();
+        org_ids_to_get.addAll(no_dups);
         return org_ids_to_get;
     }
 
