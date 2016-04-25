@@ -171,7 +171,7 @@ public class Synchroniser {
         }
 
     }
-//TODO: re-write due to simpler vcontact
+
     public Boolean resolveContactDetails(VContact v, PDContactReceived p){
         Boolean modifiedPhone = false;
 
@@ -217,56 +217,7 @@ public class Synchroniser {
                 modifiedEmail = true;
             }
         }
-        //////////////////////////////////////////////////////////////
-        /*
-        Boolean modified = false;
-        for (ContactDetail vph : v.getPhoneDetail()) {
-            Boolean matched = false;
-            for(ContactDetail pph : p.getPhone()) {
-                if (vph.getValue().equals(pph.getValue())) {
-                    matched = true;
-                    if(vph.getPrimary() != pph.getPrimary()){
-                        pph.setPrimary(vph.getPrimary());
-                        modified = true;
-                    }
-                }
-            }
-            if (!matched) {
-                modified = true;
-                p.getPhone().add(vph);
-            }
-            if (vph.getPrimary()) {
-                for(ContactDetail pphones : p.getPhone()) {
-                    if(!pphones.getValue().equals(vph.getValue())) {
-                        pphones.setPrimary(false);
-                    }
-                }
-            }
-        }
 
-        for (ContactDetail ve : v.getEmailDetail()) {
-            Boolean matched = false;
-            for(ContactDetail pe : p.getEmail()) {
-                if (ve.getValue().equals(pe.getValue())) {
-                    matched = true;
-                    if((ve.getPrimary() != pe.getPrimary())) {
-                        pe.setPrimary(ve.getPrimary());
-                        modified = true;
-                    }
-                }
-            }
-            if (!matched) {
-                modified = true;
-                p.getEmail().add(ve);
-            }
-            if (ve.getPrimary()) {
-                for(ContactDetail pemails : p.getEmail()) {
-                    if(!pemails.getValue().equals(ve.getValue())) {
-                        pemails.setPrimary(false);
-                    }
-                }
-            }
-        }*/
         return modifiedEmail || modifiedPhone;
     }
 

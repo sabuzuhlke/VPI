@@ -1,5 +1,6 @@
 package VPI;
 
+import VPI.VXMLClasses.XMLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -29,16 +30,21 @@ public class Application implements CommandLineRunner {
 
             Synchroniser synchroniser =  new Synchroniser(server, insightServer);
 
+            XMLService XS = new XMLService("http://172.18.10.54", "8095");
+
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {
                 @Override
                 public void run() {
                     System.out.println("Running...");
                     //synchroniser.importToPipedrive();
+                    //XS.objectToXML();
+                    //XS.xmlToObject();
+                    XS.testGet();
                 }
             };
 
-            timer.schedule(t, 0l, 1000*60);
+            timer.schedule(t, 0l, 1000*60*60);
 
             //DO STUFF HERE
             //synchroniser.importOrganisations();

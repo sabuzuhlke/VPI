@@ -1,8 +1,5 @@
 import VPI.*;
 import VPI.PDClasses.*;
-import VPI.VClasses.VContact;
-import com.sun.org.apache.bcel.internal.generic.LoadClass;
-import com.sun.org.apache.regexp.internal.RESyntaxException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,7 +11,6 @@ import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 
 import java.util.ArrayList;
 import java.util.List;
