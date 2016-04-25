@@ -6,30 +6,21 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import java.io.StringWriter;
 
-@XmlRootElement(name="Envelope")
-@XmlType(propOrder = {"header", "body"})
+/**
+ * Created by sabu on 25/04/2016.
+ */
+@XmlRootElement(name = "Envelope")
 public class XMLEnvelope {
 
-    private XMLHeader header;
     private XMLBody body;
 
     public XMLEnvelope() {
     }
 
-    @XmlElement(name="Header")
-    public XMLHeader getHeader() {
-        return header;
-    }
-
-    public void setHeader(XMLHeader header) {
-        this.header = header;
-    }
-
-    @XmlElement(name="Body")
+    @XmlElement(name = "Body")
     public XMLBody getBody() {
         return body;
     }
@@ -53,4 +44,5 @@ public class XMLEnvelope {
         }
         return "MARSHALLING FAILED BUT THERES SOMETHING HERE";
     }
+
 }

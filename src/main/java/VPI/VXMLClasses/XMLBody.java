@@ -1,19 +1,24 @@
 package VPI.VXMLClasses;
 
 import javax.xml.bind.annotation.XmlElement;
+
+/**
+ * Created by sabu on 25/04/2016.
+ */
 public class XMLBody {
 
-    private XMLQuery query;
+    private XMLQueryResponse queryResponse;
 
     public XMLBody() {
     }
 
-    @XmlElement(name="Query")
-    public XMLQuery getQuery() {
-        return query;
+    @XmlElement(name = "QueryResponse")
+    public XMLQueryResponse getQueryResponse() {
+        return queryResponse;
     }
 
-    public void setQuery(XMLQuery query) {
-        this.query = query;
+    public void setQueryResponse(XMLQueryResponse queryResponse) {
+        this.queryResponse = queryResponse;
     }
+
 }

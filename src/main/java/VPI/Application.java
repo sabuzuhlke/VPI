@@ -1,5 +1,6 @@
 package VPI;
 
+import VPI.VXMLClasses.XMLEnvelope;
 import VPI.VXMLClasses.XMLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,7 +32,7 @@ public class Application implements CommandLineRunner {
 
             Synchroniser synchroniser =  new Synchroniser(server, insightServer);
 
-            XMLService XS = new XMLService("http://172.18.10.54", "8095");
+            XMLService XS = new XMLService("http://172.18.10.85", "9999");
 
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {
@@ -40,7 +42,8 @@ public class Application implements CommandLineRunner {
                     //synchroniser.importToPipedrive();
                     //XS.objectToXML();
                     //XS.xmlToObject();
-                    XS.testGet();
+                    ResponseEntity<XMLEnvelope> res = XS.getLondonOrganisations();
+                    System.out.println(res.getBody().toString());
                 }
             };
 
