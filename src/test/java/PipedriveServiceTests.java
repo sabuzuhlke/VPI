@@ -166,7 +166,7 @@ public class PipedriveServiceTests {
         assertTrue(contactPostResponse.getBody().getData().getPhone().get(0).getValue().equals("0987654321"));
 
         //get contact for org
-        ResponseEntity<PDContactsForOrganisation> contactResponse = PS.getContactsForOrganisation(org_id);
+        ResponseEntity<PDContactListReceived> contactResponse = PS.getContactsForOrganisation(org_id);
 
         assertTrue(contactResponse.getBody() != null);
         assertTrue(contactResponse.getBody().getSuccess());
@@ -381,6 +381,19 @@ public class PipedriveServiceTests {
         pdContactSends.add(c4);
 
         return pdContactSends;
+    }
+
+    @Test
+    public void canGetAllContacts() {
+        ResponseEntity<PDContactListReceived> contacts = PS.getAllContacts();
+
+        assertTrue(contacts.getStatusCode() == HttpStatus.OK);
+        assertTrue(contacts.getBody().getSuccess());
+
+        assertTrue( ! contacts.getBody().getData().isEmpty());
+        assertTrue(contacts.getBody().getData().get(1) != null);
+
+
     }
 
     @Test

@@ -1,5 +1,7 @@
 package VPI.PDClasses;
 
+import com.sun.istack.internal.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,7 @@ import java.util.List;
 public class PDContactReceived {
 
     private Long id;
+    @Nullable
     private OrgId org_id;
     private PDOwner owner_id;
     private String name;

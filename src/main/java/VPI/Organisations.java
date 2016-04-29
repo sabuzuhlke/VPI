@@ -1,7 +1,7 @@
 package VPI;
 
 import VPI.PDClasses.PDOrganisation;
-import VPI.VClasses.VOrganisation;
+import VPI.InsightClasses.VOrganisation;
 
 import java.util.ArrayList;
 import java.util.List;

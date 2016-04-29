@@ -167,7 +167,7 @@ public class PDService {
     public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations(){
         RequestEntity<String> req;
         ResponseEntity<PDOrganisationItemsResponse> res = null;
-        String uri = server + "organizations?start=0&limit=1000&" + apiKey.substring(1);
+        String uri = server + "organizations?start=0&limit=100000&" + apiKey.substring(1);
         try{
             req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
             res = restTemplate.exchange(req,PDOrganisationItemsResponse.class);
@@ -259,20 +259,35 @@ public class PDService {
     }
 
 //----------------------------------------------------------------------------------GET
-    public ResponseEntity<PDContactsForOrganisation> getContactsForOrganisation(Long org_id) {
+    public ResponseEntity<PDContactListReceived> getContactsForOrganisation(Long org_id) {
         RequestEntity<String> req;
-        ResponseEntity<PDContactsForOrganisation> res = null;
+        ResponseEntity<PDContactListReceived> res = null;
         String uri = server + "organizations/" + org_id + "/persons?start=0&" + apiKey.substring(1);
 
         try {
 
             req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
-            res = restTemplate.exchange(req, PDContactsForOrganisation.class);
+            res = restTemplate.exchange(req, PDContactListReceived.class);
 
         } catch (Exception e) {
             System.out.println(e.toString());
         }
 
+        return res;
+    }
+
+    public ResponseEntity<PDContactListReceived> getAllContacts() {
+        RequestEntity<String> req;
+        ResponseEntity<PDContactListReceived> res = null;
+        String uri = server + "/persons?start=0&limit=100000&" + apiKey.substring(1);
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDContactListReceived.class);
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION IN GETTING ALL CONTACTS: " + e);
+        }
         return res;
     }
 

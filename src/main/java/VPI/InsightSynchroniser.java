@@ -1,10 +1,10 @@
 package VPI;
 
 import VPI.PDClasses.*;
-import VPI.VClasses.InsightService;
-import VPI.VClasses.VContact;
-import VPI.VClasses.VOrganisation;
-import VPI.VClasses.VProject;
+import VPI.InsightClasses.InsightService;
+import VPI.InsightClasses.VContact;
+import VPI.InsightClasses.VOrganisation;
+import VPI.InsightClasses.VProject;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Created by sabu on 15/04/2016.
  */
-public class Synchroniser {
+public class InsightSynchroniser {
 
     private PDService PDS;
     private InsightService IS;
@@ -20,7 +20,7 @@ public class Synchroniser {
     public Organisations organisations;
     public Contacts contacts;
 
-    public Synchroniser(String PDserver, String Vserver) {
+    public InsightSynchroniser(String PDserver, String Vserver) {
         RestTemplate restTemplate = new RestTemplate();
         MyCredentials creds = new MyCredentials();
         this.PDS = new PDService(restTemplate, PDserver, creds.getApiKey());
@@ -33,6 +33,7 @@ public class Synchroniser {
         this.organisations = new Organisations();
         this.contacts      = new Contacts();
     }
+
 
     public List<Long> importToPipedrive() {
         List<Long> org_ids = getProjectsForZUK();
@@ -175,6 +176,7 @@ public class Synchroniser {
     public Boolean resolveContactDetails(VContact v, PDContactReceived p){
         Boolean modifiedPhone = false;
 
+        Boolean somethingToStopCOdeDupWarning = false;
         if (v.getPhone() != null) {
 
             Boolean matchedPhone = false;
@@ -182,6 +184,7 @@ public class Synchroniser {
                 if (v.getPhone().equals(pph.getValue())) {
                     matchedPhone = true;
                     if (!pph.getPrimary()) {
+                        somethingToStopCOdeDupWarning = true;
                         pph.setPrimary(true);
                         modifiedPhone = true;
                     }
@@ -206,6 +209,7 @@ public class Synchroniser {
                     matchedEmail = true;
                     if (!pe.getPrimary()) {
                         pe.setPrimary(true);
+                        somethingToStopCOdeDupWarning = false;
                         modifiedEmail = true;
                     }
                 } else {

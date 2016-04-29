@@ -3,8 +3,8 @@ import VPI.PDClasses.ContactDetail;
 import VPI.PDClasses.OrgId;
 import VPI.PDClasses.PDContactReceived;
 import VPI.PDClasses.PDOrganisation;
-import VPI.VClasses.VContact;
-import VPI.VClasses.VOrganisation;
+import VPI.InsightClasses.VContact;
+import VPI.InsightClasses.VOrganisation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,15 +16,15 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
-public class SynchroniserUnitTests {
+public class InsightSynchroniserUnitTests {
 
-    private Synchroniser synchroniser;
+    private InsightSynchroniser insightSynchroniser;
 
     @Before
     public void setUp() throws Exception {
         String PDServer = "";
         String VServer  = "";
-        this.synchroniser = new Synchroniser(PDServer, VServer);
+        this.insightSynchroniser = new InsightSynchroniser(PDServer, VServer);
     }
 
     @Test
@@ -32,30 +32,30 @@ public class SynchroniserUnitTests {
         assignJustVOrgList();
 
         PDOrganisation p = new PDOrganisation("Peter Griffin.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
         p = new PDOrganisation("Charlies Chocolate Factory", "5 End Street, Factory A, 0000, Neverland");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        synchroniser.compareOrganisations();
-        synchroniser.compareContacts(
-                synchroniser.contacts.vContacts,
-                synchroniser.contacts.pdContacts
+        insightSynchroniser.compareOrganisations();
+        insightSynchroniser.compareContacts(
+                insightSynchroniser.contacts.vContacts,
+                insightSynchroniser.contacts.pdContacts
         );
 
         clearSynchroniser();
 
-        assertTrue(synchroniser.organisations.pdOrganisations.isEmpty());
-        assertTrue(synchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.pdOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.vOrganisations.isEmpty());
 
-        assertTrue(synchroniser.organisations.postList.isEmpty());
-        assertTrue(synchroniser.organisations.putList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.postList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.putList.isEmpty());
 
-        assertTrue(synchroniser.contacts.pdContacts.isEmpty());
-        assertTrue(synchroniser.contacts.vContacts.isEmpty());
+        assertTrue(insightSynchroniser.contacts.pdContacts.isEmpty());
+        assertTrue(insightSynchroniser.contacts.vContacts.isEmpty());
 
-        assertTrue(synchroniser.contacts.postList.isEmpty());
-        assertTrue(synchroniser.contacts.putList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.postList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.putList.isEmpty());
 
     }
 
@@ -65,14 +65,14 @@ public class SynchroniserUnitTests {
         PDOrganisation p = new PDOrganisation();
         p.setName("Peter Griffin.co");
         p.setAddress("13 Family Street, Quahog, 6727, Murica!");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
         p = new PDOrganisation();
         p.setName("Peter Quagmire.co");
         p.setAddress("17 Family Street, Quahog, 6722, Murica!");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        return synchroniser.organisations.pdOrganisations.size();
+        return insightSynchroniser.organisations.pdOrganisations.size();
     }
 
     public int assignJustVOrgList() {
@@ -82,7 +82,7 @@ public class SynchroniserUnitTests {
         v.setCountry("Murica!");
         v.setStreet("13 Family Street");
         v.setZip("6727");
-        synchroniser.organisations.vOrganisations.add(v);
+        insightSynchroniser.organisations.vOrganisations.add(v);
 
         v = new VOrganisation();
         v.setName("Peter Quagmire.co");
@@ -90,39 +90,39 @@ public class SynchroniserUnitTests {
         v.setCountry("Murica!");
         v.setStreet("17 Family Street");
         v.setZip("6722");
-        synchroniser.organisations.vOrganisations.add(v);
+        insightSynchroniser.organisations.vOrganisations.add(v);
 
-        return synchroniser.organisations.vOrganisations.size();
+        return insightSynchroniser.organisations.vOrganisations.size();
 
     }
 
     public void clearSynchroniser() {
-        synchroniser.clear();
+        insightSynchroniser.clear();
     }
 //Unit tests
     @Test
     public void emptyOrgListsReturnEmptyPostAndPutLists() {
-        assertTrue(synchroniser.organisations.pdOrganisations.isEmpty());
-        assertTrue(synchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.pdOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.vOrganisations.isEmpty());
 
-        synchroniser.compareOrganisations();
+        insightSynchroniser.compareOrganisations();
 
-        assertTrue(synchroniser.organisations.postList.isEmpty());
-        assertTrue(synchroniser.organisations.putList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.postList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.putList.isEmpty());
     }
 
     @Test
     public void emptyPDOrgListReturnsAllItemsOfVOrgListToPostList() {
 
         int numInList = assignJustVOrgList();
-        assertTrue(!synchroniser.organisations.vOrganisations.isEmpty());
-        assertTrue(synchroniser.organisations.pdOrganisations.isEmpty());
+        assertTrue(!insightSynchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.pdOrganisations.isEmpty());
 
-        synchroniser.compareOrganisations();
+        insightSynchroniser.compareOrganisations();
 
-        assertTrue(synchroniser.organisations.putList.isEmpty());
-        assertTrue(!synchroniser.organisations.postList.isEmpty());
-        assertEquals(synchroniser.organisations.postList.size(), numInList);
+        assertTrue(insightSynchroniser.organisations.putList.isEmpty());
+        assertTrue(!insightSynchroniser.organisations.postList.isEmpty());
+        assertEquals(insightSynchroniser.organisations.postList.size(), numInList);
 
         //some check on matching internal values
 
@@ -132,13 +132,13 @@ public class SynchroniserUnitTests {
     @Test
     public void emptyVlistNoPostNoPut(){
         assignMatchingPDOrgList();
-        assertTrue(synchroniser.organisations.vOrganisations.isEmpty());
-        assertTrue(!synchroniser.organisations.pdOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(!insightSynchroniser.organisations.pdOrganisations.isEmpty());
 
-        synchroniser.compareOrganisations();
+        insightSynchroniser.compareOrganisations();
 
-        assertTrue(synchroniser.organisations.putList.isEmpty());
-        assertTrue(synchroniser.organisations.postList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.putList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.postList.isEmpty());
 
         clearSynchroniser();
     }
@@ -148,13 +148,13 @@ public class SynchroniserUnitTests {
         assignJustVOrgList();
         assignMatchingPDOrgList();
 
-        assertTrue(!synchroniser.organisations.vOrganisations.isEmpty());
-        assertTrue(!synchroniser.organisations.pdOrganisations.isEmpty());
+        assertTrue(!insightSynchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(!insightSynchroniser.organisations.pdOrganisations.isEmpty());
 
-        synchroniser.compareOrganisations();
+        insightSynchroniser.compareOrganisations();
 
-        assertTrue(synchroniser.organisations.putList.isEmpty());
-        assertTrue(synchroniser.organisations.postList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.putList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.postList.isEmpty());
 
         clearSynchroniser();
     }
@@ -164,21 +164,21 @@ public class SynchroniserUnitTests {
         assignJustVOrgList();
 
         PDOrganisation p = new PDOrganisation("The Crusty Crab", "13 a Street, Bikini Bottom, 4343, Under the Sea");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
         p = new PDOrganisation("Charlies Chocolate Factory", "5 End Street, Factory A, 0000, Neverland");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        assertTrue(!synchroniser.organisations.vOrganisations.isEmpty());
-        assertTrue(synchroniser.organisations.pdOrganisations.size() == 2);
+        assertTrue(!insightSynchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.pdOrganisations.size() == 2);
 
-        synchroniser.compareOrganisations();
+        insightSynchroniser.compareOrganisations();
 
-        assertTrue(synchroniser.organisations.postList.size() == 2);
-        assertTrue(synchroniser.organisations.postList.get(0).getName().equals("Peter Griffin.co"));
-        assertTrue(synchroniser.organisations.postList.get(1).getName().equals("Peter Quagmire.co"));
+        assertTrue(insightSynchroniser.organisations.postList.size() == 2);
+        assertTrue(insightSynchroniser.organisations.postList.get(0).getName().equals("Peter Griffin.co"));
+        assertTrue(insightSynchroniser.organisations.postList.get(1).getName().equals("Peter Quagmire.co"));
 
-        assertTrue(synchroniser.organisations.putList.isEmpty());
+        assertTrue(insightSynchroniser.organisations.putList.isEmpty());
 
         clearSynchroniser();
     }
@@ -193,7 +193,7 @@ public class SynchroniserUnitTests {
         v.setCountry("Murica!");
         v.setStreet("20 Family Street");
         v.setZip("6727");
-        synchroniser.organisations.vOrganisations.add(v);
+        insightSynchroniser.organisations.vOrganisations.add(v);
 
         v = new VOrganisation();
         v.setName("Clevelands Throwback co");
@@ -201,31 +201,31 @@ public class SynchroniserUnitTests {
         v.setCountry("Murica!");
         v.setStreet("Opposite 15 Family Street");
         v.setZip("6722");
-        synchroniser.organisations.vOrganisations.add(v);
+        insightSynchroniser.organisations.vOrganisations.add(v);
 
         PDOrganisation p = new PDOrganisation("Peter Quagmire.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
         p = new PDOrganisation("Clevelands Throwback co", "5 End Street, Factory A, 0000, Neverland");
-        synchroniser.organisations.pdOrganisations.add(p);
+        insightSynchroniser.organisations.pdOrganisations.add(p);
 
 
-        assertTrue(!synchroniser.organisations.vOrganisations.isEmpty());
-        assertTrue(synchroniser.organisations.pdOrganisations.size() == 2);
+        assertTrue(!insightSynchroniser.organisations.vOrganisations.isEmpty());
+        assertTrue(insightSynchroniser.organisations.pdOrganisations.size() == 2);
 
-        synchroniser.compareOrganisations();
+        insightSynchroniser.compareOrganisations();
 
-        assertTrue(synchroniser.organisations.postList.size() == 2);
-        assertTrue(synchroniser.organisations.postList.get(0).getName().equals("Peter Griffin.co"));
-        assertTrue(synchroniser.organisations.postList.get(0).getAddress().equals("13 Family Street, Quahog, 6727, Murica!"));
-        assertTrue(synchroniser.organisations.postList.get(1).getName().equals("Joe's wheelchair co"));
-        assertTrue(synchroniser.organisations.postList.get(1).getAddress().equals("20 Family Street, Quahog, 6727, Murica!"));
+        assertTrue(insightSynchroniser.organisations.postList.size() == 2);
+        assertTrue(insightSynchroniser.organisations.postList.get(0).getName().equals("Peter Griffin.co"));
+        assertTrue(insightSynchroniser.organisations.postList.get(0).getAddress().equals("13 Family Street, Quahog, 6727, Murica!"));
+        assertTrue(insightSynchroniser.organisations.postList.get(1).getName().equals("Joe's wheelchair co"));
+        assertTrue(insightSynchroniser.organisations.postList.get(1).getAddress().equals("20 Family Street, Quahog, 6727, Murica!"));
 
-        assertTrue(synchroniser.organisations.putList.size() == 2);
-        assertTrue(synchroniser.organisations.putList.get(0).getName().equals("Peter Quagmire.co"));
-        assertTrue(synchroniser.organisations.putList.get(0).getAddress().equals("17 Family Street, Quahog, 6722, Murica!"));
-        assertTrue(synchroniser.organisations.putList.get(1).getName().equals("Clevelands Throwback co"));
-        assertTrue(synchroniser.organisations.putList.get(1).getAddress().equals("Opposite 15 Family Street, Quahog, 6722, Murica!"));
+        assertTrue(insightSynchroniser.organisations.putList.size() == 2);
+        assertTrue(insightSynchroniser.organisations.putList.get(0).getName().equals("Peter Quagmire.co"));
+        assertTrue(insightSynchroniser.organisations.putList.get(0).getAddress().equals("17 Family Street, Quahog, 6722, Murica!"));
+        assertTrue(insightSynchroniser.organisations.putList.get(1).getName().equals("Clevelands Throwback co"));
+        assertTrue(insightSynchroniser.organisations.putList.get(1).getAddress().equals("Opposite 15 Family Street, Quahog, 6722, Murica!"));
 
         clearSynchroniser();
     }
@@ -235,48 +235,48 @@ public class SynchroniserUnitTests {
 //TODO: FINISH Contact Test when unblocked
     @Test
     public void emptyContactListsReturnsEmptyPostAndPutLists() {
-        assertTrue(synchroniser.contacts.pdContacts.isEmpty());
-        assertTrue(synchroniser.contacts.vContacts.isEmpty());
+        assertTrue(insightSynchroniser.contacts.pdContacts.isEmpty());
+        assertTrue(insightSynchroniser.contacts.vContacts.isEmpty());
 
-        synchroniser.compareContacts(
-                synchroniser.contacts.vContacts,
-                synchroniser.contacts.pdContacts
+        insightSynchroniser.compareContacts(
+                insightSynchroniser.contacts.vContacts,
+                insightSynchroniser.contacts.pdContacts
         );
 
-        assertTrue(synchroniser.contacts.postList.isEmpty());
-        assertTrue(synchroniser.contacts.putList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.postList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.putList.isEmpty());
     }
 
     @Test
     public void emptyPDContactListReturnsAllItemsOfVContactToPostList() {
         int numInList = assignJustVContactList();
-        assertTrue(!synchroniser.contacts.vContacts.isEmpty());
-        assertTrue(synchroniser.contacts.pdContacts.isEmpty());
+        assertTrue(!insightSynchroniser.contacts.vContacts.isEmpty());
+        assertTrue(insightSynchroniser.contacts.pdContacts.isEmpty());
 
-        synchroniser.compareContacts(
-                synchroniser.contacts.vContacts,
-                synchroniser.contacts.pdContacts
+        insightSynchroniser.compareContacts(
+                insightSynchroniser.contacts.vContacts,
+                insightSynchroniser.contacts.pdContacts
         );
 
-        assertTrue(synchroniser.contacts.putList.isEmpty());
-        assertTrue(!synchroniser.contacts.postList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.putList.isEmpty());
+        assertTrue(!insightSynchroniser.contacts.postList.isEmpty());
 
         assertTrue(numInList == 4);
-        assertTrue(synchroniser.contacts.postList.get(0).getName().equals("Batman"));
-        assertTrue(synchroniser.contacts.postList.get(0)
+        assertTrue(insightSynchroniser.contacts.postList.get(0).getName().equals("Batman"));
+        assertTrue(insightSynchroniser.contacts.postList.get(0)
                 .getEmail().get(0).getValue().equals("BatSignal@night.com"));
-        assertTrue(synchroniser.contacts.postList.get(0)
+        assertTrue(insightSynchroniser.contacts.postList.get(0)
                 .getPhone().get(0).getValue().equals("0987654321"));
 
-        assertTrue(synchroniser.contacts.postList.get(1).getName().equals("Robin"));
-        assertTrue(synchroniser.contacts.postList.get(1)
+        assertTrue(insightSynchroniser.contacts.postList.get(1).getName().equals("Robin"));
+        assertTrue(insightSynchroniser.contacts.postList.get(1)
                 .getEmail().get(0).getValue().equals("Robin@night.com"));
 
-        assertTrue(synchroniser.contacts.postList.get(2).getName().equals("Joker"));
-        assertTrue(synchroniser.contacts.postList.get(2).getPhone().get(0).getValue().equals("123123"));
-        assertTrue(synchroniser.contacts.postList.get(2).getEmail().get(0).getValue().equals("joke@you.com"));
+        assertTrue(insightSynchroniser.contacts.postList.get(2).getName().equals("Joker"));
+        assertTrue(insightSynchroniser.contacts.postList.get(2).getPhone().get(0).getValue().equals("123123"));
+        assertTrue(insightSynchroniser.contacts.postList.get(2).getEmail().get(0).getValue().equals("joke@you.com"));
 
-        assertTrue(synchroniser.contacts.postList.get(3).getName().equals("Penguin"));
+        assertTrue(insightSynchroniser.contacts.postList.get(3).getName().equals("Penguin"));
 
         clearSynchroniser();
     }
@@ -286,13 +286,13 @@ public class SynchroniserUnitTests {
         assignJustVContactList();
         assignMatchingPDContacts();
 
-        synchroniser.compareContacts(
-                synchroniser.contacts.vContacts,
-                synchroniser.contacts.pdContacts
+        insightSynchroniser.compareContacts(
+                insightSynchroniser.contacts.vContacts,
+                insightSynchroniser.contacts.pdContacts
         );
 
-        assertTrue(synchroniser.contacts.postList.isEmpty());
-        assertTrue(synchroniser.contacts.putList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.postList.isEmpty());
+        assertTrue(insightSynchroniser.contacts.putList.isEmpty());
 
         clearSynchroniser();
     }
@@ -302,26 +302,26 @@ public class SynchroniserUnitTests {
         assignJustVContactList();
         assignPDContacts();
 
-        synchroniser.compareContacts(
-                synchroniser.contacts.vContacts,
-                synchroniser.contacts.pdContacts
+        insightSynchroniser.compareContacts(
+                insightSynchroniser.contacts.vContacts,
+                insightSynchroniser.contacts.pdContacts
         );
 
-        assertTrue(synchroniser.contacts.postList.size() == 3);
-        assertTrue(synchroniser.contacts.postList.get(0).getName().equals("Robin"));
-        assertTrue(synchroniser.contacts.postList.get(1).getName().equals("Joker"));
-        assertTrue(synchroniser.contacts.postList.get(2).getName().equals("Penguin"));
+        assertTrue(insightSynchroniser.contacts.postList.size() == 3);
+        assertTrue(insightSynchroniser.contacts.postList.get(0).getName().equals("Robin"));
+        assertTrue(insightSynchroniser.contacts.postList.get(1).getName().equals("Joker"));
+        assertTrue(insightSynchroniser.contacts.postList.get(2).getName().equals("Penguin"));
 
-        assertTrue(synchroniser.contacts.putList.size() == 1);
-        assertTrue(synchroniser.contacts.putList.get(0).getName().equals("Batman"));
-        assertTrue(synchroniser.contacts.putList.get(0).getPhone().get(0).getValue().equals("0987654321"));
-        assertTrue(synchroniser.contacts.putList.get(0).getPhone().get(0).getPrimary());
-        assertTrue(synchroniser.contacts.putList.get(0).getPhone().get(1).getValue().equals("11111111"));
-        assertTrue(!synchroniser.contacts.putList.get(0).getPhone().get(1).getPrimary());
-        assertTrue(synchroniser.contacts.putList.get(0).getEmail().get(0).getValue().equals("BatSignal@night.com"));
-        assertTrue(synchroniser.contacts.putList.get(0).getEmail().get(0).getPrimary());
-        assertTrue(synchroniser.contacts.putList.get(0).getEmail().get(1).getValue().equals("notBruce@wayne.com"));
-        assertTrue(!synchroniser.contacts.putList.get(0).getEmail().get(1).getPrimary());
+        assertTrue(insightSynchroniser.contacts.putList.size() == 1);
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getName().equals("Batman"));
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getPhone().get(0).getValue().equals("0987654321"));
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getPhone().get(0).getPrimary());
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getPhone().get(1).getValue().equals("11111111"));
+        assertTrue(!insightSynchroniser.contacts.putList.get(0).getPhone().get(1).getPrimary());
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getEmail().get(0).getValue().equals("BatSignal@night.com"));
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getEmail().get(0).getPrimary());
+        assertTrue(insightSynchroniser.contacts.putList.get(0).getEmail().get(1).getValue().equals("notBruce@wayne.com"));
+        assertTrue(!insightSynchroniser.contacts.putList.get(0).getEmail().get(1).getPrimary());
 
         clearSynchroniser();
     }
@@ -333,7 +333,7 @@ public class SynchroniserUnitTests {
         VContact v = new VContact();
         PDContactReceived p = new PDContactReceived();
 
-        Boolean mod = synchroniser.resolveContactDetails(v,p);
+        Boolean mod = insightSynchroniser.resolveContactDetails(v,p);
         assertTrue(!mod);
         assertTrue(p.getPhone().isEmpty());
         assertTrue(p.getEmail().isEmpty());
@@ -342,10 +342,10 @@ public class SynchroniserUnitTests {
     @Test
     public void emptyPDCDnonEmptyVReturnsVCDInP() {
         assignJustVContactList();
-        VContact v = synchroniser.contacts.vContacts.get(0);
+        VContact v = insightSynchroniser.contacts.vContacts.get(0);
         PDContactReceived p = new PDContactReceived();
 
-        Boolean mod = synchroniser.resolveContactDetails(v,p);
+        Boolean mod = insightSynchroniser.resolveContactDetails(v,p);
         assertTrue(mod);
         assertTrue(p.getEmail().get(0).getValue().equals("BatSignal@night.com"));
 
@@ -357,11 +357,11 @@ public class SynchroniserUnitTests {
     @Test
     public void differentPDCD_VCDreturnsAllIntoPWithCorrectPrimary() {
         assignJustVContactList();
-        VContact v = synchroniser.contacts.vContacts.get(0);
+        VContact v = insightSynchroniser.contacts.vContacts.get(0);
         assignPDContacts();
-        PDContactReceived p = synchroniser.contacts.pdContacts.get(0);
+        PDContactReceived p = insightSynchroniser.contacts.pdContacts.get(0);
 
-        Boolean mod = synchroniser.resolveContactDetails(v,p);
+        Boolean mod = insightSynchroniser.resolveContactDetails(v,p);
 
         assertTrue(mod);
         assertTrue(p.getEmail().size() == 3);
@@ -386,9 +386,9 @@ public class SynchroniserUnitTests {
     public void emptyVCDnonEmptyPDCDreturnsPDinP() {
         assignPDContacts();
         VContact v = new VContact();
-        PDContactReceived p = synchroniser.contacts.pdContacts.get(1);
+        PDContactReceived p = insightSynchroniser.contacts.pdContacts.get(1);
 
-        Boolean mod = synchroniser.resolveContactDetails(v,p);
+        Boolean mod = insightSynchroniser.resolveContactDetails(v,p);
 
         assertTrue(!mod);
         assertTrue(p.getEmail().size() == 2);
@@ -406,10 +406,10 @@ public class SynchroniserUnitTests {
         assignPDContacts();
         assignJustVContactList();
 
-        VContact v = synchroniser.contacts.vContacts.get(0);
-        PDContactReceived p = synchroniser.contacts.pdContacts.get(1);
+        VContact v = insightSynchroniser.contacts.vContacts.get(0);
+        PDContactReceived p = insightSynchroniser.contacts.pdContacts.get(1);
 
-        Boolean mod = synchroniser.resolveContactDetails(v,p);
+        Boolean mod = insightSynchroniser.resolveContactDetails(v,p);
 
         assertTrue(mod);
 
@@ -443,7 +443,7 @@ public class SynchroniserUnitTests {
         c1.getEmail().add(new ContactDetail("senior@arkham.com", false));
         c1.getPhone().add(new ContactDetail("666444666", false));
 
-        synchroniser.contacts.pdContacts.add(c1);
+        insightSynchroniser.contacts.pdContacts.add(c1);
 
         c2.setName("Batman");
         c2.setOrg_id(org_id);
@@ -452,9 +452,9 @@ public class SynchroniserUnitTests {
         c2.getPhone().add(new ContactDetail("0987654321", false));
         c2.getPhone().add(new ContactDetail("11111111", true));
 
-        synchroniser.contacts.pdContacts.add(c2);
+        insightSynchroniser.contacts.pdContacts.add(c2);
 
-        return synchroniser.contacts.pdContacts.size();
+        return insightSynchroniser.contacts.pdContacts.size();
     }
 
     public int assignMatchingPDContacts() {
@@ -513,12 +513,12 @@ public class SynchroniserUnitTests {
         p4.setValue("321321");
         c4.getPhone().add(p4);
 
-        synchroniser.contacts.pdContacts.add(c1);
-        synchroniser.contacts.pdContacts.add(c2);
-        synchroniser.contacts.pdContacts.add(c3);
-        synchroniser.contacts.pdContacts.add(c4);
+        insightSynchroniser.contacts.pdContacts.add(c1);
+        insightSynchroniser.contacts.pdContacts.add(c2);
+        insightSynchroniser.contacts.pdContacts.add(c3);
+        insightSynchroniser.contacts.pdContacts.add(c4);
 
-        return synchroniser.contacts.vContacts.size();
+        return insightSynchroniser.contacts.vContacts.size();
 
     }
 
@@ -544,12 +544,12 @@ public class SynchroniserUnitTests {
         c4.setEmail("Penguin@large.com");
         c4.setPhone("321321");
 
-        synchroniser.contacts.vContacts.add(c1);
-        synchroniser.contacts.vContacts.add(c2);
-        synchroniser.contacts.vContacts.add(c3);
-        synchroniser.contacts.vContacts.add(c4);
+        insightSynchroniser.contacts.vContacts.add(c1);
+        insightSynchroniser.contacts.vContacts.add(c2);
+        insightSynchroniser.contacts.vContacts.add(c3);
+        insightSynchroniser.contacts.vContacts.add(c4);
 
-        return synchroniser.contacts.vContacts.size();
+        return insightSynchroniser.contacts.vContacts.size();
     }
 
 }

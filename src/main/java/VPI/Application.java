@@ -1,14 +1,11 @@
 package VPI;
 
-import VPI.VXMLClasses.XMLEnvelope;
-import VPI.VXMLClasses.XMLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,7 +16,6 @@ public class Application implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(Application.class);
     private static final String server = "https://api.pipedrive.com/v1/";
-    private static final String insightServer = "http://insight.zuehlke.com";
 
     public static void main(String args[]) {
         SpringApplication.run(Application.class);
@@ -30,20 +26,13 @@ public class Application implements CommandLineRunner {
 
         try {
 
-            Synchroniser synchroniser =  new Synchroniser(server, insightServer);
-
-            XMLService XS = new XMLService("http://172.18.10.85", "9999");
+            //TODO: fix
+            //InsightSynchroniser synchroniser =  new InsightSynchroniser(server, insightServer);
 
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {
                 @Override
                 public void run() {
-                    System.out.println("Running...");
-                    //synchroniser.importToPipedrive();
-                    //XS.objectToXML();
-                    //XS.xmlToObject();
-                    ResponseEntity<XMLEnvelope> res = XS.getLondonOrganisations();
-                    System.out.println(res.getBody().toString());
                 }
             };
 

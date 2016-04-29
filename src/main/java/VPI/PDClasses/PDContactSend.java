@@ -1,6 +1,7 @@
 package VPI.PDClasses;
 
-import VPI.VClasses.VContact;
+import VPI.InsightClasses.VContact;
+import VPI.VertecClasses.JSONContact;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +45,26 @@ public class PDContactSend {
         this.active_flag = true;
     }
 
+    public PDContactSend(JSONContact c) {
+        this.name = c.getFirstName() + " " + c.getSurname();
+        this.active_flag = true;
+        this.visible_to = 3;
+        ContactDetail emaild = new ContactDetail(c.getEmail(), true);
+        this.email = new ArrayList<>();
+        this.email.add(emaild);
+        ContactDetail phoned = new ContactDetail(c.getPhone(), true);
+        ContactDetail mobiled = new ContactDetail(c.getMobile(), false);
+        this.phone = new ArrayList<>();
+        this.phone.add(phoned);
+        this.phone.add(mobiled);
+    }
+
     public PDContactSend(PDContactReceived pc) {
         this.name = pc.getName();
         this.id = pc.getId();
-        this.org_id = pc.getOrg_id().getValue();
+        if(pc.getOrg_id() != null) {
+            this.org_id = pc.getOrg_id().getValue();
+        }
         this.email = pc.getEmail();
         this.phone = pc.getPhone();
         this.visible_to = pc.getVisible_to();

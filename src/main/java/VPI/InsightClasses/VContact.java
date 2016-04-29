@@ -1,4 +1,4 @@
-package VPI.VClasses;
+package VPI.InsightClasses;
 
 import VPI.PDClasses.ContactDetail;
 import com.fasterxml.jackson.annotation.JsonProperty;

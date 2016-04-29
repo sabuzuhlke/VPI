@@ -1,6 +1,5 @@
-package VPI.VClasses;
+package VPI.InsightClasses;
 
-import VPI.VClasses.VOrganisation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

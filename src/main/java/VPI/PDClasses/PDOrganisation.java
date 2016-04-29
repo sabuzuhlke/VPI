@@ -1,6 +1,6 @@
 package VPI.PDClasses;
 
-import VPI.VClasses.VOrganisation;
+import VPI.InsightClasses.VOrganisation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;

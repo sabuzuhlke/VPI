@@ -1,6 +1,4 @@
-package VPI.VClasses;
-
-import VPI.VClasses.VContact;
+package VPI.InsightClasses;
 
 import java.util.List;
 
