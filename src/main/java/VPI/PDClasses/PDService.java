@@ -313,13 +313,13 @@ public class PDService {
         return res;
     }
 
-    public List<Long> deleteContactList(List<Long> IdsToDelete){
-        List<Long> IdsDeleted = new ArrayList<>();
+    public List<Long> deleteContactList(List<Long> idsToDelete){
+        List<Long> idsDeleted = new ArrayList<>();
         List<String> idsDeletedAsString;
         PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
-        idsForReq.setIds(IdsToDelete);
+        idsForReq.setIds(idsToDelete);
 
-        RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req;
+        RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req = null;
         ResponseEntity<PDBulkDeleteResponse> res;
 
         String uri = server + "persons/" + apiKey;
@@ -332,14 +332,14 @@ public class PDService {
             System.out.println(res.getBody().getData().getId().size());
 
             for(String s : idsDeletedAsString) {
-                IdsDeleted.add(Long.parseLong(s));
+                idsDeleted.add(Long.parseLong(s));
             }
 
         } catch (Exception e) {
-            System.out.println(e.toString());
+            System.out.println(e.toString() + "REQ: " + req);
         }
 
-        return IdsDeleted;
+        return idsDeleted;
     }
 
 //-----------------------------------------------------------------------------------PUT
