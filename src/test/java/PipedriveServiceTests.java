@@ -157,7 +157,7 @@ public class PipedriveServiceTests {
         Long org_id = postResponse.getBody().getData().getId();
 
         PDContactSend contact = new PDContactSend(org_id, "Test Name", "Test@Test.test", "0987654321");
-        ResponseEntity<PDContactResponse> contactPostResponse = PS.postContactForOrganisation(contact);
+        ResponseEntity<PDContactResponse> contactPostResponse = PS.postContact(contact);
 
         assertTrue(contactPostResponse.getBody() != null);
         assertTrue(contactPostResponse.getBody().getSuccess());
@@ -213,7 +213,7 @@ public class PipedriveServiceTests {
         Long org_id = postResponse.getBody().getData().getId();
 
         PDContactSend contact = new PDContactSend(org_id, "Test Name", "Test@Test.test", "0987654321");
-        ResponseEntity<PDContactResponse> contactPostResponse = PS.postContactForOrganisation(contact);
+        ResponseEntity<PDContactResponse> contactPostResponse = PS.postContact(contact);
 
         //modify contact
         contact.changePrimaryEmail("loseweight@kfc.com");

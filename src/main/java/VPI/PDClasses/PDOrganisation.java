@@ -1,6 +1,7 @@
 package VPI.PDClasses;
 
 import VPI.InsightClasses.VOrganisation;
+import VPI.VertecClasses.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
@@ -56,6 +57,27 @@ public class PDOrganisation {
         this.id = id;
         this.company_id = company_id;
         this.owner_id = owner_id;
+    }
+
+    public PDOrganisation(JSONOrganisation jo, PDOrganisation po){
+        this.name = jo.getName();
+        this.visible_to = 3;
+        this.v_id = jo.getObjid();
+        this.id = po.getId();
+        this.active_flag = true;
+        this.company_id = po.getCompany_id();
+        this.owner_id = po.getOwner_id(); //TODO: change to appropriate (from jo)
+
+        this.address = jo.getFormattedAddress();
+    }
+
+    public PDOrganisation(JSONOrganisation o){
+        this.name = o.getName();
+        if(name == null || name.isEmpty() || name.equals(" ")) name = "Anonymus co";
+        this.visible_to = 3;
+        this.v_id = o.getObjid();
+        this.active_flag = true;
+        this.address = o.getFormattedAddress();
     }
 
     //use this function when reading update time from object imported from pipedrive

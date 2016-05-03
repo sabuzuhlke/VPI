@@ -1,8 +1,7 @@
 import VPI.Application;
-import VPI.PDClasses.ContactDetail;
-import VPI.PDClasses.OrgId;
-import VPI.PDClasses.PDContactReceived;
+import VPI.PDClasses.*;
 import VPI.VertecClasses.JSONContact;
+import VPI.VertecClasses.JSONOrganisation;
 import VPI.VertecSynchroniser;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +12,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -31,12 +31,174 @@ public class VertecSynchroniserUnitTests {
     }
 
     @Test
+    public void canImportToPipedrive() {
+        //ids[0]=orgs posted, ids[1]=orgsPut, ids[2]=contsPostedToOrgs ids[3]=contsPosted ids[4]=contsPut
+        List<List<Long>> ids = sync.importToPipedrive();
+        List<Long> orgsToDel = new ArrayList<>();
+        orgsToDel.addAll(ids.get(0));
+        orgsToDel.addAll(ids.get(1));
+        List<Long> contsToDel = new ArrayList<>();
+        contsToDel.addAll(ids.get(2));
+        contsToDel.addAll(ids.get(3));
+        contsToDel.addAll(ids.get(4));
+        List<Long> orgsDel = sync.getPDS().deleteOrganisationList(orgsToDel);
+        List<Long> contsDel = sync.getPDS().deleteContactList(contsToDel);
+
+        assertTrue(orgsDel.equals(orgsToDel));
+        assertTrue(contsDel.equals(contsToDel));
+
+        sync.clear();
+
+    }
+
+
+
+    @Test
+    public void correctlyResolvesOrganisations(){
+        List<JSONOrganisation> vOrgs = getMockVOrgs();
+
+        List<PDOrganisation> pOrgs = getMockPOrgs();
+
+
+        this.sync.testresolveOrganisationsAndNestedContacts(vOrgs,pOrgs);
+
+
+        assertTrue(sync.organisationPostList.size() == 1);
+        assertTrue(sync.organisationPutList.size() == 1);
+
+        assertTrue(sync.organisationPostList.get(0).getName().equals(vOrgs.get(2).getName()));
+        assertTrue(sync.organisationPutList.get(0).getName().equals(vOrgs.get(1).getName()));
+        sync.organisationPostList.clear();
+        sync.organisationPutList.clear();
+
+    }
+
+    @Test
+    public void canPostOrgsCorrectly(){
+
+        List<List<Long>> Ids = new ArrayList<>();
+        List<Long> orgsDel = null;
+        List<Long> contsDel = null;
+
+        sync.organisationPostList = getMockVOrgs();
+        Ids = sync.postVOrganisations();
+
+        assertTrue(Ids.get(0).size() == 3);
+        assertTrue(Ids.get(1).size() == 6);
+
+        orgsDel = sync.getPDS().deleteOrganisationList(Ids.get(0));
+        contsDel =sync.getPDS().deleteContactList(Ids.get(1));
+
+        assertTrue(orgsDel.size() == Ids.get(0).size());
+        assertTrue(contsDel.size() == Ids.get(1).size());
+
+        sync.clear();
+
+    }
+
+
+    public List<JSONOrganisation> getMockVOrgs(){
+        JSONOrganisation o = new JSONOrganisation();
+        List<JSONOrganisation> orgs = new ArrayList<>();
+
+        JSONContact c = new JSONContact();
+        List<JSONContact> cnts = new ArrayList<>();
+
+        c.setOwner("me");
+        c.setModified("NOW");
+        c.setObjid(1L);
+        c.setEmail("habbababba@babba.com");
+        c.setFirstName("John");
+        c.setSurname("Wayne");
+        c.setPhone("37925");
+        c.setMobile("8974");
+        cnts.add(c);
+        c = new JSONContact();
+
+        c.setOwner("me");
+        c.setModified("NOW");
+        c.setObjid(2L);
+        c.setEmail("MOJOJOJO@babba.com");
+        c.setFirstName("Mojo");
+        c.setSurname("Jojo");
+        c.setPhone("234079");
+        c.setMobile("75612");
+        cnts.add(c);
+
+
+        o.setObjid(1L);
+        o.setName("SAME ORG");
+        o.setAdditionalAdress("No");
+        o.setCity("Murica City");
+        o.setCountry("Murica!");
+        o.setStreetAddress("11 Here");
+        o.setModified("NOW");
+        o.setOwner("Me");
+        o.setZip("9938");
+        o.setContacts(cnts);
+        orgs.add(o);
+
+        o = new JSONOrganisation();
+        o.setObjid(2L);
+        o.setName("SAME NAME, DIFF DETAILS");
+        o.setAdditionalAdress("No");
+        o.setCity("Murica City");
+        o.setCountry("Murica!");
+        o.setStreetAddress("11 Here");
+        o.setModified("NOW");
+        o.setOwner("Me");
+        o.setZip("9938");
+        o.setContacts(cnts);
+        orgs.add(o);
+
+        o = new JSONOrganisation();
+        o.setObjid(2L);
+        o.setName("NEW ORG");
+        o.setAdditionalAdress("No");
+        o.setCity("Murica City");
+        o.setCountry("Murica!");
+        o.setStreetAddress("11 Here");
+        o.setModified("NOW");
+        o.setOwner("Me");
+        o.setZip("9938");
+        o.setContacts(cnts);
+        orgs.add(o);
+
+        return orgs;
+    }
+
+    public List<PDOrganisation> getMockPOrgs(){
+        PDOrganisation o = new PDOrganisation();
+        List<PDOrganisation> orgs = new ArrayList<>();
+
+        o.setName("SAME ORG");
+        o.setActive_flag(true);
+        o.setAddress("No, 11 Here, Murica City, 9938, Murica!");
+        o.setCompany_id(1L);
+        o.setV_id(1L);
+        o.setOwner_id(new PDOwner());
+        orgs.add(o);
+
+        o = new PDOrganisation();
+        o.setName("SAME NAME, DIFF DETAILS");
+        o.setActive_flag(true);
+        o.setAddress("YES, 12 Here, NOT Murica City, 9938, NOT Murica!");
+        o.setCompany_id(2L);
+        o.setV_id(2L);
+        o.setOwner_id(new PDOwner());
+        orgs.add(o);
+
+
+        return orgs;
+    }
+
+    @Test
     public void correctlyResolvesDanglingContacts() {
 
         List<JSONContact> dangling = getListOfDanglingVertecContacts();
         List<PDContactReceived> pdContacts = getListOfDanglingPipedriveContacts();
 
-        sync.compareDanglingContacts(dangling, pdContacts);
+        sync.compareContacts(dangling, pdContacts);
 
         assertTrue(sync.contactPutList.size() == 1);
         assertTrue(sync.contactPutList.get(0).getName().equals("c2 surname2"));

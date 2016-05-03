@@ -1,5 +1,6 @@
 package VPI.PDClasses;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
@@ -54,7 +55,7 @@ public class PDService {
     }
 
     public ResponseEntity<PDOrganisationResponse> postOrganisation(PDOrganisation post) {
-        RequestEntity<PDOrganisation> req;
+        RequestEntity<PDOrganisation> req = null;
         ResponseEntity<PDOrganisationResponse> res = null;
         String uri = server + "organizations" + apiKey;
         try {
@@ -63,7 +64,7 @@ public class PDService {
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
 
         } catch (Exception e) {
-            System.out.println(e.toString());
+            System.out.println(e.toString() + "Respone: " + req);
         }
         return res;
     }
@@ -225,18 +226,21 @@ public class PDService {
     }
 
 //---CONTACTS-----------------------------------------------------------------------POST
-    public ResponseEntity<PDContactResponse> postContactForOrganisation(PDContactSend contact) {
+    public ResponseEntity<PDContactResponse> postContact(PDContactSend contact) {
         RequestEntity<PDContactSend> req;
         ResponseEntity<PDContactResponse> res = null;
         String uri = server + "persons" + apiKey;
 
         try {
-
+            //System.out.println("Posting Contact: ");
+            //System.out.println("    name: " + contact.getName());
             req = new RequestEntity<>(contact, HttpMethod.POST, new URI(uri));
+            //System.out.println("REQUEST:  " + req);
             res = restTemplate.exchange(req, PDContactResponse.class);
+            //System.out.println("RESPONSE: " + res);
 
         } catch (Exception e) {
-            System.out.println(e.toString());
+            System.out.println("OOPS" + e.toString() + " RESPONSE: " + res);
         }
 
         return res;
@@ -247,7 +251,7 @@ public class PDService {
         ResponseEntity<PDContactResponse> res = null;
 
         for(PDContactSend p : contacts){
-            res = postContactForOrganisation(p);
+            res = postContact(p);
             if (res.getStatusCode() == HttpStatus.CREATED) {
                 idsPosted.add(res.getBody().getData().getId());
             } else {
@@ -307,6 +311,35 @@ public class PDService {
         }
 
         return res;
+    }
+
+    public List<Long> deleteContactList(List<Long> IdsToDelete){
+        List<Long> IdsDeleted = new ArrayList<>();
+        List<String> idsDeletedAsString;
+        PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
+        idsForReq.setIds(IdsToDelete);
+
+        RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req;
+        ResponseEntity<PDBulkDeleteResponse> res;
+
+        String uri = server + "persons/" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(idsForReq, HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req, PDBulkDeleteResponse.class);
+            idsDeletedAsString = res.getBody().getData().getId();
+            System.out.println(res.getBody().getData().getId().size());
+
+            for(String s : idsDeletedAsString) {
+                IdsDeleted.add(Long.parseLong(s));
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return IdsDeleted;
     }
 
 //-----------------------------------------------------------------------------------PUT

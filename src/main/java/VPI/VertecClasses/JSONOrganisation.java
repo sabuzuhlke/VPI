@@ -123,4 +123,16 @@ public class JSONOrganisation {
     public void setCountry(String country) {
         this.country = country;
     }
+
+    public String getFormattedAddress(){
+        String address = "";
+        if( ! this.getAdditionalAdress().isEmpty()){
+            address += this.getAdditionalAdress() + ", ";
+        }
+        address += this.getStreetAddress() + ", ";
+        address += this.getCity() + ", ";
+        address += this.getZip() + ", ";
+        address += this.getCountry();
+        return address;
+    }
 }

@@ -47,6 +47,7 @@ public class PDContactSend {
 
     public PDContactSend(JSONContact c) {
         this.name = c.getFirstName() + " " + c.getSurname();
+        if(name.equals(" ")) name = "Anonymus";
         this.active_flag = true;
         this.visible_to = 3;
         ContactDetail emaild = new ContactDetail(c.getEmail(), true);
