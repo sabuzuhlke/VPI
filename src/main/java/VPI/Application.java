@@ -1,12 +1,15 @@
 package VPI;
 
+import VPI.PDClasses.PDService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,8 +24,16 @@ public class Application implements CommandLineRunner {
         SpringApplication.run(Application.class);
     }
 
+    private PDService PDS;
+
     @Override
     public void run(String... args) throws Exception {
+
+        MyCredentials creds = new MyCredentials();
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        PDS = new PDService(restTemplate, server, creds.getApiKey());
 
         try {
 
@@ -33,9 +44,10 @@ public class Application implements CommandLineRunner {
             TimerTask t = new TimerTask() {
                 @Override
                 public void run() {
+
                 }
             };
-
+            //PDS.clearPD(new ArrayList<>(), new ArrayList<>());
             timer.schedule(t, 0l, 1000*60*60);
 
             //DO STUFF HERE

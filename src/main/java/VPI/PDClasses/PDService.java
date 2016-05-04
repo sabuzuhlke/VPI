@@ -5,6 +5,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PDService {
@@ -375,6 +376,77 @@ public class PDService {
             }
         }
         return idsPut;
+    }
+
+    public void clearPD(List<Long> orgsToKeep, List<Long> contsToKeep){
+        //TODO: Modify this
+        orgsToKeep.add(206L);
+        orgsToKeep.add(207L);
+        orgsToKeep.add(209L);
+        orgsToKeep.add(211L);
+        orgsToKeep.add(208L);
+        orgsToKeep.add(1L);
+        orgsToKeep.add(3L);
+
+        contsToKeep.add(1L);
+        contsToKeep.add(4L);
+        contsToKeep.add(5L);
+        contsToKeep.add(6L);
+        contsToKeep.add(7L);
+        contsToKeep.add(8L);
+        contsToKeep.add(8L);
+        contsToKeep.add(11L);
+        contsToKeep.add(12L);
+        contsToKeep.add(13L);
+        contsToKeep.add(845L);
+
+        Integer orgsize = 0;
+        Integer contsise = 0;
+
+        ResponseEntity<PDOrganisationItemsResponse> resOrg;
+        ResponseEntity<PDContactListReceived> resCont;
+        List<Long> orgsDeleted;
+        List<Long> contsDeleted;
+
+        List<Long> orgsToDel = new ArrayList<>();
+        List<Long> contsToDel = new ArrayList<>();
+
+
+        String orgURL = server + "organisations/" + apiKey;
+
+        try {
+
+            while(orgsize != orgsToKeep.size() && contsise != contsToKeep.size()){
+                resOrg = getAllOrganisations();
+
+                orgsize = resOrg.getBody().getData().size();
+                for(PDOrganisation o : resOrg.getBody().getData()){
+                    if(! orgsToKeep.contains(o.getId())){
+                        orgsToDel.add(o.getId());
+                    }
+                }
+                System.out.println("Orgs added to del List");
+
+                resCont = getAllContacts();
+                contsise = resCont.getBody().getData().size();
+
+                for(PDContactReceived c : resCont.getBody().getData()){
+                    if( ! contsToKeep.contains(c.getId())){
+                        contsToDel.add(c.getId());
+                    }
+                }
+                System.out.println("Contacts added to del List");
+
+                orgsDeleted = deleteOrganisationList(orgsToDel);
+                contsDeleted = deleteContactList(contsToDel);
+            }
+
+
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
     }
 }
 

@@ -41,15 +41,19 @@ public class VertecSynchroniserUnitTests {
         contsToDel.addAll(ids.get(2));
         contsToDel.addAll(ids.get(3));
         contsToDel.addAll(ids.get(4));
-        List<Long> orgsDel = sync.getPDS().deleteOrganisationList(orgsToDel);
-        List<Long> contsDel = sync.getPDS().deleteContactList(contsToDel);
 
-        System.out.println("orgs to del: " + orgsToDel.size());
-        System.out.println("orgs deleted: " + orgsDel.size());
-        System.out.println("conts to  del: " + contsToDel.size());
-        System.out.println("conts del: " + contsDel.size());
-        assertTrue(orgsDel.equals(orgsToDel));
-        assertTrue(contsDel.equals(contsToDel));
+        //assertTrue(sync.contactPutList.get(1).getName().equals("Helen Anthony") || sync.contactPutList.get(0).getName().equals("Helen Anthony") );
+        //assertTrue(sync.contactPutList.get(1).getName().equals("Steve Townsend") || sync.contactPutList.get(0).getName().equals("Steve Townsend") );
+        //assertTrue(sync.organisationPutList.get(0).getName().equals("ABB Limited"));
+        //List<Long> orgsDel = sync.getPDS().deleteOrganisationList(orgsToDel);
+        //List<Long> contsDel = sync.getPDS().deleteContactList(contsToDel);
+
+//        System.out.println("orgs to del: " + orgsToDel.size());
+//        System.out.println("orgs deleted: " + orgsDel.size());
+//        System.out.println("conts to  del: " + contsToDel.size());
+//        System.out.println("conts del: " + contsDel.size());
+//        assertTrue(orgsDel.equals(orgsToDel));
+//        assertTrue(contsDel.equals(contsToDel));
 
         sync.clear();
 

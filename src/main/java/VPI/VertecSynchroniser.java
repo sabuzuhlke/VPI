@@ -136,6 +136,7 @@ public class VertecSynchroniser {
             Boolean modified = false;
             PDContactReceived temp = null;
             Long tempOrgID = null;
+            if(pContacts == null) continue;
             for(PDContactReceived pc : pContacts) {
                 String fullname = vc.getFirstName() + " " + vc.getSurname();
                 if (pc.getOrg_id() != null && pc.getOrg_id().getValue() != null) tempOrgID = pc.getOrg_id().getValue();
