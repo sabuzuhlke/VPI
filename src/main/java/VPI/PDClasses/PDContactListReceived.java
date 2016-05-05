@@ -8,6 +8,7 @@ import java.util.List;
 public class PDContactListReceived extends PDResponse {
 
     private List<PDContactReceived> data;
+    private PDAdditionalData additional_data;
 
     public PDContactListReceived() {
     }
@@ -18,5 +19,13 @@ public class PDContactListReceived extends PDResponse {
 
     public void setData(List<PDContactReceived> data) {
         this.data = data;
+    }
+
+    public PDAdditionalData getAdditional_data() {
+        return additional_data;
+    }
+
+    public void setAdditional_data(PDAdditionalData additional_data) {
+        this.additional_data = additional_data;
     }
 }

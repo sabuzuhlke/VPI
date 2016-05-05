@@ -8,8 +8,7 @@ import VPI.VertecClasses.ZUKResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sabu on 29/04/2016.
@@ -22,8 +21,10 @@ public class VertecSynchroniser {
     public List<PDContactSend> contactPutList;
     public List<PDContactSend> contactPostList;
 
-    public List<PDOrganisation> organisationPutList;
+    public List<PDOrganisationSend> organisationPutList;
     public List<JSONOrganisation> organisationPostList;
+
+    private Map<Long,Long> teamIdMap;
 
     public VertecSynchroniser() {
         RestTemplate restTemplate = new RestTemplate();
@@ -34,6 +35,7 @@ public class VertecSynchroniser {
         this.contactPutList = new ArrayList<>();
         this.organisationPostList = new ArrayList<>();
         this.organisationPutList = new ArrayList<>();
+        this.teamIdMap = setupTeamMap();
     }
 
     public List<List<Long>> importToPipedrive() {
@@ -69,55 +71,49 @@ public class VertecSynchroniser {
     public void resolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisation> pOrgs) {
         for(JSONOrganisation vo : vOrgs){
             Boolean matched = false;
-            Boolean modified= false;
-            PDOrganisation tmp = null;
-            for(PDOrganisation po :pOrgs){
-
-                if(vo.getName().equals(po.getName())){
+            for(PDOrganisation po : pOrgs){
+                if(po.getV_id() == null) continue; //TODO: Modify to add them to inconsitstency report
+                if(vo.getObjid().longValue() == po.getV_id().longValue()){
                     matched = true;
-                    modified = compareOrganisationDetails(vo, po);
+                    compareOrganisationDetails(vo, po);
                     resolveContactsForOrgs(vo,po);
-                    if(modified){
-                        tmp = po;
-                    }
                 }
             }
             if(!matched){
                 organisationPostList.add(vo);
             }
-            if(modified){
-                organisationPutList.add(new PDOrganisation(vo,tmp));
-            }
+
         }
     }
-    public void testresolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisation> pOrgs){
+    public void testresolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisation> pOrgs) {
         for(JSONOrganisation vo : vOrgs){
             Boolean matched = false;
-            Boolean modified= false;
-            PDOrganisation tmp = null;
-            for(PDOrganisation po :pOrgs){
-
-                if(vo.getName().equals(po.getName())){
+            for(PDOrganisation po : pOrgs){
+                if(po.getV_id() == null) continue; //TODO: Modify to add them to inconsitstency report
+                if(vo.getObjid().longValue() == po.getV_id().longValue()){
                     matched = true;
-                    modified = compareOrganisationDetails(vo, po);
+                    compareOrganisationDetails(vo, po);
                     resolveTestContactsForOrgs(vo,po);
-                    if(modified){
-                        tmp = po;
-                    }
                 }
             }
             if(!matched){
                 organisationPostList.add(vo);
             }
-            if(modified){
-                organisationPutList.add(new PDOrganisation(vo,tmp));
-            }
+
         }
     }
 
     private Boolean compareOrganisationDetails(JSONOrganisation vo, PDOrganisation po){
         Boolean diff = false;
         if(! vo.getFormattedAddress().equals(po.getAddress())) diff = true;
+        if( ! vo.getName().equals(po.getName())) diff = true;
+        if( teamIdMap.get(vo.getOwner()) != po.getOwner_id().getId()) diff = true;
+
+
+        if(diff){
+            Long ownerid = teamIdMap.get(vo.getOwner());
+            organisationPutList.add(new PDOrganisationSend(vo,po,ownerid)); //TODO: Make constructor deal with most recent
+        }
 
         return diff;
     }
@@ -138,10 +134,13 @@ public class VertecSynchroniser {
             Long tempOrgID = null;
             if(pContacts == null) continue;
             for(PDContactReceived pc : pContacts) {
+
                 String fullname = vc.getFirstName() + " " + vc.getSurname();
+
                 if (pc.getOrg_id() != null && pc.getOrg_id().getValue() != null) tempOrgID = pc.getOrg_id().getValue();
 
-                if (fullname.equals(pc.getName())) {
+                if(pc.getV_id() == null) continue; //TODO: Modify to support inconsistency Report
+                if (vc.getObjid().longValue() == pc.getV_id().longValue()) {
                     matchedName = true;
 
                     //resolve internal contact details;
@@ -153,8 +152,10 @@ public class VertecSynchroniser {
 
             }
             if (!matchedName) {
-                PDContactSend newContact = new PDContactSend(vc);
+                Long owner = teamIdMap.get(vc.getOwner());
+                PDContactSend newContact = new PDContactSend(vc,owner);
                 newContact.setOrg_id(tempOrgID);
+                newContact.setOwner_id(teamIdMap.get(vc.getOwner()));
                 contactPostList.add(newContact);
             }
             if(modified) {
@@ -226,9 +227,13 @@ public class VertecSynchroniser {
             }
         }
 
-        return modifiedEmail || modifiedPhone;
+        Boolean matchedName = false;
+        String fullName = v.getFirstName() + " " + v.getSurname();
+
+        if( ! fullName.equals(p.getName())) matchedName = true;
 
 
+        return modifiedEmail || modifiedPhone || matchedName;
     }
 
     //removes Contacts that are attached to organisations (as they are already handled
@@ -251,11 +256,13 @@ public class VertecSynchroniser {
         List<Long> orgsPosted = new ArrayList<>();
         List<Long> contactsPosted = new ArrayList<>();
         for(JSONOrganisation o : organisationPostList){
-            res = PDS.postOrganisation(new PDOrganisation(o));
+            Long ownerid = teamIdMap.get(o.getOwner());
+            res = PDS.postOrganisation(new PDOrganisationSend(o, ownerid));
             orgsPosted.add(res.getBody().getData().getId());
 
             for(JSONContact c : o.getContacts()){
-                PDContactSend s = new PDContactSend(c);
+                Long owner = teamIdMap.get(c.getOwner());
+                PDContactSend s = new PDContactSend(c,owner);
                 s.setOrg_id(res.getBody().getData().getId());
                 contactsPosted.add(PDS.postContact(s).getBody().getData().getId());
             }
@@ -280,12 +287,33 @@ public class VertecSynchroniser {
         return PDS.putContactList(contactPutList);
     }
 
+    public Map<Long,Long> setupTeamMap(){
+        Map<Long,Long> map = new HashMap<>();
+        map.put(5295L, 1363410L); //Wolfgang
+        map.put(504149L, 1363402L); //Tim
+        map.put(12456812L, 136429L); //Neil
+        map.put(6574798L, 1363424L); //Mike
+        map.put(8619482L, 1363416L); //Justin
+        map.put(16887415L, 1363403L); //Brewster
+        map.put(504354L, 1363488L); //Keith
+        map.put(16400137L, 1277584L); //Peter Brown
+        map.put(17739496L, 1277584L); //Steve Freeman
+        map.put(22501574L, 1277584L); //John Seston
+        map.put(2350788L, 1277584L); //Sabine
+        map.put(24807265L, 1277584L); //Ileana
+        map.put(24907657L, 1277584L); //Ina
+        map.put(null, 1277584L); //null
+
+        return map;
+    }
+
     public void clear(){
         this.organisationPostList.clear();
         this.organisationPutList.clear();
         this.contactPostList.clear();
         this.contactPutList.clear();
     }
+
 
     public PDService getPDS() {
         return PDS;

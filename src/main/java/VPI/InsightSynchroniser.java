@@ -85,7 +85,7 @@ public class InsightSynchroniser {
             compareContacts(vC, pC);
         }
 
-        for(PDOrganisation p : organisations.putList) {
+        for(PDOrganisationSend p : organisations.putList) {
             List<VContact> vC = Arrays.asList(IS.getContactsForOrganisation(p.getV_id()).getBody());
             List<PDContactReceived> pC = PDS.getContactsForOrganisation(p.getId()).getBody().getData();
 
@@ -94,7 +94,7 @@ public class InsightSynchroniser {
     }
 
     private void addContactsForNewOrganisationsToPostList() {
-        for(PDOrganisation p : organisations.postList) {
+        for(PDOrganisationSend p : organisations.postList) {
             List<VContact> contactsForOrg = Arrays.asList(IS.getContactsForOrganisation(p.getV_id()).getBody());
             for(VContact c : contactsForOrg) {
                 contacts.postList.add(new PDContactSend(c));
@@ -133,10 +133,10 @@ public class InsightSynchroniser {
                 }
             }
             if(!matched && v.getName() != null){
-                organisations.postList.add(new PDOrganisation(v));
+                organisations.postList.add(new PDOrganisationSend(v));
             }
             if(modified){
-                organisations.putList.add(temp);
+                organisations.putList.add(new PDOrganisationSend(temp));
             }
             if(matched && !modified) {
                 organisations.matchedList.add(v);

@@ -2,6 +2,8 @@ package VPI.PDClasses;
 
 //import com.sun.istack.internal.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +21,23 @@ public class PDContactReceived {
     private List<ContactDetail> phone;
     private List<ContactDetail> email;
     private Integer visible_to;
+    @JsonProperty("77f255155d7a104848c88ded9043c593ea1fbba3")
+    private Long v_id;
+
+    @JsonProperty("add_time")
+    private String creationTime;
 
     public PDContactReceived() {
         this.phone = new ArrayList<>();
         this.email = new ArrayList<>();
+    }
+
+    public String getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(String creationTime) {
+        this.creationTime = creationTime;
     }
 
     public Long getId() {
@@ -89,5 +104,11 @@ public class PDContactReceived {
         this.visible_to = visible_to;
     }
 
+    public Long getV_id() {
+        return v_id;
+    }
 
+    public void setV_id(Long v_id) {
+        this.v_id = v_id;
+    }
 }

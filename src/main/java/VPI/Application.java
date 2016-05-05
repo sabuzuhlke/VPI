@@ -47,7 +47,7 @@ public class Application implements CommandLineRunner {
 
                 }
             };
-            //PDS.clearPD(new ArrayList<>(), new ArrayList<>());
+            //
             timer.schedule(t, 0l, 1000*60*60);
 
             //DO STUFF HERE

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by sabu on 27/04/2016.
  */
-public class JSONOrganisation {
+public class  JSONOrganisation {
 
     @JsonProperty("name")
     private String name;
@@ -29,7 +29,7 @@ public class JSONOrganisation {
     private String country;
 
     @JsonProperty("owner")
-    private String owner;
+    private Long owner;
 
     @JsonProperty("objid")
     private Long objid; //unsure if needed
@@ -39,6 +39,17 @@ public class JSONOrganisation {
 
     @JsonProperty("contacts")
     private List<JSONContact> contacts;
+
+    @JsonProperty("creationTime")
+    private String creationTime;
+
+    public String getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(String creationTime) {
+        this.creationTime = creationTime;
+    }
 
     public JSONOrganisation() {
         this.contacts = new ArrayList<>();
@@ -52,11 +63,11 @@ public class JSONOrganisation {
         this.name = name;
     }
 
-    public String getOwner() {
+    public Long getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public void setOwner(Long owner) {
         this.owner = owner;
     }
 

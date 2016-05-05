@@ -30,36 +30,6 @@ public class VertecSynchroniserUnitTests {
         this.sync = new VertecSynchroniser();
     }
 
-    @Test
-    public void canImportToPipedrive() {
-        //ids[0]=orgs posted, ids[1]=orgsPut, ids[2]=contsPostedToOrgs ids[3]=contsPosted ids[4]=contsPut
-        List<List<Long>> ids = sync.importToPipedrive();
-        List<Long> orgsToDel = new ArrayList<>();
-        orgsToDel.addAll(ids.get(0));
-        orgsToDel.addAll(ids.get(1));
-        List<Long> contsToDel = new ArrayList<>();
-        contsToDel.addAll(ids.get(2));
-        contsToDel.addAll(ids.get(3));
-        contsToDel.addAll(ids.get(4));
-
-        //assertTrue(sync.contactPutList.get(1).getName().equals("Helen Anthony") || sync.contactPutList.get(0).getName().equals("Helen Anthony") );
-        //assertTrue(sync.contactPutList.get(1).getName().equals("Steve Townsend") || sync.contactPutList.get(0).getName().equals("Steve Townsend") );
-        //assertTrue(sync.organisationPutList.get(0).getName().equals("ABB Limited"));
-        //List<Long> orgsDel = sync.getPDS().deleteOrganisationList(orgsToDel);
-        //List<Long> contsDel = sync.getPDS().deleteContactList(contsToDel);
-
-//        System.out.println("orgs to del: " + orgsToDel.size());
-//        System.out.println("orgs deleted: " + orgsDel.size());
-//        System.out.println("conts to  del: " + contsToDel.size());
-//        System.out.println("conts del: " + contsDel.size());
-//        assertTrue(orgsDel.equals(orgsToDel));
-//        assertTrue(contsDel.equals(contsToDel));
-
-        sync.clear();
-
-    }
-
-
 
     @Test
     public void correctlyResolvesOrganisations(){
@@ -112,7 +82,7 @@ public class VertecSynchroniserUnitTests {
         JSONContact c = new JSONContact();
         List<JSONContact> cnts = new ArrayList<>();
 
-        c.setOwner("me");
+        c.setOwner(1L);
         c.setModified("NOW");
         c.setObjid(1L);
         c.setEmail("habbababba@babba.com");
@@ -123,7 +93,7 @@ public class VertecSynchroniserUnitTests {
         cnts.add(c);
         c = new JSONContact();
 
-        c.setOwner("me");
+        c.setOwner(1L);
         c.setModified("NOW");
         c.setObjid(2L);
         c.setEmail("MOJOJOJO@babba.com");
@@ -134,40 +104,40 @@ public class VertecSynchroniserUnitTests {
         cnts.add(c);
 
 
-        o.setObjid(1L);
+        o.setObjid(5L);
         o.setName("SAME ORG");
         o.setAdditionalAdress("No");
         o.setCity("Murica City");
         o.setCountry("Murica!");
         o.setStreetAddress("11 Here");
         o.setModified("NOW");
-        o.setOwner("Me");
+        o.setOwner(1L);
         o.setZip("9938");
         o.setContacts(cnts);
         orgs.add(o);
 
         o = new JSONOrganisation();
-        o.setObjid(2L);
+        o.setObjid(6L);
         o.setName("SAME NAME, DIFF DETAILS");
         o.setAdditionalAdress("No");
         o.setCity("Murica City");
         o.setCountry("Murica!");
         o.setStreetAddress("11 Here");
         o.setModified("NOW");
-        o.setOwner("Me");
+        o.setOwner(1L);
         o.setZip("9938");
         o.setContacts(cnts);
         orgs.add(o);
 
         o = new JSONOrganisation();
-        o.setObjid(2L);
+        o.setObjid(7L);
         o.setName("NEW ORG");
         o.setAdditionalAdress("No");
         o.setCity("Murica City");
         o.setCountry("Murica!");
         o.setStreetAddress("11 Here");
         o.setModified("NOW");
-        o.setOwner("Me");
+        o.setOwner(1L);
         o.setZip("9938");
         o.setContacts(cnts);
         orgs.add(o);
@@ -183,7 +153,7 @@ public class VertecSynchroniserUnitTests {
         o.setActive_flag(true);
         o.setAddress("No, 11 Here, Murica City, 9938, Murica!");
         o.setCompany_id(1L);
-        o.setV_id(1L);
+        o.setV_id(5L);
         o.setOwner_id(new PDOwner());
         orgs.add(o);
 
@@ -192,7 +162,7 @@ public class VertecSynchroniserUnitTests {
         o.setActive_flag(true);
         o.setAddress("YES, 12 Here, NOT Murica City, 9938, NOT Murica!");
         o.setCompany_id(2L);
-        o.setV_id(2L);
+        o.setV_id(6L);
         o.setOwner_id(new PDOwner());
         orgs.add(o);
 
@@ -207,6 +177,8 @@ public class VertecSynchroniserUnitTests {
         List<PDContactReceived> pdContacts = getListOfDanglingPipedriveContacts();
 
         sync.compareContacts(dangling, pdContacts);
+
+        System.out.println("ContactPutlist.size: " + sync.contactPutList.size());
 
         assertTrue(sync.contactPutList.size() == 1);
         assertTrue(sync.contactPutList.get(0).getName().equals("c2 surname2"));
@@ -262,6 +234,7 @@ public class VertecSynchroniserUnitTests {
         c1.setName("c1 surname1");
         c1.setOrg_id(null);
         c1.setActive_flag(true);
+        c1.setV_id(1L);
 
         List<ContactDetail> emails = new ArrayList<>();
         ContactDetail email1 = new ContactDetail("email", true);
@@ -283,6 +256,7 @@ public class VertecSynchroniserUnitTests {
         c2.setName("c2 surname2");
         c2.setOrg_id(null);
         c2.setActive_flag(true);
+        c2.setV_id(2L);
 
         emails = new ArrayList<>();
         email1 = new ContactDetail("differentemail", true);
@@ -304,6 +278,7 @@ public class VertecSynchroniserUnitTests {
         c4.setName("c4 surname4");
         c4.setOrg_id(null);
         c4.setActive_flag(true);
+        c4.setV_id(4L);
 
         emails = new ArrayList<>();
         email1 = new ContactDetail("email4", true);
@@ -335,8 +310,8 @@ public class VertecSynchroniserUnitTests {
         c1.setFirstName("c1");
         c1.setMobile("mobile");
         c1.setModified("mod");
-        c1.setObjid(10L);
-        c1.setOwner("owner");
+        c1.setObjid(1L);
+        c1.setOwner(1L);
         c1.setPhone("phone");
         c1.setSurname("surname1");
 
@@ -346,8 +321,8 @@ public class VertecSynchroniserUnitTests {
         c2.setFirstName("c2");
         c2.setMobile("mobile");
         c2.setModified("mod");
-        c2.setObjid(20L);
-        c2.setOwner("owner");
+        c2.setObjid(2L);
+        c2.setOwner(1L);
         c2.setPhone("phone");
         c2.setSurname("surname2");
 
@@ -357,8 +332,8 @@ public class VertecSynchroniserUnitTests {
         c3.setFirstName("c3");
         c3.setMobile("mobile");
         c3.setModified("mod");
-        c3.setObjid(30L);
-        c3.setOwner("owner");
+        c3.setObjid(3L);
+        c3.setOwner(1L);
         c3.setPhone("phone");
         c3.setSurname("surname3");
 

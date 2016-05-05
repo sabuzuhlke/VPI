@@ -45,7 +45,7 @@ public class VertecServiceTests {
             res = m.readValue(response,ZUKResponse.class);
         }
         catch (Exception e){
-            System.out.println("Error in unmarshalling ZUK response");
+            System.out.println("Error in unmarshalling ZUK response: " + e);
         }
 
         assertTrue(res.getDanglingContacts().size() == 2);
@@ -90,7 +90,7 @@ public class VertecServiceTests {
                 "    \"zip\" : \"666\",\n" +
                 "    \"city\" : \"Sin City\",\n" +
                 "    \"country\" : \"Murica!\",\n" +
-                "    \"owner\" : \"REplace with appropiate\",\n" +
+                "    \"owner\" : \"1\",\n" +
                 "    \"objid\" : 1,\n" +
                 "    \"modified\" : \"23:23:1876\",\n" +
                 "    \"contacts\" : [ ]\n" +
@@ -101,7 +101,7 @@ public class VertecServiceTests {
                 "    \"zip\" : \"777\",\n" +
                 "    \"city\" : \"Ouahog\",\n" +
                 "    \"country\" : \"Murica!\",\n" +
-                "    \"owner\" : \"REplace with appropiate\",\n" +
+                "    \"owner\" : \"1\",\n" +
                 "    \"objid\" : 2,\n" +
                 "    \"modified\" : \"23:23:1876\",\n" +
                 "    \"contacts\" : [ {\n" +
@@ -110,7 +110,7 @@ public class VertecServiceTests {
                 "      \"email\" : \"childrenwelcome@me.com\",\n" +
                 "      \"phone\" : \"999\",\n" +
                 "      \"mobile\" : \"07999\",\n" +
-                "      \"owner\" : \"replace With appropriate value\",\n" +
+                "      \"owner\" : \"1\",\n" +
                 "      \"modified\" : \"12:12:2012\",\n" +
                 "      \"objid\" : 1\n" +
                 "    }, {\n" +
@@ -119,7 +119,7 @@ public class VertecServiceTests {
                 "      \"email\" : \"chicken@chicken.com\",\n" +
                 "      \"phone\" : \"999\",\n" +
                 "      \"mobile\" : \"07999\",\n" +
-                "      \"owner\" : \"replace With appropriate value\",\n" +
+                "      \"owner\" : \"1\",\n" +
                 "      \"modified\" : \"12:12:2012\",\n" +
                 "      \"objid\" : 2\n" +
                 "    } ]\n" +
@@ -130,7 +130,7 @@ public class VertecServiceTests {
                 "    \"email\" : \"whopper@star.com\",\n" +
                 "    \"phone\" : \"999\",\n" +
                 "    \"mobile\" : \"07999\",\n" +
-                "    \"owner\" : \"replace With appropriate value\",\n" +
+                "    \"owner\" : \"1\",\n" +
                 "    \"modified\" : \"12:12:2012\",\n" +
                 "    \"objid\" : 3\n" +
                 "  }, {\n" +
@@ -139,7 +139,7 @@ public class VertecServiceTests {
                 "    \"email\" : \"bad@service.com\",\n" +
                 "    \"phone\" : \"999\",\n" +
                 "    \"mobile\" : \"07999\",\n" +
-                "    \"owner\" : \"replace With appropriate value\",\n" +
+                "    \"owner\" : \"1\",\n" +
                 "    \"modified\" : \"12:12:2012\",\n" +
                 "    \"objid\" : 4\n" +
                 "  } ]\n" +

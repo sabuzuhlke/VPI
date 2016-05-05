@@ -1,6 +1,7 @@
 package VPI.PDClasses;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
@@ -21,12 +22,12 @@ public class PDService {
     }
 //---ORGANISATIONS-----------------------------------------------------------------POST
     public ResponseEntity<PDOrganisationResponse> postOrganisation(String companyName, Integer visibleTo) {
-        RequestEntity<PDOrganisation> req;
+        RequestEntity<PDOrganisationSend> req;
         ResponseEntity<PDOrganisationResponse> res = null;
         String uri = server + "organizations" + apiKey;
 
         try {
-            PDOrganisation post = new PDOrganisation(companyName, visibleTo);
+            PDOrganisationSend post = new PDOrganisationSend(companyName, visibleTo);
 
             req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
@@ -39,11 +40,11 @@ public class PDService {
 
     public ResponseEntity<PDOrganisationResponse> postOrganisationWithAddress(String companyName, String address, Integer visibleTo) {
 
-        RequestEntity<PDOrganisation> req;
+        RequestEntity<PDOrganisationSend> req;
         ResponseEntity<PDOrganisationResponse> res = null;
 
         try {
-            PDOrganisation post = new PDOrganisation(companyName,address, visibleTo);
+            PDOrganisationSend post = new PDOrganisationSend(companyName,address, visibleTo);
             String uri = server + "organizations" + apiKey;
 
             req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
@@ -55,8 +56,8 @@ public class PDService {
         return res;
     }
 
-    public ResponseEntity<PDOrganisationResponse> postOrganisation(PDOrganisation post) {
-        RequestEntity<PDOrganisation> req = null;
+    public ResponseEntity<PDOrganisationResponse> postOrganisation(PDOrganisationSend post) {
+        RequestEntity<PDOrganisationSend> req = null;
         ResponseEntity<PDOrganisationResponse> res = null;
         String uri = server + "organizations" + apiKey;
         try {
@@ -70,10 +71,10 @@ public class PDService {
         return res;
     }
 
-    public List<Long> postOrganisationList(List<PDOrganisation> OrgsToPost) {
+    public List<Long> postOrganisationList(List<PDOrganisationSend> OrgsToPost) {
         ResponseEntity<PDOrganisationResponse> res;
         List<Long> idsPosted = new ArrayList<>();
-        for(PDOrganisation org : OrgsToPost) {
+        for(PDOrganisationSend org : OrgsToPost) {
             res = postOrganisation(org);
             if (res.getStatusCode() == HttpStatus.CREATED) {
                 idsPosted.add(res.getBody().getData().getId());
@@ -85,44 +86,10 @@ public class PDService {
     }
 
 //----------------------------------------------------------------------------------PUT
-    public ResponseEntity<PDOrganisationResponse> updateOrganisationAddress(Long id, String address) {
-        PDOrganisationResponse orgr;
-        PDOrganisationResponse resOrganisation = new PDOrganisationResponse();
-        RequestEntity<PDOrganisation> req;
-        ResponseEntity<PDOrganisationResponse> res = null;
 
+    public ResponseEntity<PDOrganisationResponse> updateOrganisation(PDOrganisationSend org){
 
-        try {
-            //GET organisation From Pipedrive
-            orgr = this.getOrganisation(id).getBody();
-
-            //Update with new Address
-            PDOrganisation newOrg = new PDOrganisation(
-                    id,
-                    orgr.getData().getName(),
-                    orgr.getData().getVisible_to(),
-                    address,
-                    true,
-                    orgr.getData().getCompany_id(),
-                    orgr.getData().getOwner_id()
-            );
-
-            //PUT Org with new address to PipeDrive
-            String uri = server + "organizations/" + id + apiKey;
-
-            req = new RequestEntity<>(newOrg, HttpMethod.PUT, new URI(uri));
-
-            res = restTemplate.exchange(req, PDOrganisationResponse.class);
-
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-        return res;
-    }
-
-    public ResponseEntity<PDOrganisationResponse> updateOrganisation(PDOrganisation org){
-
-        RequestEntity<PDOrganisation> req;
+        RequestEntity<PDOrganisationSend> req;
         ResponseEntity<PDOrganisationResponse> res = null;
         String uri = server + "organizations/" + org.getId() + apiKey;
 
@@ -136,10 +103,10 @@ public class PDService {
         return res;
     }
 
-    public List<Long> putOrganisationList(List<PDOrganisation> pds) {
+    public List<Long> putOrganisationList(List<PDOrganisationSend> pds) {
         ResponseEntity<PDOrganisationResponse> res;
         List<Long> idsPutted = new ArrayList<>();
-        for(PDOrganisation org : pds) {
+        for(PDOrganisationSend org : pds) {
             res = updateOrganisation(org);
             if (res.getStatusCode() == HttpStatus.OK) {
                 idsPutted.add(res.getBody().getData().getId());
@@ -167,17 +134,31 @@ public class PDService {
     }
 
     public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations(){
-        RequestEntity<String> req;
+        int start = 0;
+
+        Boolean moreItems = true;
+
         ResponseEntity<PDOrganisationItemsResponse> res = null;
-        String uri = server + "organizations?start=0&limit=100000&" + apiKey.substring(1);
-        try{
-            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
-            res = restTemplate.exchange(req,PDOrganisationItemsResponse.class);
+        List<PDOrganisation> orgsRecieved = new ArrayList<>();
+
+        while (moreItems) {
+
+            RequestEntity<String> req;
+            String uri = server + "organizations?start=" + start + "&limit=100000&" + apiKey.substring(1);
+            try{
+                req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+                res = restTemplate.exchange(req,PDOrganisationItemsResponse.class);
+
+                orgsRecieved.addAll(res.getBody().getData());
+                moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+                start += 500;
+            }
+            catch(Exception e){
+                System.out.println("Exception when getting all organisations from PipeDrive: " + e);
+            }
 
         }
-        catch(Exception e){
-            System.out.println("Exception when getting all organisations from PipeDrive: " + e);
-        }
+        res.getBody().setData(orgsRecieved);
         return res;
     }
 //----------------------------------------------------------------------------------DELETE
@@ -282,17 +263,31 @@ public class PDService {
     }
 
     public ResponseEntity<PDContactListReceived> getAllContacts() {
-        RequestEntity<String> req;
+        int start = 0;
+
+        Boolean moreItems = true;
+
         ResponseEntity<PDContactListReceived> res = null;
-        String uri = server + "/persons?start=0&limit=100000&" + apiKey.substring(1);
-        try {
+        List<PDContactReceived> contactsRecieved = new ArrayList<>();
 
-            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
-            res = restTemplate.exchange(req, PDContactListReceived.class);
+        while (moreItems) {
 
-        } catch (Exception e) {
-            System.out.println("EXCEPTION IN GETTING ALL CONTACTS: " + e);
+            RequestEntity<String> req;
+            String uri = server + "persons?start=" + start + "&limit=100000&" + apiKey.substring(1);
+            try{
+                req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+                res = restTemplate.exchange(req, PDContactListReceived.class);
+
+                contactsRecieved.addAll(res.getBody().getData());
+                moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+                start += 500;
+            }
+            catch(Exception e){
+                System.out.println("Exception when getting all organisations from PipeDrive: " + e);
+            }
+
         }
+        res.getBody().setData(contactsRecieved);
         return res;
     }
 
@@ -417,6 +412,8 @@ public class PDService {
         try {
 
             while(orgsize != orgsToKeep.size() && contsise != contsToKeep.size()){
+                orgsToDel.clear();
+                contsToDel.clear();
                 resOrg = getAllOrganisations();
 
                 orgsize = resOrg.getBody().getData().size();
@@ -437,8 +434,14 @@ public class PDService {
                 }
                 System.out.println("Contacts added to del List");
 
-                orgsDeleted = deleteOrganisationList(orgsToDel);
-                contsDeleted = deleteContactList(contsToDel);
+                if(orgsToDel.size() != 0){
+
+                    orgsDeleted = deleteOrganisationList(orgsToDel);
+                }
+                if(contsToDel.size() != 0){
+
+                    contsDeleted = deleteContactList(contsToDel);
+                }
             }
 
 

@@ -2,6 +2,7 @@ package VPI;
 
 import VPI.PDClasses.PDOrganisation;
 import VPI.InsightClasses.VOrganisation;
+import VPI.PDClasses.PDOrganisationSend;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,8 @@ public class Organisations {
     public List<VOrganisation> vOrganisations;
     public List<PDOrganisation> pdOrganisations;
 
-    public List<PDOrganisation> postList;
-    public List<PDOrganisation> putList;
+    public List<PDOrganisationSend> postList;
+    public List<PDOrganisationSend> putList;
 
     public List<VOrganisation> matchedList;
 

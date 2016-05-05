@@ -2,6 +2,7 @@ package VPI.PDClasses;
 
 import VPI.InsightClasses.VContact;
 import VPI.VertecClasses.JSONContact;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,13 @@ public class PDContactSend {
     private List<ContactDetail> phone;
     private Integer visible_to;
     private Boolean active_flag;
+    @JsonProperty("77f255155d7a104848c88ded9043c593ea1fbba3")
+    private Long v_id;
+
+    @JsonProperty("add_time")
+    private String creationTime;
+
+    private Long owner_id;
 
     public PDContactSend() {
         this.email = new ArrayList<>();
@@ -45,9 +53,9 @@ public class PDContactSend {
         this.active_flag = true;
     }
 
-    public PDContactSend(JSONContact c) {
+    public PDContactSend(JSONContact c, Long owner) {
         this.name = c.getFirstName() + " " + c.getSurname();
-        if(name.equals(" ")) name = "Anonymus";
+        if(name.equals(" ")) name = "Anonymous";
         this.active_flag = true;
         this.visible_to = 3;
         ContactDetail emaild = new ContactDetail(c.getEmail(), true);
@@ -58,6 +66,17 @@ public class PDContactSend {
         this.phone = new ArrayList<>();
         this.phone.add(phoned);
         this.phone.add(mobiled);
+        this.v_id = c.getObjid();
+
+        if(c.getCreationTime() != null){
+            String[] dateFormatter = c.getCreationTime().split("T");
+            String date = dateFormatter[0];
+            String time = dateFormatter[1];
+            this.creationTime = date + " " + time;
+        }
+
+        this.owner_id = owner;
+
     }
 
     public PDContactSend(PDContactReceived pc) {
@@ -70,6 +89,12 @@ public class PDContactSend {
         this.phone = pc.getPhone();
         this.visible_to = pc.getVisible_to();
         this.active_flag = pc.getActive_flag();
+        this.v_id = pc.getV_id();
+        this.creationTime = pc.getCreationTime();
+        if(pc.getOwner_id() != null){
+            this.owner_id = pc.getOwner_id().getId();
+        }
+
     }
 
     public void changePrimaryEmail(String newEmail){
@@ -142,6 +167,30 @@ public class PDContactSend {
 
     public void setVisible_to(Integer visible_to) {
         this.visible_to = visible_to;
+    }
+
+    public Long getV_id() {
+        return v_id;
+    }
+
+    public void setV_id(Long v_id) {
+        this.v_id = v_id;
+    }
+
+    public String getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(String creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public Long getOwner_id() {
+        return owner_id;
+    }
+
+    public void setOwner_id(Long owner_id) {
+        this.owner_id = owner_id;
     }
 
     @Override
