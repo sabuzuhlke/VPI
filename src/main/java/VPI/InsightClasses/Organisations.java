@@ -1,4 +1,4 @@
-package VPI;
+package VPI.InsightClasses;
 
 import VPI.PDClasses.PDOrganisation;
 import VPI.InsightClasses.VOrganisation;

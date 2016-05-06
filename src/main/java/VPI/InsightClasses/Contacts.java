@@ -1,4 +1,4 @@
-package VPI;
+package VPI.InsightClasses;
 
 import VPI.PDClasses.PDContactReceived;
 import VPI.PDClasses.PDContactSend;

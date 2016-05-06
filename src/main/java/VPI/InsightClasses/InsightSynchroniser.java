@@ -1,10 +1,8 @@
-package VPI;
+package VPI.InsightClasses;
 
+import VPI.InsightClasses.*;
+import VPI.MyCredentials;
 import VPI.PDClasses.*;
-import VPI.InsightClasses.InsightService;
-import VPI.InsightClasses.VContact;
-import VPI.InsightClasses.VOrganisation;
-import VPI.InsightClasses.VProject;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;

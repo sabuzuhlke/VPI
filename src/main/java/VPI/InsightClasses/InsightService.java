@@ -1,6 +1,5 @@
 package VPI.InsightClasses;
 
-import VPI.NTLMAuthenticator;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
