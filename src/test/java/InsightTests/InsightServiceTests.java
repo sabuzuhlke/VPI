@@ -37,7 +37,7 @@ public class InsightServiceTests {;
                 creds.getPass()
         );
     }
-//TODO: (on new data) incorporate new data into tests
+
     @Test
     public void canGetOrganisationsFromInsightAPI() {
         ResponseEntity<VOrganisationItems> res = IS.getAllOrganisations();
@@ -55,7 +55,7 @@ public class InsightServiceTests {;
         assertTrue(res.getBody() != null);
         assertTrue(res.getBody().getName().equals("Interactive Objects Software GmbH"));
     }
-////TODO: finish insight contact tests when we have schema of incoming data
+
     @Test
     public void canGetContactsForOrganisation() {
         Long id = 55L; //check this when we can access the data

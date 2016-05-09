@@ -1,7 +1,5 @@
 package VPI.PDClasses;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;

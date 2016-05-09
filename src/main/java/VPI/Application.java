@@ -1,6 +1,7 @@
 package VPI;
 
 import VPI.PDClasses.PDService;
+import VPI.VertecClasses.VertecService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -34,11 +35,11 @@ public class Application implements CommandLineRunner {
         RestTemplate restTemplate = new RestTemplate();
 
         PDS = new PDService(restTemplate, server, creds.getApiKey());
+        VertecService VS = new VertecService("localhost:9999");
 
         try {
 
-            //TODO: fix
-            //InsightSynchroniser synchroniser =  new InsightSynchroniser(server, insightServer);
+            //TODO: Add code for synchronisation to scheduled task
 
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {
@@ -49,6 +50,8 @@ public class Application implements CommandLineRunner {
             };
             //
             timer.schedule(t, 0l, 1000*60*60);
+            System.out.println(VS.ping());
+
 
             //DO STUFF HERE
             //synchroniser.importOrganisations();

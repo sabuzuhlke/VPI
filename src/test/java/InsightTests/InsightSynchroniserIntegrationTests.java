@@ -37,7 +37,7 @@ public class InsightSynchroniserIntegrationTests {
     public void clearSynchroniser() {
         insightSynchroniser.clear();
     }
-//TODO: edit tests to account for new method of import
+
     @Test
     public void willPostandPutOrgsNotInPDToPD() {
         //this.setUpFakeInsightData();

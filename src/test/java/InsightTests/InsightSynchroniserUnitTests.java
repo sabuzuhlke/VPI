@@ -235,7 +235,6 @@ public class InsightSynchroniserUnitTests {
 
 //--------------------------CONTACT-TESTS--------------------------------
 
-//TODO: FINISH Contact Test when unblocked
     @Test
     public void emptyContactListsReturnsEmptyPostAndPutLists() {
         assertTrue(insightSynchroniser.contacts.pdContacts.isEmpty());
