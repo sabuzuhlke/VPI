@@ -47,8 +47,11 @@ public class VertecService {
         RequestEntity<String> req;
         ResponseEntity<ZUKResponse> res = null;
 
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+
         try{
-            req = new RequestEntity<>(HttpMethod.GET, new URI("https://" + server + apiPath));
+            req = new RequestEntity<>(headers, HttpMethod.GET, new URI("https://" + server + apiPath));
             res = restTemplate.exchange(req, ZUKResponse.class);
         }
         catch(Exception e){
