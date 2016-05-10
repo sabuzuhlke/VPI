@@ -21,7 +21,7 @@ public class InsightSynchroniser {
     public InsightSynchroniser(String PDserver, String Vserver) {
         RestTemplate restTemplate = new RestTemplate();
         MyCredentials creds = new MyCredentials();
-        this.PDS = new PDService(restTemplate, PDserver, creds.getApiKey());
+        this.PDS = new PDService(PDserver, creds.getApiKey());
         this.IS  = new InsightService(
                 restTemplate,
                 Vserver,

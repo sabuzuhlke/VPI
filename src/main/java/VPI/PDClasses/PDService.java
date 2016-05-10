@@ -4,7 +4,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PDService {
@@ -13,8 +12,8 @@ public class PDService {
     private String server;
     private String apiKey;
 
-    public PDService(RestTemplate restTemplate, String server, String apiKey) {
-        this.restTemplate = restTemplate;
+    public PDService(String server, String apiKey) {
+        this.restTemplate = new RestTemplate();
         this.apiKey = apiKey;
         this.server = server;
     }

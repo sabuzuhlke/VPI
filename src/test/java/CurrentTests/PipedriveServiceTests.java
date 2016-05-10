@@ -38,7 +38,7 @@ public class PipedriveServiceTests {
         MyCredentials creds = new MyCredentials();
         String apiKey = creds.getApiKey();
         TestRestTemplate testRestTemplate = new TestRestTemplate();
-        this.PS = new PDService(testRestTemplate, server, apiKey);
+        this.PS = new PDService(server, apiKey);
         this.idsDeleted = new ArrayList<>();
     }
 
