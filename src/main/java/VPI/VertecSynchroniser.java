@@ -107,7 +107,7 @@ public class VertecSynchroniser {
         Boolean diff = false;
         if(! vo.getFormattedAddress().equals(po.getAddress())) diff = true;
         if( ! vo.getName().equals(po.getName())) diff = true;
-        if( teamIdMap.get(vo.getOwner()) != po.getOwner_id().getId()) diff = true;
+        if( teamIdMap.get(vo.getOwner()).longValue() != po.getOwner_id().getId()) diff = true;
 
 
         if(diff){
