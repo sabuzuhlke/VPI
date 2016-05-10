@@ -22,6 +22,7 @@ public class VertecService {
     public VertecService(String server){
         this.restTemplate = new RestTemplate();
         this.server = server;
+
         MyCredentials creds = new MyCredentials();
         this.username = creds.getUserName();
         this.pwd = creds.getPass();
@@ -43,40 +44,51 @@ public class VertecService {
     }
 
     public ResponseEntity<ZUKResponse> getZUKinfo(){
+
+        //request path
         String apiPath = "/organisations/ZUK";
+
+        //declare request and response
         RequestEntity<String> req;
         ResponseEntity<ZUKResponse> res = null;
 
+        //add authentication header to headers object
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("Authorization", username + ':' + pwd);
 
         try{
+
             req = new RequestEntity<>(headers, HttpMethod.GET, new URI("https://" + server + apiPath));
             res = restTemplate.exchange(req, ZUKResponse.class);
-        }
-        catch(Exception e){
+
+        }  catch (Exception e) {
             System.out.println("Exception in Vertec Service, trying to get ZUKInfo: " + e);
         }
+
         return res;
     }
 
     public String ping() {
 
+        //request path
         String apiPath = "/ping";
+
+        //declare request, response and answer string
         RequestEntity<String> req;
-
         ResponseEntity<String> res = null;
-        String answer = "notping";
+        String answer = "";
 
+        //add authentication header to headers object
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("Authorization", username + ':' + pwd);
 
         try{
+
             req = new RequestEntity<>(headers, HttpMethod.GET, new URI("https://" + server + apiPath));
             res = restTemplate.exchange(req, String.class);
             answer = res.getBody();
-        }
-        catch(Exception e){
+
+        } catch (Exception e) {
             System.out.println("Exception in Vertec Service, trying to ping " + e);
         }
 

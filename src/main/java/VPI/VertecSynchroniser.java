@@ -27,10 +27,15 @@ public class VertecSynchroniser {
     private Map<String,Long> teamIdMap;
 
     public VertecSynchroniser() {
-        RestTemplate restTemplate = new RestTemplate();
+
+        //retrieve credentials from locally stored file
         MyCredentials creds = new MyCredentials();
-        this.PDS = new PDService(restTemplate, "https://api.pipedrive.com/v1/", creds.getApiKey());
+
+        //set up Pipedrive and Vertec services
+        this.PDS = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
         this.VS = new VertecService("localhost:9999");
+
+        //initialise Contact/Og put and post list (for sending to pipedrive);
         this.contactPostList = new ArrayList<>();
         this.contactPutList = new ArrayList<>();
         this.organisationPostList = new ArrayList<>();
@@ -83,6 +88,7 @@ public class VertecSynchroniser {
     }
 
     public List<List<Long>> importToPipedrive() {
+
         //get all Vertec Data
         ZUKResponse allVertecData = VS.getZUKinfo().getBody();
 
@@ -94,15 +100,18 @@ public class VertecSynchroniser {
 
         //get all Pipedrive organisations
         List<PDOrganisation> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
+
         //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
         resolveOrganisationsAndNestedContacts(allVertecData.getOrganisationList(), pipedriveOrgs);
 
         //get all pipedrive contacts, filter to only use those without organisations
         List<PDContactReceived> pipedriveContacts = PDS.getAllContacts().getBody().getData();
         List<PDContactReceived> contactsWithoutOrg = filterContactsWithOrg(pipedriveContacts);
+
         //compare dangling vcontacts to leftover pdcontacts
         compareContacts(allVertecData.getDanglingContacts(), contactsWithoutOrg);
 
+        //initialize return list
         List<List<Long>> ids = new ArrayList<>();
 
         //now ready to post/put
@@ -110,6 +119,8 @@ public class VertecSynchroniser {
         List<Long> orgsPut = putPdOrganisations();
         List<Long> contsPost = postContacts();
         List<Long> contsPut = putContacts();
+
+        //return list of orgs and contact ids that have been posted/edited to pipedrive
         ids.add(orgsNConts.get(0));
         ids.add(orgsPut);
         ids.add(orgsNConts.get(1));
@@ -178,6 +189,7 @@ public class VertecSynchroniser {
         List<PDContactReceived>  pdContacts = PDS.getContactsForOrganisation(po.getId()).getBody().getData();
         compareContacts(jo.getContacts(), pdContacts);
     }
+
     public void compareContacts(List<JSONContact> vConts, List<PDContactReceived> pContacts) {
 
         for(JSONContact vc : vConts) {
