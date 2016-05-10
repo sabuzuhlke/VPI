@@ -24,7 +24,7 @@ public class VertecSynchroniser {
     public List<PDOrganisationSend> organisationPutList;
     public List<JSONOrganisation> organisationPostList;
 
-    private Map<Long,Long> teamIdMap;
+    private Map<String,Long> teamIdMap;
 
     public VertecSynchroniser() {
         RestTemplate restTemplate = new RestTemplate();
@@ -35,12 +35,63 @@ public class VertecSynchroniser {
         this.contactPutList = new ArrayList<>();
         this.organisationPostList = new ArrayList<>();
         this.organisationPutList = new ArrayList<>();
-        this.teamIdMap = setupTeamMap();
+        this.teamIdMap = new HashMap<>();
+    }
+
+    public Map<String, Long> getTeamIdMap() {
+        return teamIdMap;
+    }
+
+    public void setTeamIdMap(Map<String, Long> teamIdMap) {
+        this.teamIdMap = teamIdMap;
+    }
+
+    private Set<String> getVertecUserEmails(ZUKResponse data) {
+        Set<String> v_emails = new HashSet<>();
+        for (JSONOrganisation org : data.getOrganisationList()) {
+
+            v_emails.add(org.getOwner());
+
+            for (JSONContact cont : org.getContacts()) {
+
+                v_emails.add(cont.getOwner());
+
+            }
+
+        }
+
+        return v_emails;
+    }
+
+    private List<PDUser> getPipedriveUsers() {
+        return PDS.getAllUsers().getBody().getData();
+    }
+
+    public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this
+        for (String v_email : v_emails) {
+            Boolean mapped = false;
+            for (PDUser pd_user : pd_users) {
+                if (v_email.toLowerCase().equals(pd_user.getEmail().toLowerCase())) {
+                    this.teamIdMap.put(v_email, pd_user.getId());
+                    mapped = true;
+                }
+            }
+            if (!mapped) {
+                this.teamIdMap.put(v_email, 1363410L ); //TODO: replace id with appropriate id, wolfgangs or admin?
+            }
+        }
     }
 
     public List<List<Long>> importToPipedrive() {
         //get all Vertec Data
         ZUKResponse allVertecData = VS.getZUKinfo().getBody();
+
+        Set<String> v_emails = getVertecUserEmails(allVertecData);
+        List<PDUser> pd_users= getPipedriveUsers();
+
+        //constructTeamIdMap(v_emails, pd_users); //TODO: use this instead of constructTestTeamMap() on deployment
+        constructTestTeamMap();
+
         //get all Pipedrive organisations
         List<PDOrganisation> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
         //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
@@ -109,11 +160,11 @@ public class VertecSynchroniser {
         Boolean diff = false;
         if(! vo.getFormattedAddress().equals(po.getAddress())) diff = true;
         if( ! vo.getName().equals(po.getName())) diff = true;
-        if( teamIdMap.get(vo.getOwner()).longValue() != po.getOwner_id().getId()) diff = true;
+        if( po.getOwner_id().getId() != teamIdMap.get(vo.getOwner().toLowerCase()).longValue()) diff = true;
 
 
         if(diff){
-            Long ownerid = teamIdMap.get(vo.getOwner());
+            Long ownerid = teamIdMap.get(vo.getOwner().toLowerCase());
             organisationPutList.add(new PDOrganisationSend(vo,po,ownerid)); //TODO: Make constructor deal with most recent
         }
 
@@ -154,7 +205,7 @@ public class VertecSynchroniser {
 
             }
             if (!matchedName) {
-                Long owner = teamIdMap.get(vc.getOwner());
+                Long owner = teamIdMap.get(vc.getOwner().toLowerCase());
                 PDContactSend newContact = new PDContactSend(vc,owner);
                 newContact.setOrg_id(tempOrgID);
                 newContact.setOwner_id(teamIdMap.get(vc.getOwner()));
@@ -232,10 +283,22 @@ public class VertecSynchroniser {
         Boolean matchedName = false;
         String fullName = v.getFirstName() + " " + v.getSurname();
 
-        if( ! fullName.equals(p.getName())) matchedName = true;
+        if( ! fullName.equals(p.getName())) {
+            matchedName = true;
+        }
+
+        Boolean modifiedOwner = false;
+
+        if(p.getOwner_id()
+                .getId()
+                != teamIdMap.
+                get(v.getOwner()).
+                longValue()){
+            modifiedOwner = true;
+        }
 
 
-        return modifiedEmail || modifiedPhone || matchedName;
+        return modifiedEmail || modifiedPhone || matchedName || modifiedOwner;
     }
 
     //removes Contacts that are attached to organisations (as they are already handled
@@ -289,24 +352,26 @@ public class VertecSynchroniser {
         return PDS.putContactList(contactPutList);
     }
 
-    public Map<Long,Long> setupTeamMap(){
-        Map<Long,Long> map = new HashMap<>();
-        map.put(5295L, 1363410L); //Wolfgang
-        map.put(504149L, 1363402L); //Tim
-        map.put(12456812L, 136429L); //Neil
-        map.put(6574798L, 1363424L); //Mike
-        map.put(8619482L, 1363416L); //Justin
-        map.put(16887415L, 1363403L); //Brewster
-        map.put(504354L, 1363488L); //Keith
-        map.put(16400137L, 1277584L); //Peter Brown
-        map.put(17739496L, 1277584L); //Steve Freeman
-        map.put(22501574L, 1277584L); //John Seston
-        map.put(2350788L, 1277584L); //Sabine
-        map.put(24807265L, 1277584L); //Ileana
-        map.put(24907657L, 1277584L); //Ina
+    public void constructTestTeamMap(){
+        Map<String,Long> map = new HashMap<>();
+
+        map.put("wolfgang.emmerich@zuhlke.com", 1363410L); //Wolfgang
+        map.put("tim.cianchi@zuhlke.com", 1363402L); //Tim
+        map.put("neil.moorcroft@zuhlke.com", 136429L); //Neil
+        map.put("mike.hogg@zuhlke.com", 1363424L); //Mike
+        map.put("justin.cowling@zuhlke.com", 1363416L); //Justin
+        map.put("brewster.barclay@zuhlke.com", 1363403L); //Brewster
+        map.put("keith.braithwaite@zuhlke.com", 1363488L); //Keith
+        map.put("peter.brown@zuhlke.com", 1277584L); //Peter Brown
+        map.put("steve.freeman@zuhlke.com", 1277584L); //Steve Freeman
+        map.put("john.seston@zuhlke.com", 1277584L); //John Seston
+        map.put("sabine.streuss@zuhlke.com", 1277584L); //Sabine
+        map.put("ileana.meehan@zuhlke.com", 1277584L); //Ileana
+        map.put("ina.hristova@zuhlke.com", 1277584L); //Ina
         map.put(null, 1277584L); //null
 
-        return map;
+        this.teamIdMap = map;
+
     }
 
     public void clear(){

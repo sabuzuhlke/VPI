@@ -11,8 +11,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +34,12 @@ public class VertecSynchroniserUnitTests {
 
     @Test
     public void correctlyResolvesOrganisations(){
+
+        Map<String, Long> t = new HashMap<>();
+        t.put("a@eat.com", 1L);
+
+        sync.setTeamIdMap(t);
+
         List<JSONOrganisation> vOrgs = getMockVOrgs();
 
         List<PDOrganisation> pOrgs = getMockPOrgs();
@@ -67,7 +72,7 @@ public class VertecSynchroniserUnitTests {
         assertTrue(Ids.get(1).size() == 6);
 
         orgsDel = sync.getPDS().deleteOrganisationList(Ids.get(0));
-        contsDel =sync.getPDS().deleteContactList(Ids.get(1));
+        contsDel = sync.getPDS().deleteContactList(Ids.get(1));
 
         assertTrue(orgsDel.size() == Ids.get(0).size());
         assertTrue(contsDel.size() == Ids.get(1).size());
@@ -84,7 +89,7 @@ public class VertecSynchroniserUnitTests {
         JSONContact c = new JSONContact();
         List<JSONContact> cnts = new ArrayList<>();
 
-        c.setOwner(1L);
+        c.setOwner("a@eat.com");
         c.setModified("NOW");
         c.setObjid(1L);
         c.setEmail("habbababba@babba.com");
@@ -95,7 +100,7 @@ public class VertecSynchroniserUnitTests {
         cnts.add(c);
         c = new JSONContact();
 
-        c.setOwner(1L);
+        c.setOwner("a@eat.com");
         c.setModified("NOW");
         c.setObjid(2L);
         c.setEmail("MOJOJOJO@babba.com");
@@ -113,7 +118,7 @@ public class VertecSynchroniserUnitTests {
         o.setCountry("Murica!");
         o.setStreetAddress("11 Here");
         o.setModified("NOW");
-        o.setOwner(1L);
+        o.setOwner("a@eat.com");
         o.setZip("9938");
         o.setContacts(cnts);
         orgs.add(o);
@@ -126,7 +131,7 @@ public class VertecSynchroniserUnitTests {
         o.setCountry("Murica!");
         o.setStreetAddress("11 Here");
         o.setModified("NOW");
-        o.setOwner(1L);
+        o.setOwner("a@eat.com");
         o.setZip("9938");
         o.setContacts(cnts);
         orgs.add(o);
@@ -139,7 +144,7 @@ public class VertecSynchroniserUnitTests {
         o.setCountry("Murica!");
         o.setStreetAddress("11 Here");
         o.setModified("NOW");
-        o.setOwner(1L);
+        o.setOwner("a@eat.com");
         o.setZip("9938");
         o.setContacts(cnts);
         orgs.add(o);
@@ -157,6 +162,7 @@ public class VertecSynchroniserUnitTests {
         o.setCompany_id(1L);
         o.setV_id(5L);
         o.setOwner_id(new PDOwner());
+        o.getOwner_id().setId(1L);
         orgs.add(o);
 
         o = new PDOrganisation();
@@ -166,6 +172,7 @@ public class VertecSynchroniserUnitTests {
         o.setCompany_id(2L);
         o.setV_id(6L);
         o.setOwner_id(new PDOwner());
+        o.getOwner_id().setId(1L);
         orgs.add(o);
 
 
@@ -174,6 +181,10 @@ public class VertecSynchroniserUnitTests {
 
     @Test
     public void correctlyResolvesDanglingContacts() {
+        Map<String, Long> t = new HashMap<>();
+        t.put("a@eat.com", 1L);
+
+        sync.setTeamIdMap(t);
 
         List<JSONContact> dangling = getListOfDanglingVertecContacts();
         List<PDContactReceived> pdContacts = getListOfDanglingPipedriveContacts();
@@ -198,6 +209,7 @@ public class VertecSynchroniserUnitTests {
         assertTrue(sync.contactPutList.get(0).getPhone().get(3).getValue().equals("phone"));
         assertTrue( ! sync.contactPutList.get(0).getPhone().get(2).getPrimary());
         assertTrue(sync.contactPutList.get(0).getPhone().get(2).getValue().equals("mobile"));
+        assertTrue(sync.contactPutList.get(0).getOwner_id() == 1L);
 
 
         assertTrue(sync.contactPostList.size() == 1);
@@ -218,6 +230,10 @@ public class VertecSynchroniserUnitTests {
 
     @Test
     public void correctlyResovlesContactDetails() {
+        Map<String, Long> t = new HashMap<>();
+        t.put("a@eat.com", 1L);
+
+        sync.setTeamIdMap(t);
 
         List<JSONContact> dangling = getListOfDanglingVertecContacts();
         List<PDContactReceived> pdContacts = getListOfDanglingPipedriveContacts();
@@ -250,6 +266,8 @@ public class VertecSynchroniserUnitTests {
         phones.add(phone2);
         c1.setPhone(phones);
         c1.setVisible_to(3);
+        c1.setOwner_id(new PDOwner());
+        c1.getOwner_id().setId(1L);
 
 
 
@@ -259,6 +277,8 @@ public class VertecSynchroniserUnitTests {
         c2.setOrg_id(null);
         c2.setActive_flag(true);
         c2.setV_id(2L);
+        c2.setOwner_id(new PDOwner());
+        c2.getOwner_id().setId(1L);
 
         emails = new ArrayList<>();
         email1 = new ContactDetail("differentemail", true);
@@ -272,6 +292,7 @@ public class VertecSynchroniserUnitTests {
         phones.add(phone2);
         c2.setPhone(phones);
         c2.setVisible_to(3);
+
 
 
 
@@ -296,6 +317,10 @@ public class VertecSynchroniserUnitTests {
         c4.setVisible_to(3);
 
 
+        c4.setOwner_id(new PDOwner());
+        c4.getOwner_id().setId(1L);
+
+
 
         list.add(c1);
         list.add(c2);
@@ -313,7 +338,7 @@ public class VertecSynchroniserUnitTests {
         c1.setMobile("mobile");
         c1.setModified("mod");
         c1.setObjid(1L);
-        c1.setOwner(1L);
+        c1.setOwner("a@eat.com");
         c1.setPhone("phone");
         c1.setSurname("surname1");
 
@@ -324,9 +349,10 @@ public class VertecSynchroniserUnitTests {
         c2.setMobile("mobile");
         c2.setModified("mod");
         c2.setObjid(2L);
-        c2.setOwner(1L);
+        c2.setOwner("a@eat.com");
         c2.setPhone("phone");
         c2.setSurname("surname2");
+        c2.setOwner("a@eat.com");
 
 
         JSONContact c3 = new JSONContact();
@@ -335,7 +361,7 @@ public class VertecSynchroniserUnitTests {
         c3.setMobile("mobile");
         c3.setModified("mod");
         c3.setObjid(3L);
-        c3.setOwner(1L);
+        c3.setOwner("a@eat.com");
         c3.setPhone("phone");
         c3.setSurname("surname3");
 
@@ -422,5 +448,36 @@ public class VertecSynchroniserUnitTests {
         return list;
     }
 
+    @Test
+    public void canConstructTeamIdMap(){
+        Set<String> v_emails = new HashSet<>();
+
+        v_emails.add("a@eat.com");
+        v_emails.add("b@eat.com");
+        v_emails.add("a@eat.com");
+
+        List<PDUser> pd_users = new ArrayList<>();
+        PDUser p = new PDUser();
+        p.setId(1L);
+        p.setEmail("a@eat.com");
+        pd_users.add(p);
+
+        p = new PDUser();
+        p.setEmail("b@eat.com");
+        p.setId(2L);
+        pd_users.add(p);
+
+        p = new PDUser();
+        p.setEmail("c@eat.com");
+        p.setId(3L);
+        pd_users.add(p);
+
+        sync.constructTeamIdMap(v_emails,pd_users);
+
+        assertTrue(!sync.getTeamIdMap().isEmpty());
+        assertTrue(sync.getTeamIdMap().size() == 2);
+        assertTrue(sync.getTeamIdMap().get("a@eat.com") == 1L);
+        assertTrue(sync.getTeamIdMap().get("b@eat.com") == 2L);
+    }
 
 }

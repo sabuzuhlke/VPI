@@ -452,6 +452,28 @@ public class PDService {
         }
 
     }
+
+
+//---USERS-----------------------------------------------------------------------GET
+
+    public ResponseEntity<PDUserItemsResponse> getAllUsers() {
+
+        RequestEntity<String> req;
+        ResponseEntity<PDUserItemsResponse> res = null;
+        String uri = server + "users"+ apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDUserItemsResponse.class);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return res;
+    }
+
 }
 
 
