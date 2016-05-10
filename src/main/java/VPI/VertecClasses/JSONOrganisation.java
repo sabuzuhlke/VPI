@@ -29,7 +29,7 @@ public class  JSONOrganisation {
     private String country;
 
     @JsonProperty("owner")
-    private Long owner;
+    private String owner;
 
     @JsonProperty("objid")
     private Long objid; //unsure if needed
@@ -63,11 +63,11 @@ public class  JSONOrganisation {
         this.name = name;
     }
 
-    public Long getOwner() {
+    public String getOwner() {
         return owner;
     }
 
-    public void setOwner(Long owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 

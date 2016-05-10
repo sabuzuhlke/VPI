@@ -23,7 +23,7 @@ public class JSONContact {
     private String mobile;
 
     @JsonProperty("owner")
-    private Long owner;   // name of owner
+    private String owner;   // name of owner
 
     @JsonProperty("modified")
     private String modified;
@@ -77,11 +77,11 @@ public class JSONContact {
         this.mobile = mobile;
     }
 
-    public void setOwner(Long owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 
-    public Long getOwner() {
+    public String getOwner() {
         return owner;
     }
 
