@@ -1,9 +1,12 @@
+package CurrentTests;
+
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.ZUKResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.ResponseEntity;
+
 
 import java.io.StringReader;
 
@@ -23,9 +26,9 @@ public class VertecServiceTests {
 
     @Test
     public void canAccessVertecService() {
-        Boolean success = VS.ping();
+        String success = VS.ping();
 
-        assertTrue(success);
+        assertTrue(success.equals("Success!"));
     }
 
 
@@ -145,5 +148,8 @@ public class VertecServiceTests {
                 "  } ]\n" +
                 "}\n";
     }
+
+
+
 
 }

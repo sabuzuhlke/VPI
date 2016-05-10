@@ -1,3 +1,5 @@
+package CurrentTests;
+
 import VPI.Application;
 import VPI.PDClasses.*;
 import VPI.VertecClasses.JSONContact;

@@ -11,6 +11,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 public class ImportZUK {

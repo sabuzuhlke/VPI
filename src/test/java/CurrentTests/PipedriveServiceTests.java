@@ -1,3 +1,5 @@
+package CurrentTests;
+
 import VPI.*;
 import VPI.PDClasses.*;
 import org.junit.Before;
@@ -390,6 +392,44 @@ public class PipedriveServiceTests {
         assertTrue( ! contacts.getBody().getData().isEmpty());
         assertTrue(contacts.getBody().getData().get(1) != null);
 
+
+    }
+
+    @Test
+    public void howManyDuplicateContacts() {
+        ResponseEntity<PDContactListReceived> contacts = PS.getAllContacts();
+
+        assertTrue(contacts.getStatusCode() == HttpStatus.OK);
+        assertTrue(contacts.getBody().getSuccess());
+        int iinner = 0;
+        int iouter = 0;
+        int matches = 0;
+
+        List<String> matchingnames = new ArrayList<>();
+
+        for (PDContactReceived a : contacts.getBody().getData()){
+            iinner = 0;
+            iouter++;
+            for(PDContactReceived b : contacts.getBody().getData()){
+                iinner++;
+                if((iinner != iouter)){
+
+                    for(ContactDetail d : a.getEmail()){
+                        for(ContactDetail e : b.getEmail()){
+                            if(d.getValue().equals(e.getValue()) && !d.getValue().isEmpty() && !e.getValue().isEmpty()){
+                                matches++;
+                                matchingnames.add(b.getName());
+                            }
+                        }
+                    }
+                }
+            }
+            for(int i = 0; i < matchingnames.size(); i++){
+                System.out.println(a.getName() + " " + a.getEmail() + " -> " + matchingnames.get(i));
+            }
+            matchingnames.clear();
+        }
+        System.out.println("Found " + matches + " duplicate contacts");
 
     }
 

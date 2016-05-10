@@ -48,7 +48,8 @@ public class Application implements CommandLineRunner {
 
                 }
             };
-            //
+            System.out.println(VS.ping());
+
             timer.schedule(t, 0l, 1000*60*60);
             System.out.println(VS.ping());
 

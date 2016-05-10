@@ -373,25 +373,28 @@ public class PDService {
 
     public void clearPD(List<Long> orgsToKeep, List<Long> contsToKeep){
         //TODO: Modify this
-        orgsToKeep.add(206L);
-        orgsToKeep.add(207L);
-        orgsToKeep.add(209L);
-        orgsToKeep.add(211L);
-        orgsToKeep.add(208L);
-        orgsToKeep.add(1L);
-        orgsToKeep.add(3L);
 
-        contsToKeep.add(1L);
-        contsToKeep.add(4L);
-        contsToKeep.add(5L);
-        contsToKeep.add(6L);
-        contsToKeep.add(7L);
-        contsToKeep.add(8L);
-        contsToKeep.add(8L);
-        contsToKeep.add(11L);
-        contsToKeep.add(12L);
-        contsToKeep.add(13L);
-        contsToKeep.add(845L);
+//        contsToKeep.add(13L); orgsToKeep.add(206L);
+//        orgsToKeep.add(207L);
+//        orgsToKeep.add(209L);
+//        orgsToKeep.add(211L);
+//        orgsToKeep.add(208L);
+//        orgsToKeep.add(1L);
+//        orgsToKeep.add(3L);
+        orgsToKeep.add(2L);
+//
+//        contsToKeep.add(1L);
+//        contsToKeep.add(4L);
+//        contsToKeep.add(5L);
+//        contsToKeep.add(6L);
+//        contsToKeep.add(7L);
+//        contsToKeep.add(8L);
+//        contsToKeep.add(8L);
+//        contsToKeep.add(11L);
+//        contsToKeep.add(12L);
+//        contsToKeep.add(845L);
+
+        contsToKeep.add(2L);
 
         Integer orgsize = 0;
         Integer contsise = 0;

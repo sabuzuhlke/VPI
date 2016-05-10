@@ -72,10 +72,12 @@ public class VertecSynchroniser {
         for(JSONOrganisation vo : vOrgs){
             Boolean matched = false;
             for(PDOrganisation po : pOrgs){
-                if(po.getV_id() == null) continue; //TODO: Modify to add them to inconsitstency report
+                if(po.getV_id() == null) continue;
                 if(vo.getObjid().longValue() == po.getV_id().longValue()){
                     matched = true;
                     compareOrganisationDetails(vo, po);
+
+                    //TODO:!! Change so that all contacts get compared !!
                     resolveContactsForOrgs(vo,po);
                 }
             }
@@ -89,7 +91,7 @@ public class VertecSynchroniser {
         for(JSONOrganisation vo : vOrgs){
             Boolean matched = false;
             for(PDOrganisation po : pOrgs){
-                if(po.getV_id() == null) continue; //TODO: Modify to add them to inconsitstency report
+                if(po.getV_id() == null) continue;
                 if(vo.getObjid().longValue() == po.getV_id().longValue()){
                     matched = true;
                     compareOrganisationDetails(vo, po);
@@ -139,7 +141,7 @@ public class VertecSynchroniser {
 
                 if (pc.getOrg_id() != null && pc.getOrg_id().getValue() != null) tempOrgID = pc.getOrg_id().getValue();
 
-                if(pc.getV_id() == null) continue; //TODO: Modify to support inconsistency Report
+                if(pc.getV_id() == null) continue;
                 if (vc.getObjid().longValue() == pc.getV_id().longValue()) {
                     matchedName = true;
 
