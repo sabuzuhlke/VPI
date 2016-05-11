@@ -2,6 +2,7 @@ package VPI.PDClasses;
 
 import VPI.InsightClasses.VContact;
 import VPI.VertecClasses.JSONContact;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -26,11 +27,14 @@ public class PDContactSend {
     private String creationTime;
 
     private Long owner_id;
+    @JsonIgnore
+    private List<Long> followers;
 
     public PDContactSend() {
         this.email = new ArrayList<>();
         this.phone = new ArrayList<>();
         this.active_flag = true;
+        this.followers = new ArrayList<>();
     }
 
     public PDContactSend(Long org_id, String name, String email, String phone) {
@@ -43,6 +47,8 @@ public class PDContactSend {
         this.phone = new ArrayList<>();
         this.phone.add(phoneDetail);
         this.active_flag = true;
+
+        this.followers = new ArrayList<>();
     }
 
     public PDContactSend(VContact vc) {
@@ -51,6 +57,8 @@ public class PDContactSend {
         this.phone = vc.getPhoneDetail();
         this.visible_to = 3;
         this.active_flag = true;
+
+        this.followers = new ArrayList<>();
     }
 
     public PDContactSend(JSONContact c, Long owner) {
@@ -77,6 +85,8 @@ public class PDContactSend {
 
         this.owner_id = owner;
 
+        this.followers = new ArrayList<>();
+
     }
 
     public PDContactSend(PDContactReceived pc) {
@@ -94,6 +104,7 @@ public class PDContactSend {
         if(pc.getOwner_id() != null){
             this.owner_id = pc.getOwner_id().getId();
         }
+        this.followers = new ArrayList<>();
 
     }
 
@@ -191,6 +202,14 @@ public class PDContactSend {
 
     public void setOwner_id(Long owner_id) {
         this.owner_id = owner_id;
+    }
+
+    public List<Long> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(List<Long> followers) {
+        this.followers = followers;
     }
 
     @Override

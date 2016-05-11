@@ -218,6 +218,10 @@ public class PDService {
             res = restTemplate.exchange(req, PDContactResponse.class);
             //System.out.println("RESPONSE: " + res);
 
+            for(Long f : contact.getFollowers()){
+                postFollower(new PDFollower(contact.getId(), f));
+            }
+
         } catch (Exception e) {
             System.out.println("OOPS" + e.toString() + " RESPONSE: " + res);
         }
@@ -470,6 +474,24 @@ public class PDService {
             System.out.println(e.toString());
         }
 
+        return res;
+    }
+
+
+//---FOLLOWERS-----------------------------------------------------------------------POST
+    public ResponseEntity<String> postFollower(PDFollower f){
+        RequestEntity<PDFollower> req = null;
+        ResponseEntity<String> res = null;
+        String uri = server + "persons/"+ f.getContactID() + "/followers" + apiKey;
+
+        try{
+            req = new RequestEntity<>(f,HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req,String.class);
+
+            System.out.println(res);
+        } catch(Exception e){
+            System.out.println("ERROR on posting follower " + e);
+        }
         return res;
     }
 

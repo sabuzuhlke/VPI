@@ -407,6 +407,29 @@ public class PipedriveServiceTests {
         assertTrue(res.getBody().getData().get(0).getId() != null);
 
 
+
+
+    }
+
+    @Test
+    public void canPostFollowers(){
+        PDContactSend guy = new PDContactSend();
+
+        guy.setName("Guy Fawkes");
+        guy.setActive_flag(true);
+        guy.setVisible_to(3);
+
+        Long id = PS.postContact(guy).getBody().getData().getId();
+
+        PDFollower f = new PDFollower(id, 1363410L);
+
+        ResponseEntity<String> res = PS.postFollower(f);
+
+        assertTrue(res.getStatusCode() == HttpStatus.CREATED);
+        assertTrue( ! res.getBody().isEmpty());
+        assertTrue(res.getBody().contains("\"person_id\":" + id + ","));
+        assertTrue(res.getBody().contains("\"user_id\":" + 1363410L + ","));
+        PS.deleteContact(id);
     }
 //
 //    @Test

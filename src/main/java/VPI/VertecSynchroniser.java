@@ -24,7 +24,9 @@ public class VertecSynchroniser {
     public List<PDOrganisationSend> organisationPutList;
     public List<JSONOrganisation> organisationPostList;
 
+
     private Map<String,Long> teamIdMap;
+
 
     public VertecSynchroniser() {
 
@@ -221,6 +223,10 @@ public class VertecSynchroniser {
                 PDContactSend newContact = new PDContactSend(vc,owner);
                 newContact.setOrg_id(tempOrgID);
                 newContact.setOwner_id(teamIdMap.get(vc.getOwner()));
+                newContact.setFollowers(new ArrayList<>());
+                for(String f : vc.getFollowers()){
+                    newContact.getFollowers().add(teamIdMap.get(f));
+                }
                 contactPostList.add(newContact);
             }
             if(modified) {

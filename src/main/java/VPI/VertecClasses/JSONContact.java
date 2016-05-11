@@ -2,6 +2,8 @@ package VPI.VertecClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * Created by sabu on 27/04/2016.
  */
@@ -23,7 +25,7 @@ public class JSONContact {
     private String mobile;
 
     @JsonProperty("owner")
-    private String owner;   // name of owner
+    private String owner;   // email of owner
 
     @JsonProperty("modified")
     private String modified;
@@ -34,7 +36,18 @@ public class JSONContact {
     @JsonProperty("creationTime")
     private String creationTime;
 
+    @JsonProperty("followers")
+    private List<String> followers;
+
     public JSONContact() {
+    }
+
+    public List<String> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(List<String> followers) {
+        this.followers = followers;
     }
 
     public String getCreationTime() {
