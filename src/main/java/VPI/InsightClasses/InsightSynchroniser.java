@@ -1,8 +1,12 @@
 package VPI.InsightClasses;
 
-import VPI.InsightClasses.*;
 import VPI.MyCredentials;
 import VPI.PDClasses.*;
+import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Contacts.PDContactSend;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
+import VPI.PDClasses.Organisations.PDOrganisationSend;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -110,8 +114,8 @@ public class InsightSynchroniser {
         for(VOrganisation v : organisations.vOrganisations){
             Boolean matched = false;
             Boolean modified = false;
-            PDOrganisation temp = null;
-            for(PDOrganisation p : organisations.pdOrganisations) {
+            PDOrganisationReceived temp = null;
+            for(PDOrganisationReceived p : organisations.pdOrganisations) {
                 if (v.getName() != null && p.getName() != null) {
                     if (v.getName().equals(p.getName())) {
                         matched = true;

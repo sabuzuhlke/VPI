@@ -1,5 +1,12 @@
 package VPI.PDClasses;
 
+import VPI.PDClasses.Contacts.*;
+import VPI.PDClasses.Deals.PDDealItemsResponse;
+import VPI.PDClasses.Deals.PDDealReceived;
+import VPI.PDClasses.Deals.PDDealResponse;
+import VPI.PDClasses.Deals.PDDealSend;
+import VPI.PDClasses.Organisations.*;
+import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -18,7 +25,67 @@ public class PDService {
         this.apiKey = apiKey;
         this.server = server;
     }
-//---ORGANISATIONS-----------------------------------------------------------------POST
+
+    /**
+     * Deals
+     */
+//------------------------------------------------------------------------------------------------------------------POST
+
+    public ResponseEntity<PDDealResponse> postDeal(PDDealSend deal) {
+        //TODO: implement
+        return null;
+    }
+
+    public List<Long> postDealList(List<PDDealSend> deals) {
+        //TODO: implement
+        return null;
+
+    }
+
+//-------------------------------------------------------------------------------------------------------------------GET
+
+    public ResponseEntity<PDDealReceived> getDeal(Long dealId) {
+        //TODO: implement
+        return null;
+
+    }
+
+    public ResponseEntity<PDDealItemsResponse> getAllDeals() {
+        //TODO: implement
+        return null;
+
+    }
+
+//-------------------------------------------------------------------------------------------------------------------PUT
+
+    public ResponseEntity<PDDealReceived> updateDeal(PDDealSend deal) {
+        //TODO: implement
+        return null;
+
+    }
+
+//----------------------------------------------------------------------------------------------------------------DELETE
+
+    public Long deleteDeal(Long idToDelete) {
+        //TODO: implement
+        return null;
+
+    }
+
+    public List<Long> deleteDealList(List<Long> idsToDelete) {
+        //TODO: implement
+        return null;
+
+    }
+
+    /**
+     * Organisations
+     */
+//------------------------------------------------------------------------------------------------------------------POST
+    /*
+    TESTING PURPOSES ONLY
+    TODO: delete and adjust tests
+     */
     public ResponseEntity<PDOrganisationResponse> postOrganisation(String companyName, Integer visibleTo) {
         RequestEntity<PDOrganisationSend> req;
         ResponseEntity<PDOrganisationResponse> res = null;
@@ -26,24 +93,6 @@ public class PDService {
 
         try {
             PDOrganisationSend post = new PDOrganisationSend(companyName, visibleTo);
-
-            req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
-            res = restTemplate.exchange(req, PDOrganisationResponse.class);
-
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-        return res;
-    }
-
-    public ResponseEntity<PDOrganisationResponse> postOrganisationWithAddress(String companyName, String address, Integer visibleTo) {
-
-        RequestEntity<PDOrganisationSend> req;
-        ResponseEntity<PDOrganisationResponse> res = null;
-
-        try {
-            PDOrganisationSend post = new PDOrganisationSend(companyName,address, visibleTo);
-            String uri = server + "organizations" + apiKey;
 
             req = new RequestEntity<>(post, HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req, PDOrganisationResponse.class);
@@ -83,7 +132,7 @@ public class PDService {
         return idsPosted;
     }
 
-//----------------------------------------------------------------------------------PUT
+//-------------------------------------------------------------------------------------------------------------------PUT
 
     public ResponseEntity<PDOrganisationResponse> updateOrganisation(PDOrganisationSend org){
 
@@ -114,9 +163,10 @@ public class PDService {
         }
         return idsPutted;
     }
-//----------------------------------------------------------------------------------GET
+//-------------------------------------------------------------------------------------------------------------------GET
+
     public ResponseEntity<PDOrganisationResponse> getOrganisation(Long id) {
-        RequestEntity<PDOrganisation> req;
+        RequestEntity<PDOrganisationReceived> req;
         ResponseEntity<PDOrganisationResponse> res = null;
 
         try {
@@ -137,7 +187,7 @@ public class PDService {
         Boolean moreItems = true;
 
         ResponseEntity<PDOrganisationItemsResponse> res = null;
-        List<PDOrganisation> orgsRecieved = new ArrayList<>();
+        List<PDOrganisationReceived> orgsRecieved = new ArrayList<>();
 
         while (moreItems) {
 
@@ -167,9 +217,11 @@ public class PDService {
         res.getBody().setData(orgsRecieved);
         return res;
     }
-//----------------------------------------------------------------------------------DELETE
+
+//----------------------------------------------------------------------------------------------------------------DELETE
+
     public ResponseEntity<PDDeleteResponse> deleteOrganisation(Long id){
-        RequestEntity<PDOrganisation> req;
+        RequestEntity<PDOrganisationReceived> req;
         ResponseEntity<PDDeleteResponse> res = null;
         String uri = server + "organizations/" + id + apiKey;
 
@@ -213,19 +265,21 @@ public class PDService {
         return idsDeleted;
     }
 
-//---CONTACTS-----------------------------------------------------------------------POST
+
+    /**
+     * CONTACTS
+     */
+//------------------------------------------------------------------------------------------------------------------POST
+
     public ResponseEntity<PDContactResponse> postContact(PDContactSend contact) {
+
         RequestEntity<PDContactSend> req;
         ResponseEntity<PDContactResponse> res = null;
         String uri = server + "persons" + apiKey;
 
         try {
-            //System.out.println("Posting Contact: ");
-            //System.out.println("    name: " + contact.getName());
             req = new RequestEntity<>(contact, HttpMethod.POST, new URI(uri));
-            //System.out.println("REQUEST:  " + req);
             res = restTemplate.exchange(req, PDContactResponse.class);
-            //System.out.println("RESPONSE: " + res);
 
             for(Long f : contact.getFollowers()){
                 postFollower(new PDFollower(res.getBody().getData().getId(), f));
@@ -254,7 +308,8 @@ public class PDService {
 
     }
 
-//----------------------------------------------------------------------------------GET
+//-------------------------------------------------------------------------------------------------------------------GET
+
     public ResponseEntity<PDContactListReceived> getContactsForOrganisation(Long org_id) {
         RequestEntity<String> req;
         ResponseEntity<PDContactListReceived> res = null;
@@ -306,7 +361,8 @@ public class PDService {
         return res;
     }
 
-//-----------------------------------------------------------------------------------DELETE
+//----------------------------------------------------------------------------------------------------------------DELETE
+
     public ResponseEntity<PDDeleteResponse> deleteContact(Long id) {
         RequestEntity<String> req;
         ResponseEntity<PDDeleteResponse> res = null;
@@ -333,10 +389,10 @@ public class PDService {
         RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req = null;
         ResponseEntity<PDBulkDeleteResponse> res;
 
-        String uri = server + "persons/" + apiKey;
 
         try {
 
+            String uri = server + "persons/" + apiKey;
             req = new RequestEntity<>(idsForReq, HttpMethod.DELETE, new URI(uri));
             res = restTemplate.exchange(req, PDBulkDeleteResponse.class);
             idsDeletedAsString = res.getBody().getData().getId();
@@ -353,7 +409,8 @@ public class PDService {
         return idsDeleted;
     }
 
-//-----------------------------------------------------------------------------------PUT
+//-------------------------------------------------------------------------------------------------------------------PUT
+
     public ResponseEntity<PDContactResponse> updateContact(PDContactSend contact){
         RequestEntity<PDContactSend> req;
         ResponseEntity<PDContactResponse> res = null;
@@ -388,88 +445,11 @@ public class PDService {
         return idsPut;
     }
 
-    public void clearPD(List<Long> orgsToKeep, List<Long> contsToKeep){
-        //TODO: Modify this
 
-//        contsToKeep.add(13L); orgsToKeep.add(206L);
-//        orgsToKeep.add(207L);
-//        orgsToKeep.add(209L);
-//        orgsToKeep.add(211L);
-//        orgsToKeep.add(208L);
-//        orgsToKeep.add(1L);
-//        orgsToKeep.add(3L);
-        orgsToKeep.add(2L);
-//
-//        contsToKeep.add(1L);
-//        contsToKeep.add(4L);
-//        contsToKeep.add(5L);
-//        contsToKeep.add(6L);
-//        contsToKeep.add(7L);
-//        contsToKeep.add(8L);
-//        contsToKeep.add(8L);
-//        contsToKeep.add(11L);
-//        contsToKeep.add(12L);
-//        contsToKeep.add(845L);
-
-        contsToKeep.add(2L);
-
-        Integer orgsize = 0;
-        Integer contsise = 0;
-
-        ResponseEntity<PDOrganisationItemsResponse> resOrg;
-        ResponseEntity<PDContactListReceived> resCont;
-        List<Long> orgsDeleted;
-        List<Long> contsDeleted;
-
-        List<Long> orgsToDel = new ArrayList<>();
-        List<Long> contsToDel = new ArrayList<>();
-
-
-        String orgURL = server + "organisations/" + apiKey;
-
-        try {
-
-                orgsToDel.clear();
-                contsToDel.clear();
-                resOrg = getAllOrganisations();
-
-                orgsize = resOrg.getBody().getData().size();
-                for(PDOrganisation o : resOrg.getBody().getData()){
-                    if(! orgsToKeep.contains(o.getId())){
-                        orgsToDel.add(o.getId());
-                    }
-                }
-                System.out.println("Orgs added to del List");
-
-                resCont = getAllContacts();
-                contsise = resCont.getBody().getData().size();
-
-                for(PDContactReceived c : resCont.getBody().getData()){
-                    if( ! contsToKeep.contains(c.getId())){
-                        contsToDel.add(c.getId());
-                    }
-                }
-                System.out.println("Contacts added to del List");
-
-                if(orgsToDel.size() != 0){
-
-                    orgsDeleted = deleteOrganisationList(orgsToDel);
-                }
-                if(contsToDel.size() != 0){
-
-                    contsDeleted = deleteContactList(contsToDel);
-                }
-
-
-
-        } catch (Exception e) {
-            System.out.println("EXCEPTION CLEARING PD: " + e.toString());
-        }
-
-    }
-
-
-//---USERS-----------------------------------------------------------------------GET
+    /**
+     * Users
+     */
+//-------------------------------------------------------------------------------------------------------------------GET
 
     public ResponseEntity<PDUserItemsResponse> getAllUsers() {
 
@@ -490,9 +470,13 @@ public class PDService {
     }
 
 
-//---FOLLOWERS-----------------------------------------------------------------------POST
-//TODO: change res to accept new pojo instead of string (followers)
+    /**
+     * Followers
+     */
+//------------------------------------------------------------------------------------------------------------------POST
     public ResponseEntity<String> postFollower(PDFollower f){
+        //TODO: change res to accept new pojo instead of string (followers)
+
         RequestEntity<PDFollower> req;
         ResponseEntity<String> res = null;
         String uri = server + "persons/"+ f.getContactID() + "/followers" + apiKey;
@@ -502,7 +486,8 @@ public class PDService {
             res = restTemplate.exchange(req,String.class);
 
         } catch (HttpClientErrorException e) {
-            System.out.println("ERROR POSTING FOLLOWER: " + e + "      userID: " + f.getUserID() + ", contactIdP: " + f.getContactID());
+            System.out.println("ERROR POSTING FOLLOWER: " + e
+                    + "userID: " + f.getUserID() + ", contactIdP: " + f.getContactID());
         } catch(Exception e){
             System.out.println("ERROR on posting follower " + e);
         }
@@ -510,10 +495,12 @@ public class PDService {
     }
 
 
-
-//---ORGANISTATION RELATIONSHIPS-----------------------------------------------------------------------POST
-    //TODO: change res to accept new pojo instead of string (org rel)
+    /**
+     * Organisation relationships
+     */
+//------------------------------------------------------------------------------------------------------------------POST
     public ResponseEntity<String> postOrganisationRelationship(PDRelationship relationship) {
+        //TODO: change res to accept new pojo instead of string (org rel)
 
         RequestEntity<PDRelationship> req;
         ResponseEntity<String> res = null;
@@ -530,6 +517,68 @@ public class PDService {
         }
 
         return res;
+
+    }
+
+
+    /**
+     * UTILITIES
+     */
+//----------------------------------------------------------------------------------------------------------------DELETE
+    public void clearPD(List<Long> orgsToKeep, List<Long> contsToKeep){
+
+        Integer orgsize = 0;
+        Integer contsise = 0;
+
+        ResponseEntity<PDOrganisationItemsResponse> resOrg;
+        ResponseEntity<PDContactListReceived> resCont;
+        List<Long> orgsDeleted;
+        List<Long> contsDeleted;
+
+        List<Long> orgsToDel = new ArrayList<>();
+        List<Long> contsToDel = new ArrayList<>();
+
+
+        String orgURL = server + "organisations/" + apiKey;
+
+        try {
+
+            orgsToDel.clear();
+            contsToDel.clear();
+            resOrg = getAllOrganisations();
+
+            orgsize = resOrg.getBody().getData().size();
+            for(PDOrganisationReceived o : resOrg.getBody().getData()){
+                if(! orgsToKeep.contains(o.getId())){
+                    orgsToDel.add(o.getId());
+                }
+            }
+            System.out.println("Orgs added to del List");
+
+            resCont = getAllContacts();
+            contsise = resCont.getBody().getData().size();
+
+            for(PDContactReceived c : resCont.getBody().getData()){
+                if( ! contsToKeep.contains(c.getId())){
+                    contsToDel.add(c.getId());
+                }
+            }
+            System.out.println("Contacts added to del List");
+
+            if(orgsToDel.size() != 0){
+
+                orgsDeleted = deleteOrganisationList(orgsToDel);
+            }
+            if(contsToDel.size() != 0){
+
+                contsDeleted = deleteContactList(contsToDel);
+            }
+
+
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION CLEARING PD: " + e.toString());
+        }
 
     }
 

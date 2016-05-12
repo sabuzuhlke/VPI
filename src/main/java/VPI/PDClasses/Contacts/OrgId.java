@@ -1,4 +1,4 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Contacts;
 
 public class OrgId{
     private String name;

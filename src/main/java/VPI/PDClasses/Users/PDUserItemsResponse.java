@@ -1,4 +1,6 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Users;
+
+import VPI.PDClasses.PDResponse;
 
 import java.util.List;
 

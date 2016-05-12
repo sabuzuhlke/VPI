@@ -1,4 +1,6 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Contacts;
+
+import VPI.PDClasses.PDResponse;
 
 /**
  * Created by sabu on 14/04/2016.

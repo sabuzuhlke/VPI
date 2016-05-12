@@ -1,13 +1,13 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Organisations;
 
 import VPI.InsightClasses.VOrganisation;
+import VPI.PDClasses.PDOwner;
 import VPI.VertecClasses.JSONOrganisation;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 
-public class PDOrganisationSend {
+public class PDOrganisationReceived {
 
     private String name;
     private Integer visible_to;
@@ -15,7 +15,7 @@ public class PDOrganisationSend {
     private Boolean active_flag;
     private Long id;
     private Long company_id;
-    private Long owner_id;
+    private PDOwner owner_id;
     //Last Update Fields
     private String update_time;
     private Integer people_count;
@@ -24,44 +24,27 @@ public class PDOrganisationSend {
     @JsonProperty("add_time")
     private String creationTime;
 
-    public PDOrganisationSend(String name, String address, Integer visible_to) {
+    public PDOrganisationReceived(String name, String address, Integer visible_to) {
         this.name = name;
         this.visible_to = visible_to;
         this.address = address;
         this.active_flag = true;
     }
-    public PDOrganisationSend(String name, String address) {
+    public PDOrganisationReceived(String name, String address) {
         this.name = name;
         this.address = address;
         this.active_flag = true;
     }
-    public PDOrganisationSend(String name, Integer visible_to) {
+    public PDOrganisationReceived(String name, Integer visible_to) {
         this.name = name;
         this.visible_to = visible_to;
         this.active_flag = true;
     }
 
-    public PDOrganisationSend() {
-        this.visible_to = 3;
-        this.active_flag = true;
+    public PDOrganisationReceived() {
     }
 
-    //insight
-    public PDOrganisationSend(PDOrganisation o) {
-        this.name = o.getName();
-        this.visible_to = o.getVisible_to();
-        this.address = o.getAddress();
-        this.active_flag = true;
-        this.id = o.getId();
-        this.company_id = o.getCompany_id();
-        this.owner_id = o.getOwner_id().getId();
-        this.update_time = o.getUpdate_time();
-        this.v_id = o.getV_id();
-        this.creationTime = o.getCreationTime();
-    }
-
-    //insight
-    public PDOrganisationSend(VOrganisation c) {
+    public PDOrganisationReceived(VOrganisation c) {
         this.name = c.getName();
         this.visible_to = 3;
         this.active_flag = true;
@@ -69,7 +52,7 @@ public class PDOrganisationSend {
         this.v_id = c.getId();
     }
 
-    public PDOrganisationSend(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, Long owner_id) {
+    public PDOrganisationReceived(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, PDOwner owner_id) {
         this.name = name;
         this.visible_to = visible_to;
         this.address = address;
@@ -79,60 +62,38 @@ public class PDOrganisationSend {
         this.owner_id = owner_id;
     }
 
-    public PDOrganisationSend(JSONOrganisation jo, PDOrganisation po, Long ownerId){
+    public PDOrganisationReceived(JSONOrganisation jo, PDOrganisationReceived po, Long ownerId){
         this.name = jo.getName();
         this.visible_to = 3;
         this.v_id = jo.getObjid();
         this.id = po.getId();
         this.active_flag = true;
         this.company_id = po.getCompany_id();
-        this.owner_id = ownerId;
+        this.owner_id = new PDOwner();
+        this.owner_id.setId(ownerId);
 
         this.address = jo.getFormattedAddress();
-
-        try{
-            if(jo.getCreationTime() != null){
-                if (jo.getCreationTime().contains("1900-01-01")) {
-                    this.creationTime = "1900-01-01 00:00:00";
-                } else {
-                    String[] dateFormatter = jo.getCreationTime().split("T");
-                    String date = dateFormatter[0];
-                    String time = dateFormatter[1];
-                    this.creationTime = date + " " + time;
-                }
-            }
-        } catch (Exception e){
-            System.out.println("Exception while creating pdorgsend from JSONorg: " + e);
-            System.out.println("Name: " + this.name + " VId: " + this.v_id);
-            System.out.println(jo.getCreationTime());
+        if(jo.getCreationTime() != null){
+            String[] dateFormatter = jo.getCreationTime().split("T");
+            String date = dateFormatter[0];
+            String time = dateFormatter[1];
+            this.creationTime = date + " " + time;
         }
     }
 
-    public PDOrganisationSend(JSONOrganisation o, Long owner_id){
+    public PDOrganisationReceived(JSONOrganisation o){
         this.name = o.getName();
         if(name == null || name.isEmpty() || name.equals(" ")) name = "Anonymous co";
         this.visible_to = 3;
         this.v_id = o.getObjid();
         this.active_flag = true;
         this.address = o.getFormattedAddress();
-        try{
-            if(o.getCreationTime() != null){
-                if (o.getCreationTime().contains("1900-01-01")) {
-                    this.creationTime = "1900-01-01 00:00:00";
-                } else {
-                    String[] dateFormatter = o.getCreationTime().split("T");
-                    String date = dateFormatter[0];
-                    String time = dateFormatter[1];
-                    this.creationTime = date + " " + time;
-                }
-            }
-        } catch (Exception e){
-            System.out.println("Exception while creating pdorgsend from JSONorg: " + e);
-            System.out.println("Name: " + this.name + " VId: " + this.v_id);
-            System.out.println(o.getCreationTime());
-        }
+    }
 
-        this.owner_id = owner_id;
+    //use this function when reading update time from object imported from pipedrive
+    public LocalDateTime readDateFromPDOrganisation() {
+        String[] dAndT = this.update_time.split(" ");
+        return LocalDateTime.parse(dAndT[0] + "T" + dAndT[1]);
     }
 
     public Long getV_id() {
@@ -199,11 +160,11 @@ public class PDOrganisationSend {
         this.company_id = company_id;
     }
 
-    public Long getOwner_id() {
+    public PDOwner getOwner_id() {
         return owner_id;
     }
 
-    public void setOwner_id(Long owner_id) {
+    public void setOwner_id(PDOwner owner_id) {
         this.owner_id = owner_id;
     }
 

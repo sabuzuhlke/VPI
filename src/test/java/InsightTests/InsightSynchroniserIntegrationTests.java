@@ -1,7 +1,7 @@
 package InsightTests;
 
 import VPI.*;
-import VPI.PDClasses.PDOrganisation;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.PDService;
 import VPI.InsightClasses.VOrganisation;
 import VPI.InsightClasses.InsightSynchroniser;
@@ -41,7 +41,7 @@ public class InsightSynchroniserIntegrationTests {
     @Test
     public void willPostandPutOrgsNotInPDToPD() {
         //this.setUpFakeInsightData();
-        //List<PDOrganisation> PDOrgs = .getAllOrganisations().getBody().getData();
+        //List<PDOrganisationReceived> PDOrgs = .getAllOrganisations().getBody().getData();
         List<Long> ids = new ArrayList<>();
         ids.add(20683L);
         ids.add(17977L);
@@ -57,13 +57,13 @@ public class InsightSynchroniserIntegrationTests {
         assertTrue(insightSynchroniser.organisations.putList.size() == 1);
         assertTrue(insightSynchroniser.organisations.putList.get(0).getName().equals("Bentley Systems Germany GmbH"));
 
-        List<PDOrganisation> pdOrgs = insightSynchroniser.getPDS().getAllOrganisations().getBody().getData();
+        List<PDOrganisationReceived> pdOrgs = insightSynchroniser.getPDS().getAllOrganisations().getBody().getData();
 
 
 
         int matches = 0;
         for(VOrganisation v : insightSynchroniser.organisations.vOrganisations) {
-            for(PDOrganisation p : pdOrgs) {
+            for(PDOrganisationReceived p : pdOrgs) {
                 if (v.getName().equals(p.getName())) {
                     matches++;
                 }

@@ -1,4 +1,4 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Contacts;
 
 import VPI.InsightClasses.VContact;
 import VPI.VertecClasses.JSONContact;

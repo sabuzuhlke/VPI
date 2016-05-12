@@ -2,6 +2,9 @@ package CurrentTests;
 
 import VPI.*;
 import VPI.PDClasses.*;
+import VPI.PDClasses.Contacts.*;
+import VPI.PDClasses.Organisations.*;
+import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,6 +43,41 @@ public class PipedriveServiceTests {
         TestRestTemplate testRestTemplate = new TestRestTemplate();
         this.PS = new PDService(server, apiKey);
         this.idsDeleted = new ArrayList<>();
+    }
+
+    @Test
+    public void canPostDeal() {
+        assertTrue(false);
+    }
+
+    @Test
+    public void canPostDealList() {
+        assertTrue(false);
+    }
+
+    @Test
+    public void canGetDeal() {
+        assertTrue(false);
+    }
+
+    @Test
+    public void canGetAllDeals() {
+        assertTrue(false);
+    }
+
+    @Test
+    public void canUpdateDeal() {
+        assertTrue(false);
+    }
+
+    @Test
+    public void canDeleteDeal() {
+        assertTrue(false);
+    }
+
+    @Test
+    public void canDeleteDealList() {
+        assertTrue(false);
     }
 
     @Test
@@ -100,7 +138,7 @@ public class PipedriveServiceTests {
         assertTrue(postResponse.getStatusCode() == HttpStatus.CREATED);
         assertTrue(postResponse.getBody().getSuccess());
 
-        PDOrganisation org = postResponse.getBody().getData();
+        PDOrganisationReceived org = postResponse.getBody().getData();
 
         String newAddress = "test address";
 
@@ -298,7 +336,7 @@ public class PipedriveServiceTests {
         }
         idsPosted = PS.postContactList(contacts);
 
-        contacts.get(0).getEmail().add(new  ContactDetail("BatMobile@batmail.com", true));
+        contacts.get(0).getEmail().add(new ContactDetail("BatMobile@batmail.com", true));
         contacts.get(1).getEmail().add(new ContactDetail("Robin@day.com", false));
         contacts.get(2).getEmail().add(new ContactDetail("smile@me.com", false));
         contacts.get(3).getEmail().add(new ContactDetail("rat@inthepack.com",true));

@@ -2,6 +2,12 @@ package CurrentTests;
 
 import VPI.Application;
 import VPI.PDClasses.*;
+import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.OrgId;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
+import VPI.PDClasses.Organisations.PDRelationship;
+import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.JSONContact;
 import VPI.VertecClasses.JSONOrganisation;
 import VPI.VertecSynchroniser;
@@ -42,7 +48,7 @@ public class VertecSynchroniserUnitTests {
 
         List<JSONOrganisation> vOrgs = getMockVOrgs();
 
-        List<PDOrganisation> pOrgs = getMockPOrgs();
+        List<PDOrganisationReceived> pOrgs = getMockPOrgs();
 
 
         this.sync.testresolveOrganisationsAndNestedContacts(vOrgs,pOrgs);
@@ -154,9 +160,9 @@ public class VertecSynchroniserUnitTests {
         return orgs;
     }
 
-    public List<PDOrganisation> getMockPOrgs(){
-        PDOrganisation o = new PDOrganisation();
-        List<PDOrganisation> orgs = new ArrayList<>();
+    public List<PDOrganisationReceived> getMockPOrgs(){
+        PDOrganisationReceived o = new PDOrganisationReceived();
+        List<PDOrganisationReceived> orgs = new ArrayList<>();
 
         o.setName("SAME ORG");
         o.setActive_flag(true);
@@ -167,7 +173,7 @@ public class VertecSynchroniserUnitTests {
         o.getOwner_id().setId(1L);
         orgs.add(o);
 
-        o = new PDOrganisation();
+        o = new PDOrganisationReceived();
         o.setName("SAME NAME, DIFF DETAILS");
         o.setActive_flag(true);
         o.setAddress("YES, 12 Here, NOT Murica City, 9938, NOT Murica!");

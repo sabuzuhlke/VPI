@@ -1,6 +1,14 @@
 package VPI;
 
 import VPI.PDClasses.*;
+import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Contacts.PDContactSend;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
+import VPI.PDClasses.Organisations.PDOrganisationResponse;
+import VPI.PDClasses.Organisations.PDOrganisationSend;
+import VPI.PDClasses.Organisations.PDRelationship;
+import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.JSONContact;
 import VPI.VertecClasses.JSONOrganisation;
 import VPI.VertecClasses.VertecService;
@@ -69,7 +77,7 @@ public class VertecSynchroniser {
 
         //get all Pipedrive organisations
         System.out.println("Getting all organisations from pipedrive");
-        List<PDOrganisation> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
+        List<PDOrganisationReceived> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
         long pdorgTime = System.nanoTime();
         System.out.println("Took " + ((pdorgTime - teamEnd)/1000000) + " milliseconds");
 
@@ -179,16 +187,16 @@ public class VertecSynchroniser {
 
     }
 
-    public void resolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisation> pOrgs) {
+    public void resolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisationReceived> pOrgs) {
         for(JSONOrganisation vo : vOrgs){
             Boolean matched = false;
-            for(PDOrganisation po : pOrgs){
+            for(PDOrganisationReceived po : pOrgs){
                 if(po.getV_id() == null) continue;
                 if(vo.getObjid().longValue() == po.getV_id().longValue()){
                     matched = true;
                     compareOrganisationDetails(vo, po);
 
-                    //TODO:!! Change so that all contacts get compared !!
+                    //TODO: Change so that all contacts get compared as to handle contacts chaning organisations
                     resolveContactsForOrgs(vo,po);
                 }
             }
@@ -198,10 +206,10 @@ public class VertecSynchroniser {
 
         }
     }
-    public void testresolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisation> pOrgs) {
+    public void testresolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisationReceived> pOrgs) {
         for(JSONOrganisation vo : vOrgs){
             Boolean matched = false;
-            for(PDOrganisation po : pOrgs){
+            for(PDOrganisationReceived po : pOrgs){
                 if(po.getV_id() == null) continue;
                 if(vo.getObjid().longValue() == po.getV_id().longValue()){
                     matched = true;
@@ -216,7 +224,7 @@ public class VertecSynchroniser {
         }
     }
 
-    private Boolean compareOrganisationDetails(JSONOrganisation vo, PDOrganisation po){
+    private Boolean compareOrganisationDetails(JSONOrganisation vo, PDOrganisationReceived po){
         Boolean diff = false;
         if(! vo.getFormattedAddress().equals(po.getAddress())) diff = true;
         if( ! vo.getName().equals(po.getName())) diff = true;
@@ -231,10 +239,10 @@ public class VertecSynchroniser {
         return diff;
     }
 
-    public void resolveTestContactsForOrgs(JSONOrganisation jo, PDOrganisation po){
+    public void resolveTestContactsForOrgs(JSONOrganisation jo, PDOrganisationReceived po){
     }
 
-    private void resolveContactsForOrgs(JSONOrganisation jo, PDOrganisation po){
+    private void resolveContactsForOrgs(JSONOrganisation jo, PDOrganisationReceived po){
         List<PDContactReceived>  pdContacts = PDS.getContactsForOrganisation(po.getId()).getBody().getData();
         compareContacts(jo.getContacts(), pdContacts);
     }

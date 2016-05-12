@@ -1,20 +1,27 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Organisations;
+
+import VPI.PDClasses.PDAdditionalData;
+import VPI.PDClasses.PDResponse;
 
 import java.util.List;
 
 public class PDOrganisationItemsResponse extends PDResponse {
 
-    private List<PDOrganisation> data;
+    private List<PDOrganisationReceived> data;
     private PDAdditionalData additional_data;
 
     public PDOrganisationItemsResponse() {
+        //TODO: change to init list and remove null check elsewhere
+        /*
+        this.data = new ArrayList<>();
+         */
     }
 
-    public List<PDOrganisation> getData() {
+    public List<PDOrganisationReceived> getData() {
         return data;
     }
 
-    public void setData(List<PDOrganisation> data) {
+    public void setData(List<PDOrganisationReceived> data) {
         this.data = data;
     }
 

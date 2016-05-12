@@ -1,7 +1,8 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Contacts;
 
 //import com.sun.istack.internal.Nullable;
 
+import VPI.PDClasses.PDOwner;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;

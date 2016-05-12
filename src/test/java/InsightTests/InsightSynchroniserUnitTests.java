@@ -1,10 +1,10 @@
 package InsightTests;
 
 import VPI.*;
-import VPI.PDClasses.ContactDetail;
-import VPI.PDClasses.OrgId;
-import VPI.PDClasses.PDContactReceived;
-import VPI.PDClasses.PDOrganisation;
+import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.OrgId;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.InsightClasses.VContact;
 import VPI.InsightClasses.VOrganisation;
 import VPI.InsightClasses.InsightSynchroniser;
@@ -34,10 +34,10 @@ public class InsightSynchroniserUnitTests {
     public void canClearSynchroniser() {
         assignJustVOrgList();
 
-        PDOrganisation p = new PDOrganisation("Peter Griffin.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
+        PDOrganisationReceived p = new PDOrganisationReceived("Peter Griffin.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        p = new PDOrganisation("Charlies Chocolate Factory", "5 End Street, Factory A, 0000, Neverland");
+        p = new PDOrganisationReceived("Charlies Chocolate Factory", "5 End Street, Factory A, 0000, Neverland");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
         insightSynchroniser.compareOrganisations();
@@ -65,12 +65,12 @@ public class InsightSynchroniserUnitTests {
 //--------------------------ORGANISATIONS-TESTS--------------------------------
 
     public int assignMatchingPDOrgList() {
-        PDOrganisation p = new PDOrganisation();
+        PDOrganisationReceived p = new PDOrganisationReceived();
         p.setName("Peter Griffin.co");
         p.setAddress("13 Family Street, Quahog, 6727, Murica!");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        p = new PDOrganisation();
+        p = new PDOrganisationReceived();
         p.setName("Peter Quagmire.co");
         p.setAddress("17 Family Street, Quahog, 6722, Murica!");
         insightSynchroniser.organisations.pdOrganisations.add(p);
@@ -166,10 +166,10 @@ public class InsightSynchroniserUnitTests {
     public void given_CaBa_AaDa_POSTCaBa_emptyPUT(){
         assignJustVOrgList();
 
-        PDOrganisation p = new PDOrganisation("The Crusty Crab", "13 a Street, Bikini Bottom, 4343, Under the Sea");
+        PDOrganisationReceived p = new PDOrganisationReceived("The Crusty Crab", "13 a Street, Bikini Bottom, 4343, Under the Sea");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        p = new PDOrganisation("Charlies Chocolate Factory", "5 End Street, Factory A, 0000, Neverland");
+        p = new PDOrganisationReceived("Charlies Chocolate Factory", "5 End Street, Factory A, 0000, Neverland");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
         assertTrue(!insightSynchroniser.organisations.vOrganisations.isEmpty());
@@ -206,10 +206,10 @@ public class InsightSynchroniserUnitTests {
         v.setZip("6722");
         insightSynchroniser.organisations.vOrganisations.add(v);
 
-        PDOrganisation p = new PDOrganisation("Peter Quagmire.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
+        PDOrganisationReceived p = new PDOrganisationReceived("Peter Quagmire.co", "20 a Street, Bikini Bottom, 4343, Under the Sea");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
-        p = new PDOrganisation("Clevelands Throwback co", "5 End Street, Factory A, 0000, Neverland");
+        p = new PDOrganisationReceived("Clevelands Throwback co", "5 End Street, Factory A, 0000, Neverland");
         insightSynchroniser.organisations.pdOrganisations.add(p);
 
 

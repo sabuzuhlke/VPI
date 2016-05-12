@@ -1,4 +1,7 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Contacts;
+
+import VPI.PDClasses.PDAdditionalData;
+import VPI.PDClasses.PDResponse;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package VPI.InsightClasses;
 
-import VPI.PDClasses.ContactDetail;
+import VPI.PDClasses.Contacts.ContactDetail;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;

@@ -1,8 +1,7 @@
 package VPI.InsightClasses;
 
-import VPI.PDClasses.PDContactReceived;
-import VPI.PDClasses.PDContactSend;
-import VPI.InsightClasses.VContact;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Contacts.PDContactSend;
 
 import java.util.ArrayList;
 import java.util.List;

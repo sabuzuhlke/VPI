@@ -1,4 +1,4 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Users;
 
 /**
  * Created by gebo on 10/05/2016.
