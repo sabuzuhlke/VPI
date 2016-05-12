@@ -427,6 +427,7 @@ public class PipedriveServiceTests {
 
         assertTrue(res.getStatusCode() == HttpStatus.CREATED);
         assertTrue( ! res.getBody().isEmpty());
+        assertTrue(res.getBody().contains("\"success\":true,"));
         assertTrue(res.getBody().contains("\"person_id\":" + id + ","));
         assertTrue(res.getBody().contains("\"user_id\":" + 1363410L + ","));
         PS.deleteContact(id);
