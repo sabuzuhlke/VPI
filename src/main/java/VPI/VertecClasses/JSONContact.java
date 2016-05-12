@@ -2,6 +2,7 @@ package VPI.VertecClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,6 +41,7 @@ public class JSONContact {
     private List<String> followers;
 
     public JSONContact() {
+        this.followers = new ArrayList<>();
     }
 
     public List<String> getFollowers() {

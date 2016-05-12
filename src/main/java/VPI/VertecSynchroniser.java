@@ -6,7 +6,6 @@ import VPI.VertecClasses.JSONOrganisation;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.ZUKResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -26,6 +25,8 @@ public class VertecSynchroniser {
 
 
     private Map<String,Long> teamIdMap;
+    //map of v_id's to p_ids used for building relationship heirarchy
+    private Map<Long, Long> idMap;
 
 
     public VertecSynchroniser() {
@@ -43,50 +44,7 @@ public class VertecSynchroniser {
         this.organisationPostList = new ArrayList<>();
         this.organisationPutList = new ArrayList<>();
         this.teamIdMap = new HashMap<>();
-    }
-
-    public Map<String, Long> getTeamIdMap() {
-        return teamIdMap;
-    }
-
-    public void setTeamIdMap(Map<String, Long> teamIdMap) {
-        this.teamIdMap = teamIdMap;
-    }
-
-    private Set<String> getVertecUserEmails(ZUKResponse data) {
-        Set<String> v_emails = new HashSet<>();
-        for (JSONOrganisation org : data.getOrganisationList()) {
-
-            v_emails.add(org.getOwner());
-
-            for (JSONContact cont : org.getContacts()) {
-
-                v_emails.add(cont.getOwner());
-
-            }
-
-        }
-
-        return v_emails;
-    }
-
-    private List<PDUser> getPipedriveUsers() {
-        return PDS.getAllUsers().getBody().getData();
-    }
-
-    public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this
-        for (String v_email : v_emails) {
-            Boolean mapped = false;
-            for (PDUser pd_user : pd_users) {
-                if (v_email.toLowerCase().equals(pd_user.getEmail().toLowerCase())) {
-                    this.teamIdMap.put(v_email, pd_user.getId());
-                    mapped = true;
-                }
-            }
-            if (!mapped) {
-                this.teamIdMap.put(v_email, 1363410L ); //TODO: replace id with appropriate id, wolfgangs or admin?
-            }
-        }
+        this.idMap = new HashMap<>();
     }
 
     public List<List<Long>> importToPipedrive() {
@@ -113,6 +71,7 @@ public class VertecSynchroniser {
         //compare dangling vcontacts to leftover pdcontacts
         compareContacts(allVertecData.getDanglingContacts(), contactsWithoutOrg);
 
+
         //initialize return list
         List<List<Long>> ids = new ArrayList<>();
 
@@ -122,6 +81,10 @@ public class VertecSynchroniser {
         List<Long> contsPost = postContacts();
         List<Long> contsPut = putContacts();
 
+        //get list of pd relationships, then post them
+        List<PDRelationship> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
+        postRelationshipList(relationships);
+
         //return list of orgs and contact ids that have been posted/edited to pipedrive
         ids.add(orgsNConts.get(0));
         ids.add(orgsPut);
@@ -130,6 +93,39 @@ public class VertecSynchroniser {
         ids.add(contsPut);
 
         return ids;
+    }
+
+    public List<PDRelationship> getOrganistionHeirarchy(List<JSONOrganisation> orgs) {
+
+        List<PDRelationship> rels = new ArrayList<>();
+
+        for (JSONOrganisation org : orgs) {
+
+            Long childOrgPId = idMap.get(org.getObjid());
+            Long parentOrgPId = idMap.get(org.getParentOrganisationId());
+
+            if (childOrgPId != null && parentOrgPId != null) {
+
+                PDRelationship rel = new PDRelationship(parentOrgPId, childOrgPId);
+                rels.add(rel);
+
+            }
+
+        }
+
+        return rels;
+
+    }
+
+    //TODO: at some point work out exactly what eachof the post functions should return;
+    public void postRelationshipList(List<PDRelationship> relationships) {
+
+        for (PDRelationship rel : relationships) {
+
+            PDS.postOrganisationRelationship(rel);
+
+        }
+
     }
 
     public void resolveOrganisationsAndNestedContacts(List<JSONOrganisation> vOrgs, List<PDOrganisation> pOrgs) {
@@ -343,6 +339,8 @@ public class VertecSynchroniser {
             res = PDS.postOrganisation(new PDOrganisationSend(o, ownerid));
             orgsPosted.add(res.getBody().getData().getId());
 
+            idMap.put(o.getObjid(), res.getBody().getData().getId());
+
             for(JSONContact c : o.getContacts()){
                 Long owner = teamIdMap.get(c.getOwner());
                 PDContactSend s = new PDContactSend(c,owner);
@@ -368,6 +366,50 @@ public class VertecSynchroniser {
     public List<Long> putContacts(){
 
         return PDS.putContactList(contactPutList);
+    }
+
+    public Map<String, Long> getTeamIdMap() {
+        return teamIdMap;
+    }
+
+    public void setTeamIdMap(Map<String, Long> teamIdMap) {
+        this.teamIdMap = teamIdMap;
+    }
+
+    private Set<String> getVertecUserEmails(ZUKResponse data) {
+        Set<String> v_emails = new HashSet<>();
+        for (JSONOrganisation org : data.getOrganisationList()) {
+
+            v_emails.add(org.getOwner());
+
+            for (JSONContact cont : org.getContacts()) {
+
+                v_emails.add(cont.getOwner());
+
+            }
+
+        }
+
+        return v_emails;
+    }
+
+    private List<PDUser> getPipedriveUsers() {
+        return PDS.getAllUsers().getBody().getData();
+    }
+
+    public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this
+        for (String v_email : v_emails) {
+            Boolean mapped = false;
+            for (PDUser pd_user : pd_users) {
+                if (v_email.toLowerCase().equals(pd_user.getEmail().toLowerCase())) {
+                    this.teamIdMap.put(v_email, pd_user.getId());
+                    mapped = true;
+                }
+            }
+            if (!mapped) {
+                this.teamIdMap.put(v_email, 1363410L ); //TODO: replace id with appropriate id, wolfgangs or admin?
+            }
+        }
     }
 
     public void constructTestTeamMap(){
@@ -414,5 +456,13 @@ public class VertecSynchroniser {
 
     public void setVS(VertecService VS) {
         this.VS = VS;
+    }
+
+    public Map<Long, Long> getIdMap() {
+        return idMap;
+    }
+
+    public void setIdMap(Map<Long, Long> idMap) {
+        this.idMap = idMap;
     }
 }

@@ -121,6 +121,7 @@ public class VertecSynchroniserUnitTests {
         o.setOwner("a@eat.com");
         o.setZip("9938");
         o.setContacts(cnts);
+        o.setParentOrganisationId(6L);
         orgs.add(o);
 
         o = new JSONOrganisation();
@@ -134,6 +135,7 @@ public class VertecSynchroniserUnitTests {
         o.setOwner("a@eat.com");
         o.setZip("9938");
         o.setContacts(cnts);
+        o.setParentOrganisationId(7L);
         orgs.add(o);
 
         o = new JSONOrganisation();
@@ -478,6 +480,33 @@ public class VertecSynchroniserUnitTests {
         assertTrue(sync.getTeamIdMap().size() == 2);
         assertTrue(sync.getTeamIdMap().get("a@eat.com") == 1L);
         assertTrue(sync.getTeamIdMap().get("b@eat.com") == 2L);
+    }
+
+    @Test
+    public void canGetOrganisationHeirarchy() {
+
+        List<JSONOrganisation> orgs = getMockVOrgs();
+
+        Map<Long, Long> map = new HashMap<>();
+        map.put(5L, 15L);
+        map.put(6L, 16L);
+        map.put(7L, 17L);
+
+        sync.setIdMap(map);
+
+        List<PDRelationship> rels = sync.getOrganistionHeirarchy(orgs);
+
+        assertTrue(rels.size() == 2);
+        assertTrue(rels.get(0).getType().equals("parent"));
+        assertTrue(rels.get(0).getRel_owner_org_id() == 16L);
+        assertTrue(rels.get(0).getRel_linked_org_id() == 15L);
+
+
+        assertTrue(rels.get(1).getType().equals("parent"));
+        assertTrue(rels.get(1).getRel_owner_org_id() == 17L);
+        assertTrue(rels.get(1).getRel_linked_org_id() == 16L);
+
+
     }
 
 }

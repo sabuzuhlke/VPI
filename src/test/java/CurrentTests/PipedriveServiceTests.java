@@ -432,6 +432,36 @@ public class PipedriveServiceTests {
         assertTrue(res.getBody().contains("\"user_id\":" + 1363410L + ","));
         PS.deleteContact(id);
     }
+
+    @Test
+    public void canPostOrganisationRelationship() {
+
+        PDOrganisationSend orgParent = new PDOrganisationSend();
+        PDOrganisationSend orgChild  = new PDOrganisationSend();
+
+        orgParent.setName("PARENT");
+        orgChild.setName("CHILD");
+
+        Long parentId = PS.postOrganisation(orgParent).getBody().getData().getId();
+        System.out.println("POSTED: " + parentId);
+        Long childId  = PS.postOrganisation(orgChild).getBody().getData().getId();
+        System.out.println("POSTED: " + childId);
+
+        PDRelationship rel = new PDRelationship(parentId, childId);
+
+        //parent should always be first argument
+        ResponseEntity<String> res = PS.postOrganisationRelationship(rel);
+
+        assertTrue(res.getBody().contains("\"success\":true"));
+        assertTrue(res.getBody().contains("\"type\":\"parent\""));
+        assertTrue(res.getBody().contains("\"rel_owner_org_id\":{"));
+        assertTrue(res.getBody().contains("\"rel_linked_org_id\":{"));
+        assertTrue(res.getBody().contains("\"active_flag\":true"));
+
+        PS.deleteOrganisation(parentId);
+        PS.deleteOrganisation(childId);
+
+    }
 //
 //    @Test
 //    public void howManyDuplicateContacts() {

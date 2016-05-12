@@ -43,6 +43,28 @@ public class  JSONOrganisation {
     @JsonProperty("creationTime")
     private String creationTime;
 
+    @JsonProperty("parentOrganisationId")
+    private Long parentOrganisationId;
+
+    @JsonProperty("childOrganisationList")
+    private List<Long> childOrganisationList;
+
+    public Long getParentOrganisationId() {
+        return parentOrganisationId;
+    }
+
+    public void setParentOrganisationId(Long parentOrganisationId) {
+        this.parentOrganisationId = parentOrganisationId;
+    }
+
+    public List<Long> getChildOrganisationList() {
+        return childOrganisationList;
+    }
+
+    public void setChildOrganisationList(List<Long> childOrganisationList) {
+        this.childOrganisationList = childOrganisationList;
+    }
+
     public String getCreationTime() {
         return creationTime;
     }

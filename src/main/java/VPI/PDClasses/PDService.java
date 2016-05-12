@@ -479,6 +479,7 @@ public class PDService {
 
 
 //---FOLLOWERS-----------------------------------------------------------------------POST
+//TODO: change res to accept new pojo instead of string (followers)
     public ResponseEntity<String> postFollower(PDFollower f){
         RequestEntity<PDFollower> req = null;
         ResponseEntity<String> res = null;
@@ -493,6 +494,32 @@ public class PDService {
             System.out.println("ERROR on posting follower " + e);
         }
         return res;
+    }
+
+
+
+//---ORGANISTATION RELATIONSHIPS-----------------------------------------------------------------------POST
+    //TODO: change res to accept new pojo instead of string (org rel)
+    public ResponseEntity<String> postOrganisationRelationship(PDRelationship relationship) {
+
+        RequestEntity<PDRelationship> req;
+        ResponseEntity<String> res = null;
+
+        String uri = server + "organizationRelationships" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(relationship, HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req, String.class);
+
+            System.out.println(res);
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION IN POSTING ORGANISATION RELATIONSHIP: " + e);
+        }
+
+        return res;
+
     }
 
 }

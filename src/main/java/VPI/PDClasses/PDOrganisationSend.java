@@ -42,6 +42,8 @@ public class PDOrganisationSend {
     }
 
     public PDOrganisationSend() {
+        this.visible_to = 3;
+        this.active_flag = true;
     }
 
     //insight
