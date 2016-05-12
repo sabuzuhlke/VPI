@@ -1,5 +1,6 @@
 package VPI;
 
+import VPI.PDClasses.PDService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -7,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,8 +28,14 @@ public class Application implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         this.VS = new VertecSynchroniser();
+        MyCredentials creds = new MyCredentials();
+        PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
 
         try {
+
+            //Code here will run just once
+            //PD.clearPD(new ArrayList<>(), new ArrayList<>());
+            //VS.importToPipedrive();
 
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {

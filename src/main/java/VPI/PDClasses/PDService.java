@@ -1,6 +1,7 @@
 package VPI.PDClasses;
 
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
@@ -145,10 +146,18 @@ public class PDService {
             try{
                 req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
                 res = restTemplate.exchange(req,PDOrganisationItemsResponse.class);
+                if (res.getBody().getData() != null) {
 
-                orgsRecieved.addAll(res.getBody().getData());
-                moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
-                start += 500;
+
+                    orgsRecieved.addAll(res.getBody().getData());
+                    System.out.println("Not above here");
+                    moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+                    start += 500;
+                } else {
+                    moreItems = false;
+                }
+
             }
             catch(Exception e){
                 System.out.println("Exception when getting all organisations from PipeDrive: " + e);
@@ -219,7 +228,7 @@ public class PDService {
             //System.out.println("RESPONSE: " + res);
 
             for(Long f : contact.getFollowers()){
-                postFollower(new PDFollower(contact.getId(), f));
+                postFollower(new PDFollower(res.getBody().getData().getId(), f));
             }
 
         } catch (Exception e) {
@@ -231,7 +240,7 @@ public class PDService {
 
     public List<Long> postContactList(List<PDContactSend> contacts){
         List<Long> idsPosted = new ArrayList<>();
-        ResponseEntity<PDContactResponse> res = null;
+        ResponseEntity<PDContactResponse> res;
 
         for(PDContactSend p : contacts){
             res = postContact(p);
@@ -279,12 +288,17 @@ public class PDService {
                 req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
                 res = restTemplate.exchange(req, PDContactListReceived.class);
 
-                contactsRecieved.addAll(res.getBody().getData());
-                moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
-                start += 500;
+                if (res.getBody().getData() != null) {
+                    contactsRecieved.addAll(res.getBody().getData());
+                    moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+                    start += 500;
+                } else {
+                    moreItems = false;
+                }
+
             }
             catch(Exception e){
-                System.out.println("Exception when getting all organisations from PipeDrive: " + e);
+                System.out.println("Exception when getting all contacts from PipeDrive: " + e);
             }
 
         }
@@ -415,7 +429,6 @@ public class PDService {
 
         try {
 
-            while(orgsize != orgsToKeep.size() && contsise != contsToKeep.size()){
                 orgsToDel.clear();
                 contsToDel.clear();
                 resOrg = getAllOrganisations();
@@ -446,12 +459,11 @@ public class PDService {
 
                     contsDeleted = deleteContactList(contsToDel);
                 }
-            }
 
 
 
         } catch (Exception e) {
-            System.out.println(e.toString());
+            System.out.println("EXCEPTION CLEARING PD: " + e.toString());
         }
 
     }
@@ -481,7 +493,7 @@ public class PDService {
 //---FOLLOWERS-----------------------------------------------------------------------POST
 //TODO: change res to accept new pojo instead of string (followers)
     public ResponseEntity<String> postFollower(PDFollower f){
-        RequestEntity<PDFollower> req = null;
+        RequestEntity<PDFollower> req;
         ResponseEntity<String> res = null;
         String uri = server + "persons/"+ f.getContactID() + "/followers" + apiKey;
 
@@ -489,7 +501,8 @@ public class PDService {
             req = new RequestEntity<>(f,HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req,String.class);
 
-            System.out.println(res);
+        } catch (HttpClientErrorException e) {
+            System.out.println("ERROR POSTING FOLLOWER: " + e + "      userID: " + f.getUserID() + ", contactIdP: " + f.getContactID());
         } catch(Exception e){
             System.out.println("ERROR on posting follower " + e);
         }
@@ -511,8 +524,6 @@ public class PDService {
 
             req = new RequestEntity<>(relationship, HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req, String.class);
-
-            System.out.println(res);
 
         } catch (Exception e) {
             System.out.println("EXCEPTION IN POSTING ORGANISATION RELATIONSHIP: " + e);

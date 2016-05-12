@@ -49,41 +49,87 @@ public class VertecSynchroniser {
 
     public List<List<Long>> importToPipedrive() {
 
+        System.out.println("Testing " + 5 + " = " + (10/2));
+
+        long startTime = System.nanoTime();
         //get all Vertec Data
+        System.out.println("Getting ZUK data from vertec");
         ZUKResponse allVertecData = VS.getZUKinfo().getBody();
+        long zukEndTime = System.nanoTime();
+        System.out.println("Took " + ((zukEndTime - startTime)/1000000) + " milliseconds");
 
         Set<String> v_emails = getVertecUserEmails(allVertecData);
         List<PDUser> pd_users= getPipedriveUsers();
 
         //constructTeamIdMap(v_emails, pd_users); //TODO: use this instead of constructTestTeamMap() on deployment
+        System.out.println("Contructing hardcoded team map");
         constructTestTeamMap();
+        long teamEnd = System.nanoTime();
+        System.out.println("Took " + ((teamEnd - zukEndTime)/1000000) + " milliseconds");
 
         //get all Pipedrive organisations
+        System.out.println("Getting all organisations from pipedrive");
         List<PDOrganisation> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
+        long pdorgTime = System.nanoTime();
+        System.out.println("Took " + ((pdorgTime - teamEnd)/1000000) + " milliseconds");
 
         //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
+        System.out.println("About to attempt to resolve organisations and their nested contacts");
         resolveOrganisationsAndNestedContacts(allVertecData.getOrganisationList(), pipedriveOrgs);
+        long resolveOrgTime = System.nanoTime();
+        System.out.println("Took " + ((resolveOrgTime - pdorgTime)/1000000) + " milliseconds");
 
         //get all pipedrive contacts, filter to only use those without organisations
+        System.out.println("Getting all contacts from pipedrive");
         List<PDContactReceived> pipedriveContacts = PDS.getAllContacts().getBody().getData();
+        long pdcontTime = System.nanoTime();
+        System.out.println("Took " + ((pdcontTime - resolveOrgTime)/1000000) + " milliseconds");
+        System.out.println("Getting all contacts (not attached to organisations) from vertec from ZUK info");
         List<PDContactReceived> contactsWithoutOrg = filterContactsWithOrg(pipedriveContacts);
+        long vcontTime = System.nanoTime();
+        System.out.println("Took " + ((vcontTime - pdcontTime)/1000000) + " milliseconds");
 
         //compare dangling vcontacts to leftover pdcontacts
+        System.out.println("About to compare contacts");
         compareContacts(allVertecData.getDanglingContacts(), contactsWithoutOrg);
+        long compCTime = System.nanoTime();
+        System.out.println("Took " + ((compCTime - vcontTime)/1000000) + " milliseconds");
 
 
         //initialize return list
         List<List<Long>> ids = new ArrayList<>();
 
         //now ready to post/put
+        System.out.println("Posting Organisations");
         List<List<Long>> orgsNConts = postVOrganisations();
+        long orgPostTime = System.nanoTime();
+        System.out.println("Took " + ((orgPostTime - compCTime)/1000000) + " milliseconds");
+        System.out.println("Posted: " + orgsNConts.get(0).size() + " orgs, and " + orgsNConts.get(1).size() + " contacts");
+        System.out.println("Putting Organisations");
         List<Long> orgsPut = putPdOrganisations();
+        long orgPutTime = System.nanoTime();
+        System.out.println("Took " + ((orgPutTime - orgPostTime)/1000000) + " milliseconds");
+        System.out.println("Putted:" + orgsPut.size());
+        System.out.println("Posting Dangling Contacts");
         List<Long> contsPost = postContacts();
+        long contPostTime = System.nanoTime();
+        System.out.println("Took " + ((contPostTime - orgPutTime)/1000000) + " milliseconds");
+        System.out.println("Posted: " + contsPost.size());
+        System.out.println("Putting Dangling Contacts");
         List<Long> contsPut = putContacts();
+        long contputTime = System.nanoTime();
+        System.out.println("Took " + ((contputTime - contPostTime)/1000000) + " milliseconds");
+        System.out.println("Putted: " + contsPut.size());
 
         //get list of pd relationships, then post them
+        System.out.println("Building relationship hierarchy");
         List<PDRelationship> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
+        long relTime = System.nanoTime();
+        System.out.println("Took " + ((relTime - contputTime)/1000000) + " milliseconds");
+        System.out.println("Found " + relationships.size() + " relationships, now posting them");
         postRelationshipList(relationships);
+        long relPostTime = System.nanoTime();
+        System.out.println("Took " + ((relPostTime - relTime)/1000000) + " milliseconds");
 
         //return list of orgs and contact ids that have been posted/edited to pipedrive
         ids.add(orgsNConts.get(0));
@@ -91,6 +137,11 @@ public class VertecSynchroniser {
         ids.add(orgsNConts.get(1));
         ids.add(contsPost);
         ids.add(contsPut);
+
+        System.out.println("Done!");
+
+        long endTime = System.nanoTime();
+        System.out.println("Took " + ((endTime - startTime)/6000000000L) + " milliseconds");
 
         return ids;
     }
@@ -197,8 +248,6 @@ public class VertecSynchroniser {
             Long tempOrgID = null;
             if(pContacts == null) continue;
             for(PDContactReceived pc : pContacts) {
-
-                String fullname = vc.getFirstName() + " " + vc.getSurname();
 
                 if (pc.getOrg_id() != null && pc.getOrg_id().getValue() != null) tempOrgID = pc.getOrg_id().getValue();
 
@@ -344,6 +393,10 @@ public class VertecSynchroniser {
             for(JSONContact c : o.getContacts()){
                 Long owner = teamIdMap.get(c.getOwner());
                 PDContactSend s = new PDContactSend(c,owner);
+                s.setFollowers(new ArrayList<>());
+                for(String f : c.getFollowers()){
+                    s.getFollowers().add(teamIdMap.get(f));
+                }
                 s.setOrg_id(res.getBody().getData().getId());
                 contactsPosted.add(PDS.postContact(s).getBody().getData().getId());
             }

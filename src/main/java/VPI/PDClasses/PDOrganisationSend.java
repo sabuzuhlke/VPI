@@ -92,7 +92,7 @@ public class PDOrganisationSend {
 
         try{
             if(jo.getCreationTime() != null){
-                if (jo.getCreationTime().equals("1900-01-01")) {
+                if (jo.getCreationTime().contains("1900-01-01")) {
                     this.creationTime = "1900-01-01 00:00:00";
                 } else {
                     String[] dateFormatter = jo.getCreationTime().split("T");
@@ -117,10 +117,14 @@ public class PDOrganisationSend {
         this.address = o.getFormattedAddress();
         try{
             if(o.getCreationTime() != null){
-                String[] dateFormatter = o.getCreationTime().split("T");
-                String date = dateFormatter[0];
-                String time = dateFormatter[1];
-                this.creationTime = date + " " + time;
+                if (o.getCreationTime().contains("1900-01-01")) {
+                    this.creationTime = "1900-01-01 00:00:00";
+                } else {
+                    String[] dateFormatter = o.getCreationTime().split("T");
+                    String date = dateFormatter[0];
+                    String time = dateFormatter[1];
+                    this.creationTime = date + " " + time;
+                }
             }
         } catch (Exception e){
             System.out.println("Exception while creating pdorgsend from JSONorg: " + e);
@@ -129,12 +133,6 @@ public class PDOrganisationSend {
         }
 
         this.owner_id = owner_id;
-    }
-
-    //use this function when reading update time from object imported from pipedrive
-    public LocalDateTime readDateFromPDOrganisation() {
-        String[] dAndT = this.update_time.split(" ");
-        return LocalDateTime.parse(dAndT[0] + "T" + dAndT[1]);
     }
 
     public Long getV_id() {

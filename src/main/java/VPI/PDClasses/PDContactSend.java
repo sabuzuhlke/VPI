@@ -51,6 +51,7 @@ public class PDContactSend {
         this.followers = new ArrayList<>();
     }
 
+    //insight
     public PDContactSend(VContact vc) {
         this.name = vc.getName();
         this.email = vc.getEmailDetail();
@@ -89,6 +90,7 @@ public class PDContactSend {
 
     }
 
+    //for Contact put
     public PDContactSend(PDContactReceived pc) {
         this.name = pc.getName();
         this.id = pc.getId();
