@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class PDDealSend {
 
+    private Long id;
     private String title;
     private String value;
     private String currency;
@@ -38,6 +39,14 @@ public class PDDealSend {
     public String getTitle() {
 
         return title;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setTitle(String title) {

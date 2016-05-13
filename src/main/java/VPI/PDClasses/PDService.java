@@ -32,50 +32,166 @@ public class PDService {
 //------------------------------------------------------------------------------------------------------------------POST
 
     public ResponseEntity<PDDealResponse> postDeal(PDDealSend deal) {
-        //TODO: implement
-        return null;
+        RequestEntity<PDDealSend> req;
+        ResponseEntity<PDDealResponse> res = null;
+        String uri = server + "deals" + apiKey;
+
+        try{
+            req = new RequestEntity<>(deal, HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req,PDDealResponse.class);
+
+        } catch(Exception e){
+            System.out.println("Exception on POSTing PDDeal: " + e);
+        }
+
+        return res;
     }
 
     public List<Long> postDealList(List<PDDealSend> deals) {
-        //TODO: implement
-        return null;
+        ResponseEntity<PDDealResponse> res;
+        List<Long> idsPosted = new ArrayList<>();
+
+        for(PDDealSend d : deals){
+            res = postDeal(d);
+            if(res.getStatusCode() == HttpStatus.CREATED){
+                idsPosted.add(res.getBody().getData().getId());
+            } else {
+                System.out.println("Could not create deal, server response: " + res.getStatusCode().toString());
+            }
+        }
+        return idsPosted;
 
     }
 
 //-------------------------------------------------------------------------------------------------------------------GET
 
-    public ResponseEntity<PDDealReceived> getDeal(Long dealId) {
-        //TODO: implement
-        return null;
+    public ResponseEntity<PDDealResponse> getDeal(Long dealId) {
+        RequestEntity<String> req;
+        ResponseEntity<PDDealResponse> res = null;
+        String uri = server + "deals/" + dealId + apiKey;
 
+        try{
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req,PDDealResponse.class);
+
+        } catch(Exception e){
+            System.out.println("Exception on GETing PDDeal: " + e);
+        }
+
+        return res;
     }
 
     public ResponseEntity<PDDealItemsResponse> getAllDeals() {
-        //TODO: implement
-        return null;
+        int start = 0;
+        Boolean moreItemsInCollection = true;
+
+        RequestEntity<String> req;
+        ResponseEntity<PDDealItemsResponse> res = null;
+        List<PDDealReceived> dealsReceived = new ArrayList<>();
+
+        while(moreItemsInCollection){
+
+            String uri = server + "deals?start=" + start + "&limit=100000&" + apiKey.substring(1);
+            try{
+                req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+                res = restTemplate.exchange(req,PDDealItemsResponse.class);
+
+                if(res.getBody().getData() != null){
+                    dealsReceived.addAll(res.getBody().getData());
+                    moreItemsInCollection = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+                    start += 500;
+
+                } else {
+                    moreItemsInCollection = false;
+                }
+
+            } catch(Exception e){
+                System.out.println("Excepton in GETing all deals: " + e);
+            }
+        }
+
+        res.getBody().setData(dealsReceived);
+        return res;
+
+    }
+//-------------------------------------------------------------------------------------------------------------------PUT
+
+    public ResponseEntity<PDDealResponse> updateDeal(PDDealSend deal) {
+        RequestEntity<PDDealSend> req;
+        ResponseEntity<PDDealResponse> res = null;
+        String uri = server + "deals/" + deal.getId() + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(deal, HttpMethod.PUT, new URI(uri));
+            res = restTemplate.exchange(req, PDDealResponse.class);
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION UPDATING DEAL: " + e);
+        }
+
+        return res;
 
     }
 
-//-------------------------------------------------------------------------------------------------------------------PUT
-
-    public ResponseEntity<PDDealReceived> updateDeal(PDDealSend deal) {
-        //TODO: implement
-        return null;
-
+    public List<Long> updateDealList(List<PDDealSend> pds) {
+        ResponseEntity<PDDealResponse> res;
+        List<Long> idsPutted = new ArrayList<>();
+        for(PDDealSend deal : pds) {
+            res = updateDeal(deal);
+            if (res.getStatusCode() == HttpStatus.OK) {
+                idsPutted.add(res.getBody().getData().getId());
+            } else {
+                System.out.println("Could not update deal, server response: " + res.getStatusCode().toString());
+            }
+        }
+        return idsPutted;
     }
 
 //----------------------------------------------------------------------------------------------------------------DELETE
 
-    public Long deleteDeal(Long idToDelete) {
-        //TODO: implement
-        return null;
+    public ResponseEntity<PDDeleteResponse> deleteDeal(Long id) {
+        RequestEntity<String> req;
+        ResponseEntity<PDDeleteResponse> res = null;
 
+        String uri = server + "deals/" + id + apiKey;
+        try{
+            req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req,PDDeleteResponse.class);
+
+        } catch (Exception e){
+            System.out.println("Exception on DELETEing deal: " + e);
+        }
+
+        return res;
     }
 
     public List<Long> deleteDealList(List<Long> idsToDelete) {
-        //TODO: implement
-        return null;
+        List<Long> idsDeleted = new ArrayList<>();
+        List<String> idsDeletedAsString = new ArrayList<>();
+        PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
+        idsForReq.setIds(idsToDelete);
+        RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req;
+        ResponseEntity<PDBulkDeleteResponse> res;
 
+        try {
+            String uri = server + "deals/" + apiKey;
+
+            req = new RequestEntity<>(idsForReq, HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req, PDBulkDeleteResponse.class);
+            idsDeletedAsString = res.getBody().getData().getId();
+            System.out.println(res.getBody().getData().getId().size());
+
+            for(String s : idsDeletedAsString) {
+                idsDeleted.add(Long.parseLong(s));
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return idsDeleted;
     }
 
     /**
@@ -163,6 +279,7 @@ public class PDService {
         }
         return idsPutted;
     }
+
 //-------------------------------------------------------------------------------------------------------------------GET
 
     public ResponseEntity<PDOrganisationResponse> getOrganisation(Long id) {
@@ -200,7 +317,6 @@ public class PDService {
 
 
                     orgsRecieved.addAll(res.getBody().getData());
-                    System.out.println("Not above here");
                     moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
 
                     start += 500;

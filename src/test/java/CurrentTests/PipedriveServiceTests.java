@@ -3,6 +3,8 @@ package CurrentTests;
 import VPI.*;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Contacts.*;
+import VPI.PDClasses.Deals.PDDealItemsResponse;
+import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealResponse;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.*;
@@ -15,9 +17,11 @@ import org.springframework.boot.test.OutputCapture;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.yaml.snakeyaml.events.Event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +70,7 @@ public class PipedriveServiceTests {
         deal.setStage_id(1L);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL");
-        deal.setValue("£10000");
+        deal.setValue("10000");
         deal.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> postedDeal = PS.postDeal(deal);
@@ -75,39 +79,204 @@ public class PipedriveServiceTests {
         assertTrue(postedDeal.getBody().getData().getActive());
         assertTrue(postedDeal.getBody().getData().getTitle().equals("TEST DEAL"));
 
-        assertTrue(false);
+        ResponseEntity<PDDeleteResponse> deletedDeal = PS.deleteDeal(postedDeal.getBody().getData().getId());
+
+        assertTrue(deletedDeal.getStatusCode() == HttpStatus.OK);
+        assertTrue(deletedDeal.getBody().getSuccess());
     }
 
     @Test
     public void canPostDealList() {
-        assertTrue(false);
+        List<PDDealSend> deals = getSomeDeals();
+
+        List<Long> idsPosted = new ArrayList<>();
+        List<Long> idsDeleted = new ArrayList<>();
+
+        idsPosted = PS.postDealList(deals);
+
+        assertTrue(idsPosted.size() == 2);
+
+        idsDeleted = PS.deleteOrganisationList(idsPosted);
+
+        assertTrue(idsDeleted.equals(idsPosted));
+
+
     }
 
     @Test
     public void canGetDeal() {
-        assertTrue(false);
+        PDDealSend deal = new PDDealSend();
+        deal.setAdd_time("2005-07-05 12:21:12");
+        deal.setVisible_to(3);
+        deal.setCost(1000L);
+        deal.setCost_currency("GBP");
+        deal.setCurrency("GBP");
+        deal.setLead_type("New Lead");
+        deal.setLost_reason("No reason");
+        deal.setOrg_id(44265L);
+        deal.setPerson_id(40390L);
+        deal.setUser_id(1363416L);
+        deal.setPhase("Phase");
+        deal.setProject_number("PROJ_1");
+        deal.setStage_id(1L);
+        deal.setStatus("open");
+        deal.setTitle("TEST DEAL");
+        deal.setValue("10000");
+        deal.setZuhlke_office("London");
+
+        ResponseEntity<PDDealResponse> postedDeal = PS.postDeal(deal);
+
+        assertTrue(postedDeal.getBody().getSuccess());
+        assertTrue(postedDeal.getBody().getData().getActive());
+        assertTrue(postedDeal.getBody().getData().getTitle().equals("TEST DEAL"));
+
+        ResponseEntity<PDDealResponse> gotDeal = PS.getDeal(postedDeal.getBody().getData().getId());
+        System.out.println(gotDeal);
+        System.out.println(gotDeal.getBody());
+
+        assertTrue(gotDeal.getStatusCode() == HttpStatus.OK);
+        assertTrue(gotDeal.getBody() != null);
+        assertTrue(gotDeal.getBody().getData() != null);
+        assertTrue(gotDeal.getBody().getData().getActive());
+        assertTrue(gotDeal.getBody().getData().getId().longValue() == postedDeal.getBody().getData().getId());
+        assertTrue(gotDeal.getBody().getData().getCost_currency().equals("GBP"));
+        assertTrue(gotDeal.getBody().getData().getCost() == 1000L);
+        assertTrue(gotDeal.getBody().getData().getCurrency().equals("GBP"));
+        assertTrue(gotDeal.getBody().getData().getLead_type() == 3);
+        assertTrue(gotDeal.getBody().getData().getPhase().equals("Phase"));
+        assertTrue(gotDeal.getBody().getData().getProject_number().equals("PROJ_1"));
+        assertTrue(gotDeal.getBody().getData().getStatus().equals("open"));
+        assertTrue(gotDeal.getBody().getData().getTitle().equals("TEST DEAL"));
+        assertTrue(gotDeal.getBody().getData().getZuhlke_office().equals("1"));
+        assertTrue(gotDeal.getBody().getData().getOrg_id().getValue() == 44265L);
+        assertTrue(gotDeal.getBody().getData().getPerson_id().getValue() == 40390L);
+        assertTrue(gotDeal.getBody().getData().getUser_id().getId() == 1363416L);
+        assertTrue(gotDeal.getBody().getData().getStage_id() == 1L);
+        assertTrue(gotDeal.getBody().getData().getValue().equals("10000"));
+
+        ResponseEntity<PDDeleteResponse> deletedDeal = PS.deleteDeal(postedDeal.getBody().getData().getId());
+
+        assertTrue(deletedDeal.getStatusCode() == HttpStatus.OK);
+        assertTrue(deletedDeal.getBody().getSuccess());
     }
 
     @Test
     public void canGetAllDeals() {
-        assertTrue(false);
+
+        ResponseEntity<PDDealItemsResponse> res = PS.getAllDeals();
+        assertEquals(res.getStatusCode(), HttpStatus.OK);
     }
 
     @Test
     public void canUpdateDeal() {
-        assertTrue(false);
+
+        PDDealSend deal = new PDDealSend();
+        deal.setAdd_time("2005-07-05 12:21:12");
+        deal.setVisible_to(3);
+        deal.setCost(1000L);
+        deal.setCost_currency("GBP");
+        deal.setCurrency("GBP");
+        deal.setLead_type("New Lead");
+        deal.setLost_reason("No reason");
+        deal.setOrg_id(44265L);
+        deal.setPerson_id(40390L);
+        deal.setUser_id(1363416L);
+        deal.setPhase("Phase");
+        deal.setProject_number("PROJ_1");
+        deal.setStage_id(1L);
+        deal.setStatus("open");
+        deal.setTitle("TEST DEAL");
+        deal.setValue("10000");
+        deal.setZuhlke_office("London");
+
+        ResponseEntity<PDDealResponse> postedDeal = PS.postDeal(deal);
+
+        deal.setId(postedDeal.getBody().getData().getId());
+        deal.setTitle("DIFFERENT TITLE");
+
+        ResponseEntity<PDDealResponse> updatedDeal = PS.updateDeal(deal);
+
+        assertTrue(updatedDeal.getBody().getSuccess());
+        assertTrue(updatedDeal.getBody().getData().getTitle().equals("DIFFERENT TITLE"));
+
+        PS.deleteDeal(updatedDeal.getBody().getData().getId());
+
     }
 
     @Test
-    public void canDeleteDeal() {
-        assertTrue(false);
+    public void canPutDealList() {
+
+        List<PDDealSend> deals = getSomeDeals();
+
+        List<Long> postedIds = PS.postDealList(deals);
+
+        int index = 0;
+        for (PDDealSend deal : deals) {
+            deal.setId(postedIds.get(index));
+            deal.setTitle("NOT THE SAME TITLE");
+            index++;
+        }
+
+        List<Long> puttedIds = PS.updateDealList(deals);
+
+        assertTrue(postedIds.size() == puttedIds.size());
+        assertEquals(postedIds, puttedIds);
+
+        PS.deleteDealList(postedIds);
+
     }
 
-    @Test
-    public void canDeleteDealList() {
-        assertTrue(false);
+
+    public List<PDDealSend> getSomeDeals(){
+
+        List<PDDealSend> deals = new ArrayList<>();
+
+        PDDealSend deal = new PDDealSend();
+        deal.setAdd_time("2005-07-05 12:21:12");
+        deal.setVisible_to(3);
+        deal.setCost(1000L);
+        deal.setCost_currency("GBP");
+        deal.setCurrency("GBP");
+        deal.setLead_type("New Lead");
+        deal.setLost_reason("No reason");
+        deal.setOrg_id(44265L);
+        deal.setPerson_id(40390L);
+        deal.setUser_id(1363416L);
+        deal.setPhase("Phase");
+        deal.setProject_number("PROJ_1");
+        deal.setStage_id(1L);
+        deal.setStatus("open");
+        deal.setTitle("TEST DEAL1");
+        deal.setValue("10000");
+        deal.setZuhlke_office("London");
+
+        deals.add(deal);
+
+        deal = new PDDealSend();
+        deal.setAdd_time("2005-07-05 12:21:12");
+        deal.setVisible_to(3);
+        deal.setCost(1000L);
+        deal.setCost_currency("GBP");
+        deal.setCurrency("GBP");
+        deal.setLead_type("New Lead");
+        deal.setLost_reason("No reason");
+        deal.setOrg_id(44265L);
+        deal.setPerson_id(40390L);
+        deal.setUser_id(1363416L);
+        deal.setPhase("Phase");
+        deal.setProject_number("PROJ_2");
+        deal.setStage_id(1L);
+        deal.setStatus("open");
+        deal.setTitle("TEST DEAL 2");
+        deal.setValue("99999");
+        deal.setZuhlke_office("London");
+
+        deals.add(deal);
+
+        return deals;
     }
 
+    //=====================================================================================================ORGANISATIONS
     @Test
     public void canPostOrganisation() {
         //Post org, check response says success

@@ -4,6 +4,7 @@ import VPI.PDClasses.Contacts.OrgId;
 import VPI.PDClasses.PDOwner;
 import VPI.PDClasses.Users.PDUser;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by sabu on 12/05/2016.
@@ -17,7 +18,7 @@ public class PDDealReceived {
     private OrgId org_id;
     private int stage_id;
     private String title;
-    private Long value;
+    private String value;
     private String currency;
     private String update_time;
     private Boolean active;
@@ -30,7 +31,7 @@ public class PDDealReceived {
     @JsonProperty("ca0900cc615df148dc968c83c52020b1bfad7798")
     private String zuhlke_office;
     @JsonProperty("a49f4c82c7c44286df3c137791bcda2170c3ae75")
-    private String lead_type;
+    private Integer lead_type;
     @JsonProperty("361cf6ef6cc225008251d67a6a3fdcbbc8f03d55")
     private String project_number;
     @JsonProperty("7ef8282593f5a552696a36a842b250730c4df8ca")
@@ -101,11 +102,12 @@ public class PDDealReceived {
         this.title = title;
     }
 
-    public Long getValue() {
+
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Long value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
@@ -165,11 +167,11 @@ public class PDDealReceived {
         this.zuhlke_office = zuhlke_office;
     }
 
-    public String getLead_type() {
+    public Integer getLead_type() {
         return lead_type;
     }
 
-    public void setLead_type(String lead_type) {
+    public void setLead_type(Integer lead_type) {
         this.lead_type = lead_type;
     }
 
@@ -212,4 +214,18 @@ public class PDDealReceived {
     public void setStage_order_nr(int stage_order_nr) {
         this.stage_order_nr = stage_order_nr;
     }
+    @Override
+    public String toString(){
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
+        }
+        return retStr;
+    }
+
 }

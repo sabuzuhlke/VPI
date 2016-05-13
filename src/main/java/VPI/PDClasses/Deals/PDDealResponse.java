@@ -19,5 +19,10 @@ public class PDDealResponse extends PDResponse{
     public void setData(PDDealReceived data) {
         this.data = data;
     }
+
+    @Override
+    public String toString(){
+        return data.toString();
+    }
 }
 
