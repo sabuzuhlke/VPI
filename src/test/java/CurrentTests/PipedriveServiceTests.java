@@ -3,6 +3,8 @@ package CurrentTests;
 import VPI.*;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Contacts.*;
+import VPI.PDClasses.Deals.PDDealResponse;
+import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.junit.Before;
@@ -47,6 +49,32 @@ public class PipedriveServiceTests {
 
     @Test
     public void canPostDeal() {
+
+        PDDealSend deal = new PDDealSend();
+        deal.setAdd_time("2005-07-05 12:21:12");
+        deal.setVisible_to(3);
+        deal.setCost(1000L);
+        deal.setCost_currency("GBP");
+        deal.setCurrency("GBP");
+        deal.setLead_type("New Lead");
+        deal.setLost_reason("No reason");
+        deal.setOrg_id(44265L);
+        deal.setPerson_id(40390L);
+        deal.setUser_id(1363416L);
+        deal.setPhase("Phase");
+        deal.setProject_number("PROJ_1");
+        deal.setStage_id(1L);
+        deal.setStatus("open");
+        deal.setTitle("TEST DEAL");
+        deal.setValue("£10000");
+        deal.setZuhlke_office("London");
+
+        ResponseEntity<PDDealResponse> postedDeal = PS.postDeal(deal);
+
+        assertTrue(postedDeal.getBody().getSuccess());
+        assertTrue(postedDeal.getBody().getData().getActive());
+        assertTrue(postedDeal.getBody().getData().getTitle().equals("TEST DEAL"));
+
         assertTrue(false);
     }
 

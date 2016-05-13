@@ -15,7 +15,7 @@ public class PDDealSend {
     private Long org_id;
     private Long stage_id;
     private String lost_reason;
-    private Integer status;
+    private String status;
     private String add_time;
     private Integer visible_to = 3;
 
@@ -92,11 +92,11 @@ public class PDDealSend {
         this.stage_id = stage_id;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
