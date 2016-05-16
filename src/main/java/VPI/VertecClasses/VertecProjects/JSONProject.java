@@ -19,6 +19,8 @@ public class JSONProject {
     private String code;
     @JsonProperty("client_ref")
     private Long clientRef;
+    @JsonProperty("customer_ref")
+    private Long customerRef;
     @JsonProperty("leader_ref")
     private Long leaderRef;
     @JsonProperty("phases")
@@ -81,5 +83,13 @@ public class JSONProject {
 
     public void setPhases(List<JSONPhase> phases) {
         this.phases = phases;
+    }
+
+    public Long getCustomerRef() {
+        return customerRef;
+    }
+
+    public void setCustomerRef(Long customerRef) {
+        this.customerRef = customerRef;
     }
 }

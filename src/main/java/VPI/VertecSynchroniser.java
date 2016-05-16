@@ -215,7 +215,8 @@ public class VertecSynchroniser {
                 Long user_id = teamIdMap.get(phase.getPersonResponsible());
                 deal.setUser_id(user_id);
 
-                //person_id TODO: Get and Set Person/Customer attached to projectd
+                //person_id TODO: build map of customer v_id to p_id before this is called
+                deal.setPerson_id(customerMap.get(project.getCustomerRef()));
 
                 //org_id
                 deal.setOrg_id(idMap.get(project.getClientRef()));
