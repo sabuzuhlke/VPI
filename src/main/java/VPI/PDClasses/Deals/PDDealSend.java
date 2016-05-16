@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class PDDealSend {
 
-    private Long id;
+    private Long id;                //only set if part of PUT
     private String title;
     private String value;
     private String currency;
@@ -32,6 +32,8 @@ public class PDDealSend {
     private Long cost;
     @JsonProperty("44105f961d387bc35323ecf4bc6325be3a732c8d_currency")
     private String cost_currency;
+
+    private Long v_id;
 
     public PDDealSend() {
     }
@@ -179,5 +181,13 @@ public class PDDealSend {
 
     public void setCost_currency(String cost_currency) {
         this.cost_currency = cost_currency;
+    }
+
+    public Long getV_id() {
+        return v_id;
+    }
+
+    public void setV_id(Long v_id) {
+        this.v_id = v_id;
     }
 }
