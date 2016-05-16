@@ -1,5 +1,7 @@
-package VPI.VertecClasses;
+package VPI.VertecClasses.VertecOrganisations;
 
+import VPI.VertecClasses.VertecOrganisations.JSONContact;
+import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

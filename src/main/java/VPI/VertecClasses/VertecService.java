@@ -1,6 +1,8 @@
 package VPI.VertecClasses;
 
 import VPI.MyCredentials;
+import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
+import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,11 @@ public class VertecService {
                 });
     }
 
+    /**
+     * Returns a ZUKResponse containing all organisastions relevant to ZUK along with nested contacts
+     * and a list of dangling contacts not attached to organisations
+     * @return
+     */
     public ResponseEntity<ZUKResponse> getZUKinfo(){
 
         //request path
@@ -68,6 +75,41 @@ public class VertecService {
         return res;
     }
 
+    /**
+     * Returns a ZUKProjects containing all projects relevant to ZUK along with their nested Project Phases
+     * @return
+     */
+    public ResponseEntity<ZUKProjects> getZUKProjects() {
+
+        //request path
+        String apiPath = "/projects/ZUK";
+
+        //declare request and response
+        RequestEntity<String> req;
+        ResponseEntity<ZUKProjects> res = null;
+
+        //add authentication header to headers object
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+
+        try{
+
+            req = new RequestEntity<>(headers, HttpMethod.GET, new URI("https://" + server + apiPath));
+            res = restTemplate.exchange(req, ZUKProjects.class);
+
+        }  catch (Exception e) {
+            System.out.println("Exception in Vertec Service, trying to get ZUKProjects: " + e);
+        }
+
+        return res;
+
+    }
+
+    /**
+     * Returns "Success!" if request is properly authenticated and access permissions are not limited otherwise returns
+     * appropriate error string
+     * @return
+     */
     public String ping() {
 
         //request path

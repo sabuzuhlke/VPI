@@ -1,4 +1,4 @@
-package VPI.VertecClasses;
+package VPI.VertecClasses.VertecOrganisations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

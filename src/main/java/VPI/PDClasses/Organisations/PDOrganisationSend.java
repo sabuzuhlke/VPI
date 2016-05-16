@@ -1,7 +1,7 @@
 package VPI.PDClasses.Organisations;
 
 import VPI.InsightClasses.VOrganisation;
-import VPI.VertecClasses.JSONOrganisation;
+import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PDOrganisationSend {

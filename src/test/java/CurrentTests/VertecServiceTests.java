@@ -1,11 +1,10 @@
 package CurrentTests;
 
 import VPI.VertecClasses.VertecService;
-import VPI.VertecClasses.ZUKResponse;
+import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.http.ResponseEntity;
 
 
 import java.io.StringReader;

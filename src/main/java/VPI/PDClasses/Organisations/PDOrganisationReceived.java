@@ -2,7 +2,7 @@ package VPI.PDClasses.Organisations;
 
 import VPI.InsightClasses.VOrganisation;
 import VPI.PDClasses.PDOwner;
-import VPI.VertecClasses.JSONOrganisation;
+import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;

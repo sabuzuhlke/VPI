@@ -1,7 +1,7 @@
 package VPI.PDClasses.Contacts;
 
 import VPI.InsightClasses.VContact;
-import VPI.VertecClasses.JSONContact;
+import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

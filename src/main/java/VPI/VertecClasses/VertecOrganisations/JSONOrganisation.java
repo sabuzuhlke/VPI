@@ -1,5 +1,6 @@
-package VPI.VertecClasses;
+package VPI.VertecClasses.VertecOrganisations;
 
+import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;

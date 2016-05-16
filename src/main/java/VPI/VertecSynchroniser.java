@@ -4,15 +4,17 @@ import VPI.PDClasses.*;
 import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
+import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationResponse;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.Users.PDUser;
-import VPI.VertecClasses.JSONContact;
-import VPI.VertecClasses.JSONOrganisation;
+import VPI.VertecClasses.VertecOrganisations.JSONContact;
+import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
-import VPI.VertecClasses.ZUKResponse;
+import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.*;
@@ -55,9 +57,7 @@ public class VertecSynchroniser {
         this.idMap = new HashMap<>();
     }
 
-    public List<List<Long>> importToPipedrive() {
-
-        System.out.println("Testing " + 5 + " = " + (10/2));
+    public List<List<Long>> importOrganisationsAndContactsToPipedrive() {
 
         long startTime = System.nanoTime();
         //get all Vertec Data
@@ -153,6 +153,17 @@ public class VertecSynchroniser {
 
         return ids;
     }
+
+    public List<Long> importProjectsAndPhasesToPipedrive() {
+
+        List<JSONProject> projects = VS.getZUKProjects().getBody().getProjects();
+
+        //List<PDDealSend> dealsToPost = createDealObjects(projects);
+
+        return new ArrayList<>();
+
+    }
+
 
     public List<PDRelationship> getOrganistionHeirarchy(List<JSONOrganisation> orgs) {
 
