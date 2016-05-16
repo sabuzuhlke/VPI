@@ -1,10 +1,12 @@
 package CurrentTests;
 
+import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.ResponseEntity;
 
 
 import java.io.StringReader;
@@ -79,6 +81,16 @@ public class VertecServiceTests {
         assertTrue(res.getOrganisationList().get(0).getObjid() == 1L);
         assertTrue(res.getOrganisationList().get(0).getContacts().isEmpty());
 
+
+    }
+
+    @Test
+    public void canGetAllProjectsAndPhasesFromVertec() {
+
+        ResponseEntity<ZUKProjects> res = VS.getZUKProjects();
+
+        assertTrue(res.getBody().getProjects() != null);
+        System.out.println(res.getBody().toString());
 
     }
 
