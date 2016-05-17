@@ -12,6 +12,7 @@ import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
+import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
@@ -158,10 +159,108 @@ public class VertecSynchroniser {
 
         List<JSONProject> projects = VS.getZUKProjects().getBody().getProjects();
 
-        //List<PDDealSend> dealsToPost = createDealObjects(projects);
+        List<PDDealSend> dealsToPost = createDealObjects(projects);
 
         return new ArrayList<>();
 
+    }
+
+    public List<PDDealSend> createDealObjects(List<JSONProject> projects) {
+
+        List<PDDealSend> deals = new ArrayList<>();
+
+        for(JSONProject project : projects) {
+
+            for(JSONPhase phase : project.getPhases()) {
+
+                PDDealSend deal = new PDDealSend();
+                /**
+                 * must set:
+                 * title --------- check
+                 * value --------- check
+                 * currency ------ check
+                 * user_id ------- check
+                 * person_id -----
+                 * org_id -------- done (assuming idMap is populated (check))
+                 * stage_id ------
+                 * lost_reason?---
+                 * status --------
+                 * add_time ------
+                 * visible_to ----
+                 * v_id ---------- done
+                 * zuhlke_office--
+                 * lead_type -----
+                 * project_number- done
+                 * phase --------- done
+                 * cost ----------
+                 * cost_currency -
+                 */
+
+                //TODO: ensure title is set correctly
+                //title
+                String title = project.getTitle() + ": " + phase.getDescription();
+                deal.setTitle(title);
+
+                //value
+                String value = phase.getExternalValue();
+                deal.setValue(value);
+
+                //currency
+                String currency = "GBP";
+                deal.setCurrency(currency);
+
+                //sets the person responsible to be the leader of the phase,
+                //but if this is null the leader of whole project? or check other phase owners?;
+                // TODO: check other phases for user_id if null
+                Long user_id = teamIdMap.get(phase.getPersonResponsible());
+                deal.setUser_id(user_id);
+
+                //person_id TODO: build map of customer v_id to p_id before this is called
+                deal.setPerson_id(customerMap.get(project.getCustomerRef()));
+
+                //org_id
+                deal.setOrg_id(idMap.get(project.getClientRef()));
+
+                //stage_id
+
+                //lost_reason
+
+                //status ('open' = Open, 'won' = Won, 'lost' = Lost, 'deleted' = Deleted)
+
+                //add_time TODO: add creationDateTime to VRAPI and VPI
+
+                //visible_to (1 = owner and followers, 3 = everyone)
+                deal.setVisible_to(3);
+
+                //v_id
+                deal.setV_id(phase.getV_id());
+
+                //zuhlke_office TODO: somehow get this from VRAPI
+
+                //lead_type
+
+                //project number
+                deal.setProject_number(project.getCode());
+
+                //phase
+                String dealPhase = phase.getCode();
+                deal.setPhase(dealPhase);
+
+                //cost
+
+                //cost_currency TODO: Get and set currency;
+
+
+
+
+                //add deal to list
+                deals.add(deal);
+            }
+
+
+        }
+
+        return deals;
     }
 
 
