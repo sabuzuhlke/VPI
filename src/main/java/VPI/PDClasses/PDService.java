@@ -1,18 +1,21 @@
 package VPI.PDClasses;
 
+import VPI.PDClasses.Activities.PDActivity;
+import VPI.PDClasses.Activities.PDActivityItemsResponse;
+import VPI.PDClasses.Activities.PDActivityResponse;
 import VPI.PDClasses.Contacts.*;
-import VPI.PDClasses.Deals.PDDealItemsResponse;
-import VPI.PDClasses.Deals.PDDealReceived;
-import VPI.PDClasses.Deals.PDDealResponse;
-import VPI.PDClasses.Deals.PDDealSend;
+import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUserItemsResponse;
+import com.sun.javafx.collections.MappingChange;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PDService {
 
@@ -408,19 +411,21 @@ public class PDService {
         return res;
     }
 
-    public List<Long> postContactList(List<PDContactSend> contacts){
-        List<Long> idsPosted = new ArrayList<>();
+    public Map<Long, Long> postContactList(List<PDContactSend> contacts){
+        Map<Long, Long> map = new HashMap<>();
         ResponseEntity<PDContactResponse> res;
 
         for(PDContactSend p : contacts){
             res = postContact(p);
             if (res.getStatusCode() == HttpStatus.CREATED) {
-                idsPosted.add(res.getBody().getData().getId());
+
+                map.put(p.getV_id(), res.getBody().getData().getId());
+
             } else {
                 System.out.println("Could not create contact, server response: " + res.getStatusCode().toString());
             }
         }
-        return idsPosted;
+        return map;
 
     }
 
@@ -545,22 +550,67 @@ public class PDService {
         return res;
     }
 
-    public List<Long> putContactList(List<PDContactSend> contacts){
+    public Map<Long, Long> putContactList(List<PDContactSend> contacts){
         ResponseEntity<PDContactResponse> res;
+
+        Map<Long, Long> map = new HashMap<>();
+
         List<Long> idsPut = new ArrayList<>();
 
         for(PDContactSend c : contacts){
             res = updateContact(c);
             if(res.getStatusCode() == HttpStatus.OK){
 
+                map.put(c.getV_id(), res.getBody().getData().getId());
                 idsPut.add(res.getBody().getData().getId());
             }else{
                 System.out.println("Could not UPDATE contact, server responded: " + res.getStatusCode());
             }
         }
-        return idsPut;
+        return map;
     }
 
+
+    /**
+     * Activites
+     */
+//-------------------------------------------------------------------------------------------------------------------GET
+
+    public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForDeal(Long dealId) {
+        //TODO: implement this + test
+        return null;
+    }
+
+    public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForOrganisation(Long orgId) {
+        //TODO: implement this + test
+        return null;
+    }
+
+    public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForContact(Long contactId) {
+        //TODO: implement this + test
+        return null;
+    }
+
+//------------------------------------------------------------------------------------------------------------------POST
+
+    public ResponseEntity<PDActivityResponse> postActivity(PDActivity activity) {
+        //TODO: implement this + test
+        return null;
+    }
+
+//-------------------------------------------------------------------------------------------------------------------PUT
+
+    public ResponseEntity<PDActivityResponse> putActivity(PDActivity activity) {
+        //TODO: implement this + test
+        return null;
+    }
+
+//----------------------------------------------------------------------------------------------------------------DELETE
+
+    public ResponseEntity<PDDeleteResponse> deleteActivity(Long activityId) {
+        //TODO: implement this + test
+        return null;
+    }
 
     /**
      * Users

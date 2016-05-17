@@ -1,11 +1,15 @@
 package CurrentTests;
 
 import VPI.Application;
+import VPI.MyCredentials;
+import VPI.PDClasses.PDService;
+import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecSynchroniser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
@@ -55,4 +59,17 @@ public class ImportZUK {
 //        sync.clear();
 //
 //    }
+
+    @Test
+    public void canImportOrganisationsContactsAndProjects() {
+
+        VertecSynchroniser VS = new VertecSynchroniser();
+        MyCredentials creds = new MyCredentials();
+        PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+
+        PD.clearPD(new ArrayList<>(), new ArrayList<>());
+        VS.importOrganisationsAndContactsToPipedriveAndPrint();
+        VS.importProjectsAndPhasesToPipedrive();
+
+    }
 }

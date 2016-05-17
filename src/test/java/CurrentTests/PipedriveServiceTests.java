@@ -3,10 +3,7 @@ package CurrentTests;
 import VPI.*;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Contacts.*;
-import VPI.PDClasses.Deals.PDDealItemsResponse;
-import VPI.PDClasses.Deals.PDDealReceived;
-import VPI.PDClasses.Deals.PDDealResponse;
-import VPI.PDClasses.Deals.PDDealSend;
+import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.junit.Before;
@@ -25,6 +22,7 @@ import org.yaml.snakeyaml.events.Event;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -67,7 +65,7 @@ public class PipedriveServiceTests {
         deal.setUser_id(1363416L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(1L);
+        deal.setStage_id(1);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL");
         deal.setValue("10000");
@@ -118,7 +116,7 @@ public class PipedriveServiceTests {
         deal.setUser_id(1363416L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(1L);
+        deal.setStage_id(1);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL");
         deal.setValue("10000");
@@ -142,7 +140,7 @@ public class PipedriveServiceTests {
         assertTrue(gotDeal.getBody().getData().getCost_currency().equals("GBP"));
         assertTrue(gotDeal.getBody().getData().getCost() == 1000L);
         assertTrue(gotDeal.getBody().getData().getCurrency().equals("GBP"));
-        assertTrue(gotDeal.getBody().getData().getLead_type() == 3);
+        //assertTrue(gotDeal.getBody().getData().getLead_type() == 3);
         assertTrue(gotDeal.getBody().getData().getPhase().equals("Phase"));
         assertTrue(gotDeal.getBody().getData().getProject_number().equals("PROJ_1"));
         assertTrue(gotDeal.getBody().getData().getStatus().equals("open"));
@@ -183,21 +181,28 @@ public class PipedriveServiceTests {
         deal.setUser_id(1363416L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(1L);
+        deal.setStage_id(1);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL");
         deal.setValue("10000");
         deal.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> postedDeal = PS.postDeal(deal);
+        assertTrue(postedDeal.getBody().getData().getTitle().equals("TEST DEAL"));
 
+        System.out.println(postedDeal);
         deal.setId(postedDeal.getBody().getData().getId());
         deal.setTitle("DIFFERENT TITLE");
 
         ResponseEntity<PDDealResponse> updatedDeal = PS.updateDeal(deal);
 
         assertTrue(updatedDeal.getBody().getSuccess());
-        assertTrue(updatedDeal.getBody().getData().getTitle().equals("DIFFERENT TITLE"));
+        System.out.println(updatedDeal);
+        assertTrue(updatedDeal.
+                getBody().
+                getData().
+                getTitle().
+                equals("DIFFERENT TITLE"));
 
         PS.deleteDeal(updatedDeal.getBody().getData().getId());
 
@@ -226,7 +231,6 @@ public class PipedriveServiceTests {
 
     }
 
-
     public List<PDDealSend> getSomeDeals(){
 
         List<PDDealSend> deals = new ArrayList<>();
@@ -244,7 +248,7 @@ public class PipedriveServiceTests {
         deal.setUser_id(1363416L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(1L);
+        deal.setStage_id(1);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL1");
         deal.setValue("10000");
@@ -265,7 +269,7 @@ public class PipedriveServiceTests {
         deal.setUser_id(1363416L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_2");
-        deal.setStage_id(1L);
+        deal.setStage_id(1);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL 2");
         deal.setValue("99999");
@@ -275,6 +279,7 @@ public class PipedriveServiceTests {
 
         return deals;
     }
+
 
     //=====================================================================================================ORGANISATIONS
     @Test
@@ -487,7 +492,6 @@ public class PipedriveServiceTests {
         List<PDContactSend> contacts = assignMatchingPDContacts();
         ResponseEntity<PDOrganisationResponse> Orgres;
         ResponseEntity<PDDeleteResponse> delres;
-        List<Long> idsPosted;
 
         Orgres = PS.postOrganisation("Yuuhuuu!",3);
         assertTrue(Orgres.getStatusCode() == HttpStatus.CREATED);
@@ -498,12 +502,17 @@ public class PipedriveServiceTests {
             contacts.get(i).setOrg_id(orgid);
         }
 
-        idsPosted = PS.postContactList(contacts);
+        System.out.println(contacts.size());
+        Map<Long, Long> map = PS.postContactList(contacts);
 
-        assertTrue(idsPosted.size() == contacts.size());
+        System.out.println(map.size());
+        System.out.println(map.keySet().size());
+        System.out.println(map.values().size());
+
+        assertTrue(map.keySet().size() == contacts.size());
         List<Long> contactsDeleted = new ArrayList<>();
 
-        for(Long id : idsPosted){
+        for(Long id : map.values()){
             delres = PS.deleteContact(id);
             assertTrue(delres.getBody().getSuccess());
             contactsDeleted.add(delres.getBody().getData().getId());
@@ -511,7 +520,7 @@ public class PipedriveServiceTests {
 
         PS.deleteOrganisation(orgid);
 
-        assertEquals(idsPosted.size(),contactsDeleted.size());
+        assertEquals(map.values().size(),contactsDeleted.size());
     }
 
     @Test
@@ -519,8 +528,6 @@ public class PipedriveServiceTests {
         List<PDContactSend> contacts = assignMatchingPDContacts();
         ResponseEntity<PDOrganisationResponse> Orgres;
         ResponseEntity<PDDeleteResponse> delres;
-        List<Long> idsPosted = new ArrayList<>();
-        List<Long> idsPut = new ArrayList<>();
         List<Long> contactsDeleted = new ArrayList<>();
 
 
@@ -531,22 +538,24 @@ public class PipedriveServiceTests {
         for(int i = 0; i < contacts.size(); i++){
             contacts.get(i).setOrg_id(orgid);
         }
-        idsPosted = PS.postContactList(contacts);
+        Map<Long, Long> map = PS.postContactList(contacts);
 
         contacts.get(0).getEmail().add(new ContactDetail("BatMobile@batmail.com", true));
         contacts.get(1).getEmail().add(new ContactDetail("Robin@day.com", false));
         contacts.get(2).getEmail().add(new ContactDetail("smile@me.com", false));
         contacts.get(3).getEmail().add(new ContactDetail("rat@inthepack.com",true));
 
-        contacts.get(0).setId(idsPosted.get(0));
-        contacts.get(1).setId(idsPosted.get(1));
-        contacts.get(2).setId(idsPosted.get(2));
-        contacts.get(3).setId(idsPosted.get(3));
+        contacts.get(0).setId(map.get(contacts.get(0).getV_id()));
+        contacts.get(1).setId(map.get(contacts.get(1).getV_id()));
+        contacts.get(2).setId(map.get(contacts.get(2).getV_id()));
+        contacts.get(3).setId(map.get(contacts.get(3).getV_id()));
 
-        idsPut = PS.putContactList(contacts);
-        assertTrue(idsPosted.size() == idsPut.size());
+        int sizeOfMapBeforePut = map.values().size();
 
-        for(Long id : idsPosted){
+        map.putAll( PS.putContactList(contacts) );
+        assertTrue(map.keySet().size() == sizeOfMapBeforePut);
+
+        for(Long id : map.values()){
             delres = PS.deleteContact(id);
             assertTrue(delres.getBody().getSuccess());
             contactsDeleted.add(delres.getBody().getData().getId());
@@ -554,7 +563,7 @@ public class PipedriveServiceTests {
 
         PS.deleteOrganisation(orgid);
 
-        assertEquals(idsPosted.size(),contactsDeleted.size());
+        assertEquals(map.values().size(),contactsDeleted.size());
 
     }
 
@@ -578,6 +587,7 @@ public class PipedriveServiceTests {
         p12.setPrimary(false);
         p12.setValue("1234567890");
         c1.getPhone().add(p12);
+        c1.setV_id(12421L);
 
         PDContactSend c2 = new PDContactSend();
         c2.setName("Robin");
@@ -585,6 +595,7 @@ public class PipedriveServiceTests {
         e2.setPrimary(true);
         e2.setValue("Robin@night.com");
         c2.getEmail().add(e2);
+        c2.setV_id(12435L);
 
         PDContactSend c3 = new PDContactSend();
         c3.setName("Joker");
@@ -596,6 +607,7 @@ public class PipedriveServiceTests {
         p3.setPrimary(true);
         p3.setValue("123123");
         c3.getPhone().add(p3);
+        c3.setV_id(98754L);
 
         PDContactSend c4 = new PDContactSend();
         c4.setName("Penguin");
@@ -607,6 +619,7 @@ public class PipedriveServiceTests {
         p4.setPrimary(true);
         p4.setValue("321321");
         c4.getPhone().add(p4);
+        c4.setV_id(3457L);
 
         List<PDContactSend> pdContactSends = new ArrayList<>();
         pdContactSends.add(c1);

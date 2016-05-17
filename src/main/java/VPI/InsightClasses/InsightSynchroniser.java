@@ -76,7 +76,8 @@ public class InsightSynchroniser {
     private List<Long> importContacts() {
         addContactsForNewOrganisationsToPostList();
         resolveContactsForMatchedOrganisations();
-        return pushContacts();
+        //return pushContacts();
+        return new ArrayList<>();
     }
 
     private void resolveContactsForMatchedOrganisations() {
@@ -236,14 +237,14 @@ public class InsightSynchroniser {
         return idsPushed;
     }
 
-    private List<Long> pushContacts() {
-        List<Long> idsPosted = PDS.postContactList(contacts.postList);
-        List<Long> idsPutted = PDS.putContactList(contacts.putList);
-
-        List<Long> idsPushed = new ArrayList<>(idsPosted);
-        idsPushed.addAll(idsPutted);
-        return idsPushed;
-    }
+//    private List<Long> pushContacts() {
+//        //List<Long> idsPosted = PDS.postContactList(contacts.postList);
+//        List<Long> idsPutted = PDS.putContactList(contacts.putList);
+//
+//        List<Long> idsPushed = new ArrayList<>(idsPosted);
+//        idsPushed.addAll(idsPutted);
+//        return idsPushed;
+//    }
 
     public void clear(){
         this.organisations = new Organisations();

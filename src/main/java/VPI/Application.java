@@ -34,8 +34,9 @@ public class Application implements CommandLineRunner {
         try {
 
             //Code here will run just once
-            //PD.clearPD(new ArrayList<>(), new ArrayList<>());
-            //VS.importToPipedrive();
+//            PD.clearPD(new ArrayList<>(), new ArrayList<>());
+//            VS.importOrganisationsAndContactsToPipedriveAndPrint();
+//            VS.importProjectsAndPhasesToPipedrive();
 
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {

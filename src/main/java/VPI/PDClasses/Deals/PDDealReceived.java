@@ -11,27 +11,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class PDDealReceived {
 
-    private Long id;
-    private PDOwner user_id;
+    private Long id;//
+    private PDOwner user_id;//
     private PDOwner creator_user_id;
-    private PDPersonId person_id;
-    private OrgId org_id;
-    private int stage_id;
-    private String title;
-    private String value;
-    private String currency;
+    private PDPersonId person_id;//
+    private OrgId org_id;//
+    private int stage_id;//
+    private String title;//
+    private String value;//
+    private String currency;//
     private String update_time;
     private Boolean active;
     private String status;
     private String visible_to;
     private int pipeline_id;
+    private String lost_reason;
     //won_time
     //lost_time
     //lost_reason
     @JsonProperty("ca0900cc615df148dc968c83c52020b1bfad7798")
     private String zuhlke_office;
     @JsonProperty("a49f4c82c7c44286df3c137791bcda2170c3ae75")
-    private Integer lead_type;
+    private String lead_type;
     @JsonProperty("361cf6ef6cc225008251d67a6a3fdcbbc8f03d55")
     private String project_number;
     @JsonProperty("7ef8282593f5a552696a36a842b250730c4df8ca")
@@ -42,6 +43,10 @@ public class PDDealReceived {
     private String cost_currency;
 
     private int stage_order_nr;
+
+
+    @JsonProperty("a604365b4dc4fbe6c736f02efd82ea41ace64595")
+    private Long v_id;
 
     public PDDealReceived() {
     }
@@ -167,11 +172,11 @@ public class PDDealReceived {
         this.zuhlke_office = zuhlke_office;
     }
 
-    public Integer getLead_type() {
+    public String getLead_type() {
         return lead_type;
     }
 
-    public void setLead_type(Integer lead_type) {
+    public void setLead_type(String lead_type) {
         this.lead_type = lead_type;
     }
 
@@ -214,6 +219,23 @@ public class PDDealReceived {
     public void setStage_order_nr(int stage_order_nr) {
         this.stage_order_nr = stage_order_nr;
     }
+
+    public String getLost_reason() {
+        return lost_reason;
+    }
+
+    public void setLost_reason(String lost_reason) {
+        this.lost_reason = lost_reason;
+    }
+
+    public Long getV_id() {
+        return v_id;
+    }
+
+    public void setV_id(Long v_id) {
+        this.v_id = v_id;
+    }
+
     @Override
     public String toString(){
         String retStr = null;

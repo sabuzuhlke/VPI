@@ -1,5 +1,9 @@
 package VPI.PDClasses.Deals;
 
+/**
+ * Created by sabu on 17/05/2016.
+ */
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Created by sabu on 12/05/2016.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PDDealSend {
+public class PDDealPut {
 
     @JsonIgnore
     private Long id;//only set if part of PUT
@@ -53,10 +57,10 @@ public class PDDealSend {
     @JsonProperty("a604365b4dc4fbe6c736f02efd82ea41ace64595")
     private Long v_id;
 
-    public PDDealSend() {
+    public PDDealPut() {
     }
 
-    public PDDealSend(PDDealReceived d){
+    public PDDealPut(PDDealReceived d){
         this.id = d.getId();
         this.title = d.getTitle();
         this.value = d.getValue();

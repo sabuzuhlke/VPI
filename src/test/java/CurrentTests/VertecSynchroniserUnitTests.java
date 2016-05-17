@@ -498,7 +498,7 @@ public class VertecSynchroniserUnitTests {
         map.put(6L, 16L);
         map.put(7L, 17L);
 
-        sync.setIdMap(map);
+        sync.setOrgIdMap(map);
 
         List<PDRelationship> rels = sync.getOrganistionHeirarchy(orgs);
 
@@ -512,6 +512,11 @@ public class VertecSynchroniserUnitTests {
         assertTrue(rels.get(1).getRel_owner_org_id() == 17L);
         assertTrue(rels.get(1).getRel_linked_org_id() == 16L);
 
+
+    }
+
+    @Test
+    public void canNoticeDifferenceBetweenDealsCorrectly(){
 
     }
 

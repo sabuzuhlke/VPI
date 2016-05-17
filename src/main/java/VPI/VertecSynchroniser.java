@@ -4,6 +4,7 @@ import VPI.PDClasses.*;
 import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
+import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationResponse;
@@ -16,8 +17,12 @@ import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -34,10 +39,15 @@ public class VertecSynchroniser {
     public List<PDOrganisationSend> organisationPutList;
     public List<JSONOrganisation> organisationPostList;
 
+    public List<PDDealSend> dealPostList;
+    public List<PDDealSend> dealPutList;
 
     private Map<String,Long> teamIdMap;
     //map of v_id's to p_ids used for building relationship heirarchy
-    private Map<Long, Long> idMap;
+    private Map<Long, Long> orgIdMap;
+    //map of v_ids to p_ids for contacts, for associating deals with persons
+    private Map<Long, Long> contactIdMap;
+
 
 
     public VertecSynchroniser() {
@@ -54,11 +64,64 @@ public class VertecSynchroniser {
         this.contactPutList = new ArrayList<>();
         this.organisationPostList = new ArrayList<>();
         this.organisationPutList = new ArrayList<>();
+        this.dealPostList = new ArrayList<>();
+        this.dealPutList = new ArrayList<>();
         this.teamIdMap = new HashMap<>();
-        this.idMap = new HashMap<>();
+        this.orgIdMap = new HashMap<>();
+        this.contactIdMap = new HashMap<>();
     }
 
     public List<List<Long>> importOrganisationsAndContactsToPipedrive() {
+
+        //get all Vertec Data
+        ZUKResponse allVertecData = VS.getZUKinfo().getBody();
+
+        Set<String> v_emails = getVertecUserEmails(allVertecData);
+        List<PDUser> pd_users= getPipedriveUsers();
+
+        //constructTeamIdMap(v_emails, pd_users); //TODO: use this instead of constructTestTeamMap() on deployment
+        constructTestTeamMap();
+
+        //get all Pipedrive organisations
+        List<PDOrganisationReceived> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
+
+        //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
+        resolveOrganisationsAndNestedContacts(allVertecData.getOrganisationList(), pipedriveOrgs);
+
+        //get all pipedrive contacts, filter to only use those without organisations
+        List<PDContactReceived> pipedriveContacts = PDS.getAllContacts().getBody().getData();
+        List<PDContactReceived> contactsWithoutOrg = filterContactsWithOrg(pipedriveContacts);
+
+        //compare dangling vcontacts to leftover pdcontacts
+        compareContacts(allVertecData.getDanglingContacts(), contactsWithoutOrg);
+
+
+        //initialize return list
+        List<List<Long>> ids = new ArrayList<>();
+
+        //now ready to post/put
+        List<List<Long>> orgsNConts = postVOrganisations();
+
+        List<Long> orgsPut = putPdOrganisations();
+        this.contactIdMap.putAll(postContacts());
+        Map<Long, Long> putMap = putContacts();
+        this.contactIdMap.putAll(putMap);
+
+        //get list of pd relationships, then post them
+        List<PDRelationship> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
+        postRelationshipList(relationships);
+
+        //return list of orgs and contact ids that have been posted/edited to pipedrive
+        ids.add(orgsNConts.get(0));
+        ids.add(orgsPut);
+        ids.add(orgsNConts.get(1));
+        ids.add((List) contactIdMap.values());
+        ids.add((List) putMap.values());
+
+        return ids;
+    }
+
+    public List<List<Long>> importOrganisationsAndContactsToPipedriveAndPrint() {
 
         long startTime = System.nanoTime();
         //get all Vertec Data
@@ -120,15 +183,16 @@ public class VertecSynchroniser {
         System.out.println("Took " + ((orgPutTime - orgPostTime)/1000000) + " milliseconds");
         System.out.println("Putted:" + orgsPut.size());
         System.out.println("Posting Dangling Contacts");
-        List<Long> contsPost = postContacts();
+        this.contactIdMap = postContacts();
         long contPostTime = System.nanoTime();
         System.out.println("Took " + ((contPostTime - orgPutTime)/1000000) + " milliseconds");
-        System.out.println("Posted: " + contsPost.size());
+        System.out.println("Posted: " + contactIdMap.values().size());
         System.out.println("Putting Dangling Contacts");
-        List<Long> contsPut = putContacts();
+        Map<Long, Long> putMap = putContacts();
+        this.contactIdMap.putAll(putMap);
         long contputTime = System.nanoTime();
         System.out.println("Took " + ((contputTime - contPostTime)/1000000) + " milliseconds");
-        System.out.println("Putted: " + contsPut.size());
+        System.out.println("Putted: " + putMap.values().size());
 
         //get list of pd relationships, then post them
         System.out.println("Building relationship hierarchy");
@@ -144,8 +208,8 @@ public class VertecSynchroniser {
         ids.add(orgsNConts.get(0));
         ids.add(orgsPut);
         ids.add(orgsNConts.get(1));
-        ids.add(contsPost);
-        ids.add(contsPut);
+        //ids.add((Set<Long>) contactIdMap.values());
+        //ids.add((List) putMap.values());
 
         System.out.println("Done!");
 
@@ -157,12 +221,98 @@ public class VertecSynchroniser {
 
     public List<Long> importProjectsAndPhasesToPipedrive() {
 
+        System.out.println("Getting projects from vertec...");
         List<JSONProject> projects = VS.getZUKProjects().getBody().getProjects();
+        System.out.println("Got em");
 
-        List<PDDealSend> dealsToPost = createDealObjects(projects);
+        System.out.println("Building deals...");
+        List<PDDealSend> vertecDeals = createDealObjects(projects);
+        System.out.println("Build successful!");
 
-        return new ArrayList<>();
+        System.out.println("Getting all pipedrive deals...");
+        List<PDDealReceived> pipedriveDeals = PDS.getAllDeals().getBody().getData();
+        System.out.println("Got em");
 
+        System.out.println("Comparing deals...");
+        compareDeals(vertecDeals, pipedriveDeals);
+        System.out.println("That was interesting, found " + dealPostList.size() + " new deals, and " + dealPutList.size() + " deals to update");
+
+        System.out.println("Posting deals...");
+        List<Long> projPosted = PDS.postDealList(dealPostList);
+        System.out.println("POST COMPLETE");
+        System.out.println("Updating deals...");
+        List<Long> projPut = PDS.updateDealList(dealPutList);
+        System.out.println("FINISHED DEALS, GOODBYE!");
+        projPosted.addAll(projPut);
+
+        return projPosted;
+    }
+
+    public void compareDeals(List<PDDealSend> vertecDeals, List<PDDealReceived> pipedriveDeals) {
+
+        for (PDDealSend vDeal : vertecDeals) {
+            Boolean matched = false;
+            Boolean modified = true;
+            PDDealReceived temp = null;
+            for (PDDealReceived pDeal : pipedriveDeals) {
+                //if phase code matches then check details
+                if (vDeal.getProject_number().equals(pDeal.getProject_number())
+                        && vDeal.getPhase().equals(pDeal.getPhase())) {
+                    matched = true;
+
+                    modified = compareDealDetails(vDeal, pDeal);
+                    if (modified) {
+                        temp = pDeal;
+                    }
+                }
+            }
+
+            if (!matched) {
+                this.dealPostList.add(vDeal);
+            }
+            if (modified) {
+                DateTimeFormatter p = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter v = DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
+
+                LocalDateTime pt = LocalDateTime.from(p.parse(temp.getUpdate_time()));
+                LocalDateTime vt = LocalDateTime.from(v.parse(vDeal.getModified()));
+
+                Boolean pipedriveMoreRecent = pt.isAfter(vt);
+
+                if (pipedriveMoreRecent) {
+
+                    Boolean filled = addMissingInformation(vDeal, temp);
+                    if (filled) {
+                        this.dealPutList.add(new PDDealSend(temp));
+                    }
+
+                } else {
+
+                    vDeal.setId(temp.getId());
+                    vDeal.setLead_type(temp.getLead_type());
+                    vDeal.setZuhlke_office(temp.getZuhlke_office());
+                    this.dealPutList.add(vDeal);
+
+                }
+
+            }
+
+        }
+
+    }
+
+    public Boolean compareDealDetails(PDDealSend vDeal, PDDealReceived pDeal) {
+        Boolean diff = false;
+        if ( ! vDeal.getTitle().equals(pDeal.getTitle())) diff = true;
+        if ( ! vDeal.getValue().equals(pDeal.getValue())) diff = true;
+        if ( ! vDeal.getCurrency().equals(pDeal.getCurrency())) diff = true;
+        if (vDeal.getUser_id().longValue() != pDeal.getUser_id().getId()) diff = true;
+        if( vDeal.getPerson_id() != pDeal.getPerson_id().getValue().longValue()) diff = true;
+        if(vDeal.getOrg_id() != pDeal.getOrg_id().getValue().longValue()) diff = true;
+        if(vDeal.getStage_id() != pDeal.getStage_id()) diff = true;
+        if(! vDeal.getStatus().equals(pDeal.getStatus())) diff = true;
+
+        return diff;
     }
 
     public List<PDDealSend> createDealObjects(List<JSONProject> projects) {
@@ -176,24 +326,24 @@ public class VertecSynchroniser {
                 PDDealSend deal = new PDDealSend();
                 /**
                  * must set:
-                 * title --------- check
-                 * value --------- check
-                 * currency ------ check
-                 * user_id ------- check
+                 * title --------- done
+                 * value --------- done
+                 * currency ------ done
+                 * user_id ------- done (assuming teamMap is populated)
                  * person_id -----
-                 * org_id -------- done (assuming idMap is populated (check))
-                 * stage_id ------
-                 * lost_reason?---
-                 * status --------
-                 * add_time ------
-                 * visible_to ----
+                 * org_id -------- done (assuming orgIdMap is populated (check))
+                 * stage_id ------ done
+                 * lost_reason?--- done
+                 * status -------- done
+                 * add_time ------ done
+                 * visible_to ---- done
                  * v_id ---------- done
-                 * zuhlke_office--
-                 * lead_type -----
+                 * zuhlke_office-- n/a
+                 * lead_type ----- n/a
                  * project_number- done
                  * phase --------- done
-                 * cost ----------
-                 * cost_currency -
+                 * cost ---------- n/a
+                 * cost_currency - n/a
                  */
 
                 //TODO: ensure title is set correctly
@@ -206,7 +356,7 @@ public class VertecSynchroniser {
                 deal.setValue(value);
 
                 //currency
-                String currency = "GBP";
+                String currency = project.getCurrency();
                 deal.setCurrency(currency);
 
                 //sets the person responsible to be the leader of the phase,
@@ -215,29 +365,64 @@ public class VertecSynchroniser {
                 Long user_id = teamIdMap.get(phase.getPersonResponsible());
                 deal.setUser_id(user_id);
 
-                //person_id TODO: build map of customer v_id to p_id before this is called
-                deal.setPerson_id(customerMap.get(project.getCustomerRef()));
+                //person_id
+                deal.setPerson_id(contactIdMap.get(project.getCustomerRef()));
 
                 //org_id
-                deal.setOrg_id(idMap.get(project.getClientRef()));
+                deal.setOrg_id(orgIdMap.get(project.getClientRef()));
 
                 //stage_id
+                //TODO: change to correct stage_ids once in production
+                String salesStatus = phase.getSalesStatus();
+                String code = salesStatus.substring(0, Math.min(salesStatus.length(), 2));
+                Integer num = Integer.parseInt(code);
 
-                //lost_reason
+                //for setting status
+                String status = "open";
+
+                switch (num) {
+                    //Exploratory = 8, NewLead/Extension = 1, QualifiedLead = 2
+                    case 5: deal.setStage_id(8);
+                        break;
+                    //Rfp Recieved = 3
+                    case 10: deal.setStage_id(3);
+                        break;
+                    //Offered = 6
+                    case 11: deal.setStage_id(6);
+                        break;
+                    //UnderNegotiation = 5
+                    case 12: deal.setStage_id(5);
+                        break;
+                    //VerballySold = 7
+                    case 20: deal.setStage_id(7);
+                        break;
+                    //SOLD = WON
+                    case 21: status = "won";
+                        break;
+                    //LOST = LOST
+                    case 30: status = "lost";
+                        deal.setLost_reason(phase.getLostReason());
+                        break;
+                    //FINISHED = WON
+                    case 40: status = "won";
+                        break;
+                    default: System.out.println(num);
+                        break;
+                }
 
                 //status ('open' = Open, 'won' = Won, 'lost' = Lost, 'deleted' = Deleted)
+                //deal.setStatus(status);
+                deal.setStatus(status);
 
-                //add_time TODO: add creationDateTime to VRAPI and VPI
+                //add_time
+                String addTime = phase.getCreationDate();
+                deal.setAdd_time(addTime);
 
                 //visible_to (1 = owner and followers, 3 = everyone)
                 deal.setVisible_to(3);
 
                 //v_id
                 deal.setV_id(phase.getV_id());
-
-                //zuhlke_office TODO: somehow get this from VRAPI
-
-                //lead_type
 
                 //project number
                 deal.setProject_number(project.getCode());
@@ -247,11 +432,10 @@ public class VertecSynchroniser {
                 deal.setPhase(dealPhase);
 
                 //cost
+                //TODO: Ensure we can ignore cost, lead type and zuhlke office
 
-                //cost_currency TODO: Get and set currency;
-
-
-
+                //modified
+                deal.setModified(phase.getModifiedDate());
 
                 //add deal to list
                 deals.add(deal);
@@ -263,6 +447,43 @@ public class VertecSynchroniser {
         return deals;
     }
 
+    private Boolean addMissingInformation(PDDealSend vDeal, PDDealReceived pdDeal){
+        Boolean filled = false;
+        if(pdDeal.getValue() == null) {
+            pdDeal.setValue(vDeal.getValue());
+            filled = true;
+        }
+        if(pdDeal.getCurrency() == null) {
+            pdDeal.setCurrency(vDeal.getCurrency()); filled = true;
+        }
+        if(pdDeal.getUser_id() == null) {
+            pdDeal.getUser_id().setId(vDeal.getUser_id()); filled = true;
+        }
+        if(pdDeal.getUser_id() == null) {
+        pdDeal.getUser_id().setId(vDeal.getUser_id()); filled = true;
+        }
+        if(pdDeal.getPerson_id() == null) {
+            pdDeal.getPerson_id().setValue(vDeal.getPerson_id()); filled = true;
+        }
+        if(pdDeal.getOrg_id() == null) {
+            pdDeal.getOrg_id().setValue(vDeal.getOrg_id()); filled = true;
+        }
+        if(pdDeal.getLost_reason() == null) {
+            pdDeal.setLost_reason(vDeal.getLost_reason()); filled = true;
+        }
+        if(pdDeal.getVisible_to() == null) {
+            pdDeal.setVisible_to(vDeal.getVisible_to().toString()); filled = true;
+        }
+        if(pdDeal.getVisible_to() == null){
+            pdDeal.setVisible_to(vDeal.getVisible_to().toString()); filled = true;
+        }
+        if(pdDeal.getZuhlke_office() == null){
+            pdDeal.setZuhlke_office(vDeal.getZuhlke_office()); filled = true;
+        }
+
+        return filled;
+    }
+
 
     public List<PDRelationship> getOrganistionHeirarchy(List<JSONOrganisation> orgs) {
 
@@ -270,8 +491,8 @@ public class VertecSynchroniser {
 
         for (JSONOrganisation org : orgs) {
 
-            Long childOrgPId = idMap.get(org.getObjid());
-            Long parentOrgPId = idMap.get(org.getParentOrganisationId());
+            Long childOrgPId = orgIdMap.get(org.getObjid());
+            Long parentOrgPId = orgIdMap.get(org.getParentOrganisationId());
 
             if (childOrgPId != null && parentOrgPId != null) {
 
@@ -506,7 +727,7 @@ public class VertecSynchroniser {
             res = PDS.postOrganisation(new PDOrganisationSend(o, ownerid));
             orgsPosted.add(res.getBody().getData().getId());
 
-            idMap.put(o.getObjid(), res.getBody().getData().getId());
+            orgIdMap.put(o.getObjid(), res.getBody().getData().getId());
 
             for(JSONContact c : o.getContacts()){
                 Long owner = teamIdMap.get(c.getOwner());
@@ -516,7 +737,8 @@ public class VertecSynchroniser {
                     s.getFollowers().add(teamIdMap.get(f));
                 }
                 s.setOrg_id(res.getBody().getData().getId());
-                contactsPosted.add(PDS.postContact(s).getBody().getData().getId());
+                Long pdId = PDS.postContact(s).getBody().getData().getId();
+                this.contactIdMap.put(c.getObjid(), pdId);
             }
         }
         both.add(orgsPosted);
@@ -529,12 +751,12 @@ public class VertecSynchroniser {
         return PDS.putOrganisationList(organisationPutList);
     }
 
-    public List<Long> postContacts(){
+    public Map<Long, Long> postContacts(){
 
         return PDS.postContactList(contactPostList);
     }
 
-    public List<Long> putContacts(){
+    public Map<Long, Long> putContacts(){
 
         return PDS.putContactList(contactPutList);
     }
@@ -629,11 +851,11 @@ public class VertecSynchroniser {
         this.VS = VS;
     }
 
-    public Map<Long, Long> getIdMap() {
-        return idMap;
+    public Map<Long, Long> getOrgIdMap() {
+        return orgIdMap;
     }
 
-    public void setIdMap(Map<Long, Long> idMap) {
-        this.idMap = idMap;
+    public void setOrgIdMap(Map<Long, Long> orgIdMap) {
+        this.orgIdMap = orgIdMap;
     }
 }
