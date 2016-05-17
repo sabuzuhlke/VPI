@@ -23,6 +23,16 @@ public class JSONProject {
     private Long leaderRef;
     @JsonProperty("phases")
     private List<JSONPhase> phases;
+    @JsonProperty("customer_ref")
+    private Long customerRef;
+    @JsonProperty("type")
+    private String type;
+    @JsonProperty("currency")
+    private String currency;
+    @JsonProperty("last_modified")
+    private String modified;
+    @JsonProperty("created")
+    private String created;
 
     public JSONProject() {
     }
@@ -81,5 +91,45 @@ public class JSONProject {
 
     public void setPhases(List<JSONPhase> phases) {
         this.phases = phases;
+    }
+
+    public Long getCustomerRef() {
+        return customerRef;
+    }
+
+    public void setCustomerRef(Long customerRef) {
+        this.customerRef = customerRef;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getModified() {
+        return modified;
+    }
+
+    public void setModified(String modified) {
+        this.modified = modified;
+    }
+
+    public String getCreated() {
+        return created;
+    }
+
+    public void setCreated(String created) {
+        this.created = created;
     }
 }
