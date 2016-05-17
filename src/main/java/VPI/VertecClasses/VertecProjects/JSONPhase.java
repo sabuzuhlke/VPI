@@ -1,5 +1,6 @@
 package VPI.VertecClasses.VertecProjects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -18,12 +19,28 @@ public class JSONPhase {
     private String code;
     @JsonProperty("status")
     private int status;
+    @JsonProperty("sales_status")
+    private String salesStatus;
     @JsonProperty("external_value")
     private String externalValue;
     @JsonProperty("internal_value")
     private String internalValue;
     @JsonProperty("person_responsible")
     private String personResponsible;
+    @JsonProperty("start_date")
+    private String startDate;
+    @JsonProperty("end_date")
+    private String endDate;
+    @JsonProperty("offered_date")
+    private String offeredDate;
+    @JsonProperty("granted_date")
+    private String grantedDate;
+    @JsonProperty("lost_reason")
+    private String lostReason;
+    @JsonProperty("last_modified")
+    private String modifiedDate;
+    @JsonProperty("created")
+    private String creationDate;
 
     public JSONPhase() {
     }
@@ -91,5 +108,69 @@ public class JSONPhase {
 
     public void setPersonResponsible(String personResponsible) {
         this.personResponsible = personResponsible;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getOfferedDate() {
+        return offeredDate;
+    }
+
+    public void setOfferedDate(String offeredDate) {
+        this.offeredDate = offeredDate;
+    }
+
+    public String getSalesStatus() {
+        return salesStatus;
+    }
+
+    public void setSalesStatus(String salesStatus) {
+        this.salesStatus = salesStatus;
+    }
+
+    public String getGrantedDate() {
+        return grantedDate;
+    }
+
+    public void setGrantedDate(String grantedDate) {
+        this.grantedDate = grantedDate;
+    }
+
+    public String getLostReason() {
+        return lostReason;
+    }
+
+    public void setLostReason(String lostReason) {
+        this.lostReason = lostReason;
+    }
+
+    public String getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(String modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
+    public String getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(String creationDate) {
+        this.creationDate = creationDate;
     }
 }
