@@ -662,6 +662,20 @@ public class PDService {
         return res;
     }
 
+    public List<Long> postActivityList(List<PDActivitySend> activities) {
+
+        List<Long> idsPosted = new ArrayList<>();
+
+        for (PDActivitySend activity : activities) {
+
+            Long id = postActivity(activity).getBody().getData().getId();
+            idsPosted.add(id);
+
+        }
+
+        return idsPosted;
+    }
+
 //-------------------------------------------------------------------------------------------------------------------PUT
 
     public ResponseEntity<PDActivityResponse> putActivity(PDActivitySend activity) {
@@ -680,6 +694,19 @@ public class PDService {
         }
 
         return res;
+    }
+
+    public List<Long> putActivitesList(List<PDActivitySend> activities) {
+
+        List<Long> idsPutted = new ArrayList<>();
+
+        for (PDActivitySend activity : activities) {
+
+            Long id = putActivity(activity).getBody().getData().getId();
+            idsPutted.add(id);
+        }
+
+        return idsPutted;
     }
 
 //----------------------------------------------------------------------------------------------------------------DELETE
