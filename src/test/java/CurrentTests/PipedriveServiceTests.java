@@ -49,6 +49,10 @@ public class PipedriveServiceTests {
         this.idsDeleted = new ArrayList<>();
     }
 
+    /**
+     * Deals ===========================================================================================================
+     */
+
     @Test
     public void canPostDeal() {
 
@@ -281,7 +285,10 @@ public class PipedriveServiceTests {
     }
 
 
-    //=====================================================================================================ORGANISATIONS
+    /**
+     * Organisations ===================================================================================================
+     */
+
     @Test
     public void canPostOrganisation() {
         //Post org, check response says success
@@ -432,7 +439,9 @@ public class PipedriveServiceTests {
         assertTrue(delRes.getBody().getData().getId().equals(org_id));
     }
 
-
+    /**
+     * Contacts ========================================================================================================
+     */
 
     @Test
     public void canPutContact() {
@@ -641,6 +650,10 @@ public class PipedriveServiceTests {
         //assertTrue(contacts.getBody().getData().get(0) != null);
     }
 
+    /**
+     * Users ===========================================================================================================
+     */
+
     @Test //will need to be changed for real pipedrive data
     public void canGetAllUsers(){
         ResponseEntity<PDUserItemsResponse> res = null;
@@ -654,10 +667,11 @@ public class PipedriveServiceTests {
         assertTrue(res.getBody().getData().get(0).getEmail() != null);
         assertTrue(res.getBody().getData().get(0).getId() != null);
 
-
-
-
     }
+
+    /**
+     * Followers =======================================================================================================
+     */
 
     @Test
     public void canPostFollowers(){
@@ -680,6 +694,10 @@ public class PipedriveServiceTests {
         assertTrue(res.getBody().contains("\"user_id\":" + 1363410L + ","));
         PS.deleteContact(id);
     }
+
+    /**
+     * Organisation Relationships ======================================================================================
+     */
 
     @Test
     public void canPostOrganisationRelationship() {
@@ -748,6 +766,10 @@ public class PipedriveServiceTests {
 //        System.out.println("Found " + matches + " duplicate contacts");
 //
 //    }
+
+    /**
+     * Delete ==========================================================================================================
+     */
 
     @Test
     public void deletedAllOrganisations(){
