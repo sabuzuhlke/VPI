@@ -729,6 +729,34 @@ public class PDService {
         return res;
     }
 
+    public List<Long> deleteActivityList(List<Long> activityIds) {
+        List<Long> idsDeleted = new ArrayList<>();
+        List<String> idsDeletedAsString;
+        PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
+        idsForReq.setIds(activityIds);
+
+        RequestEntity<PDBulkDeleteResponse.PDBulkDeletedIdsReq> req = null;
+        ResponseEntity<PDBulkDeleteResponse> res;
+
+
+        try {
+
+            String uri = server + "activities/" + apiKey;
+            req = new RequestEntity<>(idsForReq, HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req, PDBulkDeleteResponse.class);
+            idsDeletedAsString = res.getBody().getData().getId();
+
+            for(String s : idsDeletedAsString) {
+                idsDeleted.add(Long.parseLong(s));
+            }
+
+        } catch (Exception e) {
+            System.out.println("ERROR BULK DELETING ACTIVITIES" + e.toString() + "REQ: " + req);
+        }
+
+        return idsDeleted;
+    }
+
     /**
      * Users
      */
