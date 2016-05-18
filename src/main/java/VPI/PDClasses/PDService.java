@@ -594,8 +594,21 @@ public class PDService {
 //------------------------------------------------------------------------------------------------------------------POST
 
     public ResponseEntity<PDActivityResponse> postActivity(PDActivity activity) {
-        //TODO: implement this + test
-        return null;
+
+        RequestEntity<PDActivity> req;
+        ResponseEntity<PDActivityResponse> res = null;
+        String uri = server + "activites" + apiKey;
+
+        try {
+
+            req = new RequestEntity<PDActivity>(activity, HttpMethod.POST, new URI(uri));
+            res = restTemplate.exchange(req, PDActivityResponse.class);
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION POSTING DEAL: " + e);
+        }
+
+        return res;
     }
 
 //-------------------------------------------------------------------------------------------------------------------PUT
