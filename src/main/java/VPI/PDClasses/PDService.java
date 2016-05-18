@@ -1,13 +1,13 @@
 package VPI.PDClasses;
 
-import VPI.PDClasses.Activities.PDActivity;
+import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityItemsResponse;
 import VPI.PDClasses.Activities.PDActivityResponse;
+import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.*;
 import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUserItemsResponse;
-import com.sun.javafx.collections.MappingChange;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -644,9 +644,9 @@ public class PDService {
 
 //------------------------------------------------------------------------------------------------------------------POST
 
-    public ResponseEntity<PDActivityResponse> postActivity(PDActivity activity) {
+    public ResponseEntity<PDActivityResponse> postActivity(PDActivitySend activity) {
 
-        RequestEntity<PDActivity> req;
+        RequestEntity<PDActivitySend> req;
         ResponseEntity<PDActivityResponse> res = null;
         String uri = server + "activities" + apiKey;
 
@@ -664,9 +664,9 @@ public class PDService {
 
 //-------------------------------------------------------------------------------------------------------------------PUT
 
-    public ResponseEntity<PDActivityResponse> putActivity(PDActivity activity) {
+    public ResponseEntity<PDActivityResponse> putActivity(PDActivitySend activity) {
 
-        RequestEntity<PDActivity> req;
+        RequestEntity<PDActivitySend> req;
         ResponseEntity<PDActivityResponse> res = null;
         String uri = server + "activities/" + activity.getId() + apiKey;
 

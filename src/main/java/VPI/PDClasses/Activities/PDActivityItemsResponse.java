@@ -9,16 +9,16 @@ import java.util.List;
  */
 public class PDActivityItemsResponse extends PDResponse {
 
-    private List<PDActivity> data;
+    private List<PDActivityReceived> data;
 
     public PDActivityItemsResponse() {
     }
 
-    public List<PDActivity> getData() {
+    public List<PDActivityReceived> getData() {
         return data;
     }
 
-    public void setData(List<PDActivity> data) {
+    public void setData(List<PDActivityReceived> data) {
         this.data = data;
     }
 }

@@ -7,16 +7,16 @@ import VPI.PDClasses.PDResponse;
  */
 public class PDActivityResponse extends PDResponse {
 
-    private PDActivity data;
+    private PDActivityReceived data;
 
     public PDActivityResponse() {
     }
 
-    public PDActivity getData() {
+    public PDActivityReceived getData() {
         return data;
     }
 
-    public void setData(PDActivity data) {
+    public void setData(PDActivityReceived data) {
         this.data = data;
     }
 }

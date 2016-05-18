@@ -1,42 +1,30 @@
 package VPI.PDClasses.Activities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 /**
  * Created by sabu on 17/05/2016.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class PDActivity {
+public class PDActivityReceived {
 
-    @JsonIgnore
     private Long id;
-    @JsonIgnore
     private Long user_id;
     private Boolean done;
     private String type;
     private String due_date;
     private String due_time;
     private String duration;
-    @JsonIgnore
     private String add_time;
-    @JsonIgnore
     private String marked_as_done_time;
     private String subject;
     private Long deal_id;
     private Long org_id;
     private Long person_id;
-    @JsonIgnore
     private Boolean active_flag;
-    @JsonIgnore
     private String update_time;
     private String note;
-    @JsonIgnore
     private Long assigned_to_user_id;
-    @JsonIgnore
     private Long created_by_user_id;
 
-    public PDActivity() {
+    public PDActivityReceived() {
     }
 
     public Long getId() {
