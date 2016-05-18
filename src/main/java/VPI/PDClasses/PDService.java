@@ -555,14 +555,11 @@ public class PDService {
 
         Map<Long, Long> map = new HashMap<>();
 
-        List<Long> idsPut = new ArrayList<>();
-
         for(PDContactSend c : contacts){
             res = updateContact(c);
             if(res.getStatusCode() == HttpStatus.OK){
 
                 map.put(c.getV_id(), res.getBody().getData().getId());
-                idsPut.add(res.getBody().getData().getId());
             }else{
                 System.out.println("Could not UPDATE contact, server responded: " + res.getStatusCode());
             }
@@ -595,18 +592,54 @@ public class PDService {
     }
 
     public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForDeal(Long dealId) {
-        //TODO: implement this + test
-        return null;
+
+        RequestEntity<String> req;
+        ResponseEntity<PDActivityItemsResponse> res = null;
+        String uri = server + "deals/" + dealId + "/activities" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDActivityItemsResponse.class);
+        } catch (Exception e) {
+            System.out.println("ERROR GETTING ACTIVITIES FOR DEAL: " + e);
+        }
+
+        return res;
     }
 
     public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForOrganisation(Long orgId) {
-        //TODO: implement this + test
-        return null;
+
+        RequestEntity<String> req;
+        ResponseEntity<PDActivityItemsResponse> res = null;
+        String uri = server + "organizations/" + orgId + "/activities" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDActivityItemsResponse.class);
+        } catch (Exception e) {
+            System.out.println("ERROR GETTING ACTIVITIES FOR ORGANISATION: " + e);
+        }
+
+        return res;
     }
 
     public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForContact(Long contactId) {
-        //TODO: implement this + test
-        return null;
+
+        RequestEntity<String> req;
+        ResponseEntity<PDActivityItemsResponse> res = null;
+        String uri = server + "persons/" + contactId + "/activities" + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDActivityItemsResponse.class);
+        } catch (Exception e) {
+            System.out.println("ERROR GETTING ACTIVITIES FOR CONTACT: " + e);
+        }
+
+        return res;
     }
 
 //------------------------------------------------------------------------------------------------------------------POST
