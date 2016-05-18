@@ -328,8 +328,6 @@ public class PipedriveServiceTests {
 
     }
 
-
-
     @Test
     public void canUpdateOrg() {
         ResponseEntity<PDOrganisationResponse> orgr;
@@ -369,8 +367,6 @@ public class PipedriveServiceTests {
         PS.deleteOrganisation(org.getId());
 
     }
-
-
 
     @Test
     public void canGetAllOrganisations(){
@@ -576,6 +572,17 @@ public class PipedriveServiceTests {
 
     }
 
+    @Test
+    public void canGetAllContacts() {
+        ResponseEntity<PDContactListReceived> contacts = PS.getAllContacts();
+
+        assertTrue(contacts.getStatusCode() == HttpStatus.OK);
+        assertTrue(contacts.getBody().getSuccess());
+
+        //assertTrue( ! contacts.getBody().getData().isEmpty());
+        //assertTrue(contacts.getBody().getData().get(0) != null);
+    }
+
     public List<PDContactSend> assignMatchingPDContacts() {
 
         PDContactSend c1 = new PDContactSend();
@@ -637,17 +644,6 @@ public class PipedriveServiceTests {
         pdContactSends.add(c4);
 
         return pdContactSends;
-    }
-
-    @Test
-    public void canGetAllContacts() {
-        ResponseEntity<PDContactListReceived> contacts = PS.getAllContacts();
-
-        assertTrue(contacts.getStatusCode() == HttpStatus.OK);
-        assertTrue(contacts.getBody().getSuccess());
-
-        //assertTrue( ! contacts.getBody().getData().isEmpty());
-        //assertTrue(contacts.getBody().getData().get(0) != null);
     }
 
     /**

@@ -639,8 +639,21 @@ public class PDService {
 //----------------------------------------------------------------------------------------------------------------DELETE
 
     public ResponseEntity<PDDeleteResponse> deleteActivity(Long activityId) {
-        //TODO: implement this + test
-        return null;
+        RequestEntity<String> req;
+        ResponseEntity<PDDeleteResponse> res = null;
+        String uri = server + "activities/" + activityId + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.DELETE, new URI(uri));
+            res = restTemplate.exchange(req, PDDeleteResponse.class);
+
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION GETTING ACTIVITY: " + e);
+        }
+
+        return res;
     }
 
     /**
