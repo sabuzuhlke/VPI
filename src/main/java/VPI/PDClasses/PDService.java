@@ -615,11 +615,11 @@ public class PDService {
 
         RequestEntity<PDActivity> req;
         ResponseEntity<PDActivityResponse> res = null;
-        String uri = server + "activites" + apiKey;
+        String uri = server + "activities" + apiKey;
 
         try {
 
-            req = new RequestEntity<PDActivity>(activity, HttpMethod.POST, new URI(uri));
+            req = new RequestEntity<>(activity, HttpMethod.POST, new URI(uri));
             res = restTemplate.exchange(req, PDActivityResponse.class);
 
         } catch (Exception e) {
@@ -632,8 +632,21 @@ public class PDService {
 //-------------------------------------------------------------------------------------------------------------------PUT
 
     public ResponseEntity<PDActivityResponse> putActivity(PDActivity activity) {
-        //TODO: implement this + test
-        return null;
+
+        RequestEntity<PDActivity> req;
+        ResponseEntity<PDActivityResponse> res = null;
+        String uri = server + "activities/" + activity.getId() + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(activity, HttpMethod.PUT, new URI(uri));
+            res = restTemplate.exchange(req, PDActivityResponse.class);
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION PUTTING DEAL: " + e);
+        }
+
+        return res;
     }
 
 //----------------------------------------------------------------------------------------------------------------DELETE
@@ -650,7 +663,7 @@ public class PDService {
 
 
         } catch (Exception e) {
-            System.out.println("EXCEPTION GETTING ACTIVITY: " + e);
+            System.out.println("EXCEPTION DELETING ACTIVITY: " + e);
         }
 
         return res;
@@ -734,7 +747,7 @@ public class PDService {
     /**
      * UTILITIES
      */
-//----------------------------------------------------------------------------------------------------------------DELETE
+//-----------------------------------------------------------------------------------------------------------------CLEAR
     public void clearPD(List<Long> orgsToKeep, List<Long> contsToKeep){
 
         Integer orgsize = 0;
