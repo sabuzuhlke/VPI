@@ -1,5 +1,7 @@
 package VPI.PDClasses.Activities;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Created by sabu on 17/05/2016.
  */
@@ -169,5 +171,18 @@ public class PDActivityReceived {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+    @Override
+    public String toString(){
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not print PDActivityReceived: " + e.toString());
+        }
+        return retStr;
     }
 }

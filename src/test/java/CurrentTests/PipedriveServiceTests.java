@@ -2,6 +2,10 @@ package CurrentTests;
 
 import VPI.*;
 import VPI.PDClasses.*;
+import VPI.PDClasses.Activities.PDActivityItemsResponse;
+import VPI.PDClasses.Activities.PDActivityReceived;
+import VPI.PDClasses.Activities.PDActivityResponse;
+import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.*;
 import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
@@ -98,11 +102,9 @@ public class PipedriveServiceTests {
 
         assertTrue(idsPosted.size() == 2);
 
-        idsDeleted = PS.deleteOrganisationList(idsPosted);
+        idsDeleted = PS.deleteDealList(idsPosted);
 
         assertTrue(idsDeleted.equals(idsPosted));
-
-
     }
 
     @Test
@@ -762,6 +764,362 @@ public class PipedriveServiceTests {
 //        System.out.println("Found " + matches + " duplicate contacts");
 //
 //    }
+    /**
+     * Activities =======================================================================================================
+     */
+
+    @Test
+    public void canPostActivity(){
+        PDActivitySend activity = new PDActivitySend();
+        activity.setUser_id(1281007L);
+        activity.setDone(false);
+        activity.setType("call");
+        activity.setDue_date("2142-01-01");
+        activity.setDue_time("23:55:12");
+        activity.setSubject("PAC Expansion");
+        activity.setNote("Be diplomatic");
+
+        PDOrganisationSend o = new PDOrganisationSend();
+        o.setActive_flag(true);
+        o.setVisible_to(3);
+        o.setAddress("10 Downing Street, London");
+        o.setName("Private Contractor");
+        o.setV_id(1L);
+
+        ResponseEntity<PDOrganisationResponse> res;
+        res = PS.postOrganisation(o);
+        assertTrue(res.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(res.getBody().getSuccess());
+
+        Long orgid = res.getBody().getData().getId();
+
+        PDContactSend c = new PDContactSend();
+        c.setOrg_id(orgid);
+        c.setActive_flag(true);
+        c.setName("Vladimir Butin");
+        c.changePrimaryEmail("power@me.ru");
+
+        ResponseEntity<PDContactResponse> resC = PS.postContact(c);
+
+        assertTrue(resC.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resC.getBody().getSuccess());
+
+        Long contid = resC.getBody().getData().getId();
+
+        PDDealSend d = new PDDealSend();
+        d.setTitle("EU PAC Peace Talks");
+        d.setVisible_to(3);
+        d.setCost(0L);
+        d.setCost_currency("USD");
+        d.setOrg_id(orgid);
+        d.setPerson_id(contid);
+        d.setPhase("00_EXTERNAL");
+        d.setProject_number("007");
+        d.setStatus("open");
+        d.setUser_id(1281007L);
+        d.setZuhlke_office("LON");
+
+        ResponseEntity<PDDealResponse> resD = PS.postDeal(d);
+
+        assertTrue(resD.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resD.getBody().getSuccess());
+
+        Long dealid = resD.getBody().getData().getId();
+
+        activity.setOrg_id(orgid);
+        activity.setPerson_id(contid);
+        activity.setDeal_id(dealid);
+
+        ResponseEntity<PDActivityResponse> resA = PS.postActivity(activity);
+
+        Long actid = resA.getBody().getData().getId();
+
+        assertTrue(resA.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resA.getBody().getSuccess());
+        assertTrue(resA.getBody().getData().getActive_flag());
+        assertTrue(resA.getBody().getData().getType().equals("call"));
+        assertTrue( ! resA.getBody().getData().getDone());
+        assertTrue(resA.getBody().getData().getDue_date().equals("2142-01-01"));
+        assertTrue(resA.getBody().getData().getDue_time().equals("23:55"));
+        assertTrue(resA.getBody().getData().getId().longValue() == actid);
+        assertTrue(resA.getBody().getData().getSubject().equals("PAC Expansion"));
+        assertTrue(resA.getBody().getData().getNote().equals("Be diplomatic"));
+        assertTrue(resA.getBody().getData().getOrg_id() == orgid.longValue());
+        assertTrue(resA.getBody().getData().getPerson_id() == contid.longValue());
+        assertTrue(resA.getBody().getData().getDeal_id() == dealid.longValue());
+        assertTrue(resA.getBody().getData().getUser_id() == 1281007L);
+
+        ResponseEntity<PDDeleteResponse> delres;
+
+        delres = PS.deleteDeal(dealid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteContact(contid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteOrganisation(orgid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteActivity(actid);
+        assertTrue(delres.getBody().getSuccess());
+
+    }
+
+    @Test
+    public void canPostActivityList(){
+        List<PDActivitySend> acts = getSomeActivities();
+
+        List<Long> idsPosted = new ArrayList<>();
+
+        List<Long> res = PS.postActivityList(acts);
+
+
+        idsPosted = res;
+
+        assertTrue(acts.size() == idsPosted.size());
+
+        List<Long> idsDeleted = PS.deleteActivityList(idsPosted);
+        assertTrue(idsDeleted.equals(idsPosted));
+
+    }
+
+    public List<PDActivitySend> getSomeActivities(){
+        List<PDActivitySend> activities = new ArrayList<>();
+
+        PDActivitySend activity = new PDActivitySend();
+        activity.setUser_id(1281007L);
+        activity.setDone(false);
+        activity.setType("call");
+        activity.setDue_date("2142-01-01");
+        activity.setDue_time("23:55:12");
+        activity.setSubject("PAC Expansion");
+        activity.setNote("Be diplomatic");
+        activities.add(activity);
+
+        activity = new PDActivitySend();
+        activity.setUser_id(1281007L);
+        activity.setDone(false);
+        activity.setType("call");
+        activity.setDue_date("2142-01-01");
+        activity.setDue_time("23:55:12");
+        activity.setSubject("TESTACTIVITY");
+        activity.setNote("Note");
+        activities.add(activity);
+
+        return activities;
+    }
+    
+    @Test
+    public void canGetActivity(){
+        PDActivitySend activity = new PDActivitySend();
+        activity.setUser_id(1281007L);
+        activity.setDone(false);
+        activity.setType("call");
+        activity.setDue_date("2142-01-01");
+        activity.setDue_time("23:55:12");
+        activity.setSubject("PAC Expansion");
+        activity.setNote("Be diplomatic");
+
+        PDOrganisationSend o = new PDOrganisationSend();
+        o.setActive_flag(true);
+        o.setVisible_to(3);
+        o.setAddress("10 Downing Street, London");
+        o.setName("Private Contractor");
+        o.setV_id(1L);
+
+        ResponseEntity<PDOrganisationResponse> res;
+        res = PS.postOrganisation(o);
+        assertTrue(res.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(res.getBody().getSuccess());
+
+        Long orgid = res.getBody().getData().getId();
+
+        PDContactSend c = new PDContactSend();
+        c.setOrg_id(orgid);
+        c.setActive_flag(true);
+        c.setName("Vladimir Butin");
+        c.changePrimaryEmail("power@me.ru");
+
+        ResponseEntity<PDContactResponse> resC = PS.postContact(c);
+
+        assertTrue(resC.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resC.getBody().getSuccess());
+
+        Long contid = resC.getBody().getData().getId();
+
+        PDDealSend d = new PDDealSend();
+        d.setTitle("EU PAC Peace Talks");
+        d.setVisible_to(3);
+        d.setCost(0L);
+        d.setCost_currency("USD");
+        d.setOrg_id(orgid);
+        d.setPerson_id(contid);
+        d.setPhase("00_EXTERNAL");
+        d.setProject_number("007");
+        d.setStatus("open");
+        d.setUser_id(1281007L);
+        d.setZuhlke_office("LON");
+
+        ResponseEntity<PDDealResponse> resD = PS.postDeal(d);
+
+        assertTrue(resD.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resD.getBody().getSuccess());
+
+        Long dealid = resD.getBody().getData().getId();
+
+        activity.setOrg_id(orgid);
+        activity.setPerson_id(contid);
+        activity.setDeal_id(dealid);
+
+        ResponseEntity<PDActivityResponse> resA = PS.postActivity(activity);
+
+        Long actid = resA.getBody().getData().getId();
+        
+        resA = PS.getActivity(actid);
+        
+        PDActivityReceived a = resA.getBody().getData();
+
+        assertTrue(resA.getStatusCode() == HttpStatus.OK);
+        assertTrue(resA.getBody().getSuccess());
+        assertTrue(a.getActive_flag());
+        assertTrue(a.getType().equals("call"));
+        assertTrue( ! a.getDone());
+        assertTrue(a.getDue_date().equals("2142-01-01"));
+        assertTrue(a.getDue_time().equals("23:55"));
+        assertTrue(a.getId().longValue() == actid);
+        assertTrue(a.getSubject().equals("PAC Expansion"));
+        assertTrue(a.getNote().equals("Be diplomatic"));
+        assertTrue(a.getOrg_id() == orgid.longValue());
+        assertTrue(a.getPerson_id() == contid.longValue());
+        assertTrue(a.getDeal_id() == dealid.longValue());
+        assertTrue(a.getUser_id() == 1281007L);
+
+        ResponseEntity<PDDeleteResponse> delres;
+
+        delres = PS.deleteDeal(dealid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteContact(contid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteOrganisation(orgid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteActivity(actid);
+        assertTrue(delres.getBody().getSuccess());
+        
+    }
+
+    @Test
+    public void canPutActivity(){
+
+        PDActivitySend activity = new PDActivitySend();
+        activity.setUser_id(1281007L);
+        activity.setDone(false);
+        activity.setType("call");
+        activity.setDue_date("2142-01-01");
+        activity.setDue_time("23:55:12");
+        activity.setSubject("PAC Expansion");
+        activity.setNote("Be diplomatic");
+
+        PDOrganisationSend o = new PDOrganisationSend();
+        o.setActive_flag(true);
+        o.setVisible_to(3);
+        o.setAddress("10 Downing Street, London");
+        o.setName("Private Contractor");
+        o.setV_id(1L);
+
+        ResponseEntity<PDOrganisationResponse> res;
+        res = PS.postOrganisation(o);
+        assertTrue(res.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(res.getBody().getSuccess());
+
+        Long orgid = res.getBody().getData().getId();
+
+        PDContactSend c = new PDContactSend();
+        c.setOrg_id(orgid);
+        c.setActive_flag(true);
+        c.setName("Vladimir Butin");
+        c.changePrimaryEmail("power@me.ru");
+
+        ResponseEntity<PDContactResponse> resC = PS.postContact(c);
+
+        assertTrue(resC.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resC.getBody().getSuccess());
+
+        Long contid = resC.getBody().getData().getId();
+
+        PDDealSend d = new PDDealSend();
+        d.setTitle("EU PAC Peace Talks");
+        d.setVisible_to(3);
+        d.setCost(0L);
+        d.setCost_currency("USD");
+        d.setOrg_id(orgid);
+        d.setPerson_id(contid);
+        d.setPhase("00_EXTERNAL");
+        d.setProject_number("007");
+        d.setStatus("open");
+        d.setUser_id(1281007L);
+        d.setZuhlke_office("LON");
+
+        ResponseEntity<PDDealResponse> resD = PS.postDeal(d);
+
+        assertTrue(resD.getStatusCode() == HttpStatus.CREATED);
+        assertTrue(resD.getBody().getSuccess());
+
+        Long dealid = resD.getBody().getData().getId();
+
+        activity.setOrg_id(orgid);
+        activity.setPerson_id(contid);
+        activity.setDeal_id(dealid);
+
+        ResponseEntity<PDActivityResponse> resA = PS.postActivity(activity);
+
+        Long actid = resA.getBody().getData().getId();
+
+        activity.setSubject("Avoid complications");
+        activity.setId(actid);
+
+        resA = PS.putActivity(activity);
+
+        assertTrue(resA.getStatusCode() == HttpStatus.OK);
+        assertTrue(resA.getBody().getSuccess());
+        assertTrue(resA.getBody().getData().getSubject().equals("Avoid complications"));
+
+        ResponseEntity<PDDeleteResponse> delres;
+
+        delres = PS.deleteDeal(dealid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteContact(contid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteOrganisation(orgid);
+        assertTrue(delres.getBody().getSuccess());
+
+        delres = PS.deleteActivity(actid);
+        assertTrue(delres.getBody().getSuccess());
+    }
+
+
+    @Test
+    public void canPutActivityList(){
+        List<PDActivitySend> activities = getSomeActivities();
+
+        List<Long> idsPosted = PS.postActivityList(activities);
+
+        for(int i = 0; i < idsPosted.size(); i++){
+            activities.get(i).setId(idsPosted.get(i));
+            activities.get(i).setSubject("Changed Subject");
+        }
+
+        List<Long> idsPut = PS.putActivitesList(activities);
+
+        assertTrue(idsPosted.equals(idsPut));
+
+        List<Long> idsDeleted = PS.deleteActivityList(idsPosted);
+        assertTrue(idsDeleted.equals(idsPosted));
+    }
 
     /**
      * Delete ==========================================================================================================
