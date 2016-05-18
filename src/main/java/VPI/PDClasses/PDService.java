@@ -576,6 +576,24 @@ public class PDService {
      */
 //-------------------------------------------------------------------------------------------------------------------GET
 
+    public ResponseEntity<PDActivityResponse> getActivity(Long id) {
+        RequestEntity<String> req;
+        ResponseEntity<PDActivityResponse> res = null;
+        String uri = server + "activities/" + id + apiKey;
+
+        try {
+
+            req = new RequestEntity<>(HttpMethod.GET, new URI(uri));
+            res = restTemplate.exchange(req, PDActivityResponse.class);
+
+
+        } catch (Exception e) {
+            System.out.println("EXCEPTION GETTING ACTIVITY: " + e);
+        }
+
+        return res;
+    }
+
     public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForDeal(Long dealId) {
         //TODO: implement this + test
         return null;
