@@ -656,7 +656,7 @@ public class PDService {
             res = restTemplate.exchange(req, PDActivityResponse.class);
 
         } catch (Exception e) {
-            System.out.println("EXCEPTION POSTING DEAL: " + e);
+            System.out.println("EXCEPTION POSTING ACTIVITY: " + e);
         }
 
         return res;
