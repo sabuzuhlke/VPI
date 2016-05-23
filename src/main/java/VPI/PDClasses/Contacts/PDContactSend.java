@@ -20,7 +20,7 @@ public class PDContactSend {
     private List<ContactDetail> phone;
     private Integer visible_to;
     private Boolean active_flag;
-    @JsonProperty("77f255155d7a104848c88ded9043c593ea1fbba3")
+    @JsonProperty("174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
 
     @JsonProperty("add_time")

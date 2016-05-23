@@ -2,9 +2,10 @@ package CurrentTests;
 
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
-import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
+import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.ResponseEntity;
 
@@ -42,11 +43,11 @@ public class VertecServiceTests {
 
         ObjectMapper m = new ObjectMapper();
 
-        ZUKResponse res = new ZUKResponse();
+        ZUKOrganisations res = new ZUKOrganisations();
 
         try{
 
-            res = m.readValue(response,ZUKResponse.class);
+            res = m.readValue(response,ZUKOrganisations.class);
         }
         catch (Exception e){
             System.out.println("Error in unmarshalling ZUK response: " + e);
@@ -84,7 +85,7 @@ public class VertecServiceTests {
 
     }
 
-    @Test
+    @Test @Ignore
     public void canGetAllProjectsAndPhasesFromVertec() {
 
         ResponseEntity<ZUKProjects> res = VS.getZUKProjects();

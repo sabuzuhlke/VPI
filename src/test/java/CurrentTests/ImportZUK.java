@@ -6,6 +6,7 @@ import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecSynchroniser;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -61,6 +62,7 @@ public class ImportZUK {
 //    }
 
     @Test
+    @Ignore
     public void canImportOrganisationsContactsAndProjects() {
 
         VertecSynchroniser VS = new VertecSynchroniser();
@@ -68,7 +70,7 @@ public class ImportZUK {
         PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
 
         PD.clearPD(new ArrayList<>(), new ArrayList<>());
-        VS.importOrganisationsAndContactsToPipedriveAndPrint();
+        //VS.importOrganisationsAndContactsToPipedriveAndPrint();
         VS.importProjectsAndPhasesToPipedrive();
 
     }

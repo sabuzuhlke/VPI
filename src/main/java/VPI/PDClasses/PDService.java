@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.SynchronousQueue;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -271,14 +273,16 @@ public class PDService {
     }
 
     public Map<Long, Long> postContactList(List<PDContactSend> contacts){
-        Map<Long, Long> map = new HashMap<>();
-        contacts.stream()
+        Map<Long, Long> mymap = new HashMap<>();
+        List<Long> idsPosted = contacts.stream()
                 .map(this::postContact)
                 .filter(response -> response.getStatusCode() == HttpStatus.CREATED)
-                .map(contact -> map.put(
+                .map(contact -> mymap.put(
                         contact.getBody().getData().getV_id(),
-                        contact.getBody().getData().getId()));
-        return map;
+                        contact.getBody().getData().getId())
+                )
+                .collect(toList());
+        return mymap;
     }
 
 //-------------------------------------------------------------------------------------------------------------------GET

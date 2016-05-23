@@ -9,6 +9,7 @@ import VPI.InsightClasses.VContact;
 import VPI.InsightClasses.VOrganisation;
 import VPI.InsightClasses.InsightSynchroniser;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -19,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Ignore
 public class InsightSynchroniserUnitTests {
 
     private InsightSynchroniser insightSynchroniser;

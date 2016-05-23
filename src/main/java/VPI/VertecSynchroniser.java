@@ -13,17 +13,18 @@ import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
+import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
 import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
-import VPI.VertecClasses.VertecOrganisations.ZUKResponse;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 /**
  * Created by sabu on 29/04/2016.
@@ -71,29 +72,28 @@ public class VertecSynchroniser {
         this.contactIdMap = new HashMap<>();
     }
 
+    @SuppressWarnings("unused")
     public List<List<Long>> importOrganisationsAndContactsToPipedrive() {
 
         //get all Vertec Data
-        ZUKResponse allVertecData = VS.getZUKinfo().getBody();
+        ZUKOrganisations allVertecData = VS.getZUKOrganisations().getBody();
 
-        Set<String> v_emails = getVertecUserEmails(allVertecData);
-        List<PDUser> pd_users= getPipedriveUsers();
-
-        //constructTeamIdMap(v_emails, pd_users); //TODO: use this instead of constructTestTeamMap() on deployment
+        //constructTeamIdMap(getVertecUserEmails(allVertecData), getPipedriveUsers()); //TODO: use this instead of constructTestTeamMap() on deployment
         constructTestTeamMap();
 
         //get all Pipedrive organisations
-        List<PDOrganisationReceived> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
 
         //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
-        resolveOrganisationsAndNestedContacts(allVertecData.getOrganisationList(), pipedriveOrgs);
+        resolveOrganisationsAndNestedContacts(
+                allVertecData.getOrganisationList(),
+                PDS.getAllOrganisations().getBody().getData());
 
         //get all pipedrive contacts, filter to only use those without organisations
-        List<PDContactReceived> pipedriveContacts = PDS.getAllContacts().getBody().getData();
-        List<PDContactReceived> contactsWithoutOrg = filterContactsWithOrg(pipedriveContacts);
 
         //compare dangling vcontacts to leftover pdcontacts
-        compareContacts(allVertecData.getDanglingContacts(), contactsWithoutOrg);
+        compareContacts(
+                allVertecData.getDanglingContacts(),
+                filterContactsWithOrg(PDS.getAllContacts().getBody().getData()));
 
 
         //initialize return list
@@ -115,18 +115,18 @@ public class VertecSynchroniser {
         ids.add(orgsNConts.get(0));
         ids.add(orgsPut);
         ids.add(orgsNConts.get(1));
-        ids.add((List) contactIdMap.values());
-        ids.add((List) putMap.values());
+        ids.add(contactIdMap.values().stream().collect(toList()));
+        ids.add(putMap.values().stream().collect(toList()));
 
         return ids;
     }
-
+/*
     public List<List<Long>> importOrganisationsAndContactsToPipedriveAndPrint() {
 
         long startTime = System.nanoTime();
         //get all Vertec Data
         System.out.println("Getting ZUK data from vertec");
-        ZUKResponse allVertecData = VS.getZUKinfo().getBody();
+        ZUKOrganisations allVertecData = VS.getZUKOrganisations().getBody();
         long zukEndTime = System.nanoTime();
         System.out.println("Took " + ((zukEndTime - startTime)/1000000) + " milliseconds");
 
@@ -218,38 +218,22 @@ public class VertecSynchroniser {
 
         return ids;
     }
-
+*/
     public List<Long> importProjectsAndPhasesToPipedrive() {
+        compareDeals(
+                createDealObjects(VS.getZUKProjects().getBody().getProjects()),
+                PDS.getAllDeals().getBody().getData());
 
-        System.out.println("Getting projects from vertec...");
-        List<JSONProject> projects = VS.getZUKProjects().getBody().getProjects();
-        System.out.println("Got em");
-
-        System.out.println("Building deals...");
-        List<PDDealSend> vertecDeals = createDealObjects(projects);
-        System.out.println("Build successful!");
-
-        System.out.println("Getting all pipedrive deals...");
-        List<PDDealReceived> pipedriveDeals = PDS.getAllDeals().getBody().getData();
-        System.out.println("Got em");
-
-        System.out.println("Comparing deals...");
-        compareDeals(vertecDeals, pipedriveDeals);
         System.out.println("That was interesting, found " + dealPostList.size() + " new deals, and " + dealPutList.size() + " deals to update");
 
-        System.out.println("Posting deals...");
         List<Long> projPosted = PDS.postDealList(dealPostList);
-        System.out.println("POST COMPLETE");
-        System.out.println("Updating deals...");
         List<Long> projPut = PDS.updateDealList(dealPutList);
-        System.out.println("FINISHED DEALS, GOODBYE!");
         projPosted.addAll(projPut);
 
         return projPosted;
     }
 
     public void compareDeals(List<PDDealSend> vertecDeals, List<PDDealReceived> pipedriveDeals) {
-
         for (PDDealSend vDeal : vertecDeals) {
             Boolean matched = false;
             Boolean modified = true;
@@ -739,6 +723,7 @@ public class VertecSynchroniser {
                 s.setOrg_id(res.getBody().getData().getId());
                 Long pdId = PDS.postContact(s).getBody().getData().getId();
                 this.contactIdMap.put(c.getObjid(), pdId);
+                contactsPosted.add(pdId);
             }
         }
         both.add(orgsPosted);
@@ -769,7 +754,7 @@ public class VertecSynchroniser {
         this.teamIdMap = teamIdMap;
     }
 
-    private Set<String> getVertecUserEmails(ZUKResponse data) {
+    private Set<String> getVertecUserEmails(ZUKOrganisations data) {
         Set<String> v_emails = new HashSet<>();
         for (JSONOrganisation org : data.getOrganisationList()) {
 

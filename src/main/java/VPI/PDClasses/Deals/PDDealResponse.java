@@ -1,5 +1,6 @@
 package VPI.PDClasses.Deals;
 
+import VPI.PDClasses.PDAdditionalData;
 import VPI.PDClasses.PDResponse;
 
 /**
@@ -8,6 +9,7 @@ import VPI.PDClasses.PDResponse;
 public class PDDealResponse extends PDResponse{
 
     private PDDealReceived data;
+
 
     public PDDealResponse() {
     }

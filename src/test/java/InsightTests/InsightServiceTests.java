@@ -3,6 +3,7 @@ package InsightTests;
 import VPI.*;
 import VPI.InsightClasses.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
+@Ignore
 public class InsightServiceTests {;
 
     private InsightService IS;

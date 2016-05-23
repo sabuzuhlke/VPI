@@ -38,19 +38,20 @@ public class PDDealSend {
     @JsonIgnore
     private String modified;
 
-    @JsonProperty("ca0900cc615df148dc968c83c52020b1bfad7798")
+    @JsonProperty("7513bc1ddf030d16508c593c097537da6d2b5865")
     private String zuhlke_office;
-    @JsonProperty("a49f4c82c7c44286df3c137791bcda2170c3ae75")
+    @JsonProperty("3d133ca0d93126ed643d314ac98f0c8bdb485b1f")
     private String lead_type;
-    @JsonProperty("361cf6ef6cc225008251d67a6a3fdcbbc8f03d55")
+    @JsonProperty("cdb9d7237459a4912b101871d758dcebfdace08f")
     private String project_number;
-    @JsonProperty("7ef8282593f5a552696a36a842b250730c4df8ca")
+    @JsonProperty("c340a82a1529b131894bcf743b0b30de963139fb")
     private String phase;
-    @JsonProperty("44105f961d387bc35323ecf4bc6325be3a732c8d")
+    @JsonProperty("02d60bdc626550f2fa1aaf9d38fbfef20ce18a34")
     private Long cost;
-    @JsonProperty("44105f961d387bc35323ecf4bc6325be3a732c8d_currency")
+    //@JsonProperty("44105f961d387bc35323ecf4bc6325be3a732c8d_currency")
+    @JsonIgnore
     private String cost_currency;
-    @JsonProperty("a604365b4dc4fbe6c736f02efd82ea41ace64595")
+    @JsonProperty("d444c37006b2f7d3b8a0fc41af636f71a6633b42")
     private Long v_id;
 
     public PDDealSend() {

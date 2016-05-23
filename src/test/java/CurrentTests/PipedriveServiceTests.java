@@ -115,9 +115,9 @@ public class PipedriveServiceTests {
         deal.setCurrency("GBP");
         deal.setLead_type("New Lead");
         deal.setLost_reason("No reason");
-        deal.setOrg_id(44265L);
-        deal.setPerson_id(40390L);
-        deal.setUser_id(1363416L);
+        deal.setOrg_id(1L);
+        deal.setPerson_id(1L);
+        deal.setUser_id(1277584L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
         deal.setStage_id(1);
@@ -141,7 +141,6 @@ public class PipedriveServiceTests {
         assertTrue(gotDeal.getBody().getData() != null);
         assertTrue(gotDeal.getBody().getData().getActive());
         assertTrue(gotDeal.getBody().getData().getId().longValue() == postedDeal.getBody().getData().getId());
-        assertTrue(gotDeal.getBody().getData().getCost_currency().equals("GBP"));
         assertTrue(gotDeal.getBody().getData().getCost() == 1000L);
         assertTrue(gotDeal.getBody().getData().getCurrency().equals("GBP"));
         //assertTrue(gotDeal.getBody().getData().getLead_type() == 3);
@@ -150,9 +149,9 @@ public class PipedriveServiceTests {
         assertTrue(gotDeal.getBody().getData().getStatus().equals("open"));
         assertTrue(gotDeal.getBody().getData().getTitle().equals("TEST DEAL"));
         assertTrue(gotDeal.getBody().getData().getZuhlke_office().equals("1"));
-        assertTrue(gotDeal.getBody().getData().getOrg_id().getValue() == 44265L);
-        assertTrue(gotDeal.getBody().getData().getPerson_id().getValue() == 40390L);
-        assertTrue(gotDeal.getBody().getData().getUser_id().getId() == 1363416L);
+        assertTrue(gotDeal.getBody().getData().getOrg_id().getValue() == 1L);
+        assertTrue(gotDeal.getBody().getData().getPerson_id().getValue() == 1L);
+        assertTrue(gotDeal.getBody().getData().getUser_id().getId() == 1277584L);
         assertTrue(gotDeal.getBody().getData().getStage_id() == 1L);
         assertTrue(gotDeal.getBody().getData().getValue().equals("10000"));
 
@@ -659,7 +658,7 @@ public class PipedriveServiceTests {
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(!res.getBody().getData().isEmpty());
-        assertTrue(res.getBody().getData().size() == 9);
+        assertTrue(res.getBody().getData().size() == 7);
         assertTrue(res.getBody().getData().get(0).getEmail() != null);
         assertTrue(res.getBody().getData().get(0).getId() != null);
 
@@ -776,5 +775,11 @@ public class PipedriveServiceTests {
             assertTrue(!org.getBody().getData().getActive_flag());
         }
     }
+
+
+    /**
+     * REFACTOR TEST====================================================================================================
+     */
+
 
 }

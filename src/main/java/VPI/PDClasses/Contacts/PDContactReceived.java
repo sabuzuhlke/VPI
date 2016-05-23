@@ -22,7 +22,7 @@ public class PDContactReceived {
     private List<ContactDetail> phone;
     private List<ContactDetail> email;
     private Integer visible_to;
-    @JsonProperty("77f255155d7a104848c88ded9043c593ea1fbba3")
+    @JsonProperty("174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
 
     @JsonProperty("add_time")

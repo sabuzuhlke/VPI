@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by sabu on 27/04/2016.
  */
-public class ZUKResponse {
+public class ZUKOrganisations {
 
     @JsonProperty("organisations")
     private List<JSONOrganisation> organisationList;
@@ -19,7 +19,7 @@ public class ZUKResponse {
     @JsonProperty("danglingContacts")
     private List<JSONContact> danglingContacts;
 
-    public ZUKResponse() {
+    public ZUKOrganisations() {
         this.organisationList = new ArrayList<>();
         this.danglingContacts = new ArrayList<>();
     }
