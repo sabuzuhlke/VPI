@@ -19,6 +19,7 @@ public class PDActivitySend {
     private Long org_id;
     private Long person_id;
     private String note;
+    private Long user_id;
 
     public PDActivitySend() {
     }
@@ -109,5 +110,13 @@ public class PDActivitySend {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Long user_id) {
+        this.user_id = user_id;
     }
 }
