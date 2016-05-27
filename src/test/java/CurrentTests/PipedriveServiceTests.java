@@ -24,9 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.yaml.snakeyaml.events.Event;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -98,13 +97,15 @@ public class PipedriveServiceTests {
         List<Long> idsPosted = new ArrayList<>();
         List<Long> idsDeleted = new ArrayList<>();
 
-        idsPosted = PS.postDealList(deals);
+        HashMap<Long, Long> map = PS.postDealList(deals);
+        System.out.println(map.size());
+        System.out.println(map.values().size());
+        System.out.println(map.keySet().size());
+        assertTrue(map.size() == 2);
 
-        assertTrue(idsPosted.size() == 2);
+        //idsDeleted = PS.deleteDealList(map.values());
 
-        idsDeleted = PS.deleteDealList(idsPosted);
-
-        assertTrue(idsDeleted.equals(idsPosted));
+        //assertTrue(idsDeleted.equals(new ArrayList<>(map.values())));
     }
 
     @Test
@@ -218,7 +219,7 @@ public class PipedriveServiceTests {
 
         List<PDDealSend> deals = getSomeDeals();
 
-        List<Long> postedIds = PS.postDealList(deals);
+        List<Long> postedIds = new ArrayList<>(PS.postDealList(deals).values());
 
         int index = 0;
         for (PDDealSend deal : deals) {
@@ -254,10 +255,12 @@ public class PipedriveServiceTests {
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
         deal.setStage_id(1);
-        deal.setStatus("open");
+        deal.setStatus("lost");
         deal.setTitle("TEST DEAL1");
         deal.setValue("10000");
         deal.setZuhlke_office("London");
+        deal.setV_id(1L);
+        deal.setLost_time("2007-01-01 00:00:00");
 
         deals.add(deal);
 
@@ -279,6 +282,7 @@ public class PipedriveServiceTests {
         deal.setTitle("TEST DEAL 2");
         deal.setValue("99999");
         deal.setZuhlke_office("London");
+        deal.setV_id(2L);
 
         deals.add(deal);
 
@@ -660,7 +664,7 @@ public class PipedriveServiceTests {
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(!res.getBody().getData().isEmpty());
-        assertTrue(res.getBody().getData().size() == 7);
+        assertTrue(res.getBody().getData().size() == 11);
         assertTrue(res.getBody().getData().get(0).getEmail() != null);
         assertTrue(res.getBody().getData().get(0).getId() != null);
 
@@ -770,7 +774,7 @@ public class PipedriveServiceTests {
     @Test
     public void canPostActivity(){
         PDActivitySend activity = new PDActivitySend();
-        activity.setUser_id(1281007L);
+        activity.setUser_id(1277584L);
         activity.setDone(false);
         activity.setType("call");
         activity.setDue_date("2142-01-01");
@@ -815,8 +819,8 @@ public class PipedriveServiceTests {
         d.setPhase("00_EXTERNAL");
         d.setProject_number("007");
         d.setStatus("open");
-        d.setUser_id(1281007L);
-        d.setZuhlke_office("LON");
+        d.setUser_id(1403429L);
+        d.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> resD = PS.postDeal(d);
 
@@ -846,7 +850,7 @@ public class PipedriveServiceTests {
         assertTrue(resA.getBody().getData().getOrg_id() == orgid.longValue());
         assertTrue(resA.getBody().getData().getPerson_id() == contid.longValue());
         assertTrue(resA.getBody().getData().getDeal_id() == dealid.longValue());
-        assertTrue(resA.getBody().getData().getUser_id() == 1281007L);
+        assertTrue(resA.getBody().getData().getUser_id() == 1277584L);
 
         ResponseEntity<PDDeleteResponse> delres;
 
@@ -868,12 +872,7 @@ public class PipedriveServiceTests {
     public void canPostActivityList(){
         List<PDActivitySend> acts = getSomeActivities();
 
-        List<Long> idsPosted = new ArrayList<>();
-
-        List<Long> res = PS.postActivityList(acts);
-
-
-        idsPosted = res;
+        List<Long> idsPosted = PS.postActivityList(acts);
 
         assertTrue(acts.size() == idsPosted.size());
 
@@ -886,7 +885,7 @@ public class PipedriveServiceTests {
         List<PDActivitySend> activities = new ArrayList<>();
 
         PDActivitySend activity = new PDActivitySend();
-        activity.setUser_id(1281007L);
+        activity.setUser_id(1277584L);
         activity.setDone(false);
         activity.setType("call");
         activity.setDue_date("2142-01-01");
@@ -896,7 +895,7 @@ public class PipedriveServiceTests {
         activities.add(activity);
 
         activity = new PDActivitySend();
-        activity.setUser_id(1281007L);
+        activity.setUser_id(1277584L);
         activity.setDone(false);
         activity.setType("call");
         activity.setDue_date("2142-01-01");
@@ -911,7 +910,7 @@ public class PipedriveServiceTests {
     @Test
     public void canGetActivity(){
         PDActivitySend activity = new PDActivitySend();
-        activity.setUser_id(1281007L);
+        activity.setUser_id(1277584L);
         activity.setDone(false);
         activity.setType("call");
         activity.setDue_date("2142-01-01");
@@ -956,8 +955,8 @@ public class PipedriveServiceTests {
         d.setPhase("00_EXTERNAL");
         d.setProject_number("007");
         d.setStatus("open");
-        d.setUser_id(1281007L);
-        d.setZuhlke_office("LON");
+        d.setUser_id(1277584L);
+        d.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> resD = PS.postDeal(d);
 
@@ -991,7 +990,7 @@ public class PipedriveServiceTests {
         assertTrue(a.getOrg_id() == orgid.longValue());
         assertTrue(a.getPerson_id() == contid.longValue());
         assertTrue(a.getDeal_id() == dealid.longValue());
-        assertTrue(a.getUser_id() == 1281007L);
+        assertTrue(a.getUser_id() == 1277584L);
 
         ResponseEntity<PDDeleteResponse> delres;
 
@@ -1013,7 +1012,7 @@ public class PipedriveServiceTests {
     public void canPutActivity(){
 
         PDActivitySend activity = new PDActivitySend();
-        activity.setUser_id(1281007L);
+        activity.setUser_id(1277584L);
         activity.setDone(false);
         activity.setType("call");
         activity.setDue_date("2142-01-01");
@@ -1058,8 +1057,8 @@ public class PipedriveServiceTests {
         d.setPhase("00_EXTERNAL");
         d.setProject_number("007");
         d.setStatus("open");
-        d.setUser_id(1281007L);
-        d.setZuhlke_office("LON");
+        d.setUser_id(1277584L);
+        d.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> resD = PS.postDeal(d);
 

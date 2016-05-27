@@ -5,6 +5,9 @@ import VPI.PDClasses.*;
 import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.OrgId;
 import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Deals.PDDealReceived;
+import VPI.PDClasses.Deals.PDDealSend;
+import VPI.PDClasses.Deals.PDPersonId;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.Users.PDUser;
@@ -12,11 +15,14 @@ import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecSynchroniser;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -516,8 +522,58 @@ public class VertecSynchroniserUnitTests {
     }
 
     @Test
-    public void canNoticeDifferenceBetweenDealsCorrectly(){
+    public void canCorrectlyExtractVidFromNoteWithItSet() {
+        String note = "V_ID:132412312542#seoibfl ernglbnreipiqt naerdb aaowri hnd";
+        Long id = sync.extractVID(note);
+        assertTrue(id == 132412312542L);
 
+        String note2 = "wiephsfgpaorejfpboamfbdp";
+        Long id2 = sync.extractVID(note2);
+        assertTrue(id2 == -1L);
+
+        String note3 = "oiadfniaodnfbpn#oianfbindfb";
+        Long id3 = sync.extractVID(note3);
+        assertTrue(id3 == -1L);
+    }
+
+    @Test @Ignore
+    public void canCompareDealDetails() {
+
+
+        PDDealSend deal = new PDDealSend();
+        PDDealReceived deal2 = new PDDealReceived();
+        sync.compareDealDetails(deal, deal2);
+
+        deal2.setPerson_id(new PDPersonId());
+        sync.compareDealDetails(deal, deal2);
+
+        PDPersonId person = new PDPersonId();
+        person.setValue(1L);
+        deal2.setPerson_id(person);
+        sync.compareDealDetails(deal, deal2);
+
+        deal.setPerson_id(1L);
+        PDDealReceived deal3 = new PDDealReceived();
+        sync.compareDealDetails(deal, deal3);
+
+        deal3.setPerson_id(new PDPersonId());
+        sync.compareDealDetails(deal, deal3);
+
+        deal3.setPerson_id(person);
+        sync.compareDealDetails(deal, deal2);
+
+
+
+    }
+
+    @Test
+    public void canParseTime() {
+
+        DateTimeFormatter p = DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm:ss");
+
+        LocalDateTime pt = LocalDateTime.from(p.parse("2016-05-20 14:02:40"));
+
+        System.out.println(pt);
     }
 
 }
