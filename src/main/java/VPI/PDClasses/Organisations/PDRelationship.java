@@ -54,4 +54,9 @@ public class PDRelationship {
     public void setOrg_id(Long org_id) {
         this.org_id = org_id;
     }
+
+    @Override
+    public String toString() {
+        return ("REl: " + rel_linked_org_id + ", " + rel_owner_org_id + ", " + type + ", " + org_id);
+    }
 }

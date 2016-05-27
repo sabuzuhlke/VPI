@@ -1,6 +1,8 @@
 package VPI.PDClasses.Activities;
 
+import VPI.VertecClasses.VertecActivities.JSONActivity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by sabu on 18/05/2016.
@@ -22,6 +24,17 @@ public class PDActivitySend {
     private Long user_id;
 
     public PDActivitySend() {
+    }
+
+    public PDActivitySend(JSONActivity a, Long user_id, Long contact_id, Long ord_id, Long deal_id, String type) {
+        this.done = a.getDone();
+        this.type = type;
+        this.subject = a.getTitle();
+        this.deal_id = deal_id;
+        this.org_id = ord_id;
+        this.person_id = contact_id;
+        this.note = "V_ID:" + a.getId() + "#\n" + a.getText(); //TODO: make this hack known
+        this.user_id = user_id;
     }
 
     public Long getId() {
@@ -118,5 +131,15 @@ public class PDActivitySend {
 
     public void setUser_id(Long user_id) {
         this.user_id = user_id;
+    }
+
+    public String toPrettyJSON() {
+        ObjectMapper m = new ObjectMapper();
+        try {
+            return m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (Exception e) {
+            System.out.println("Couldnt marshall activity send to json for printing");
+            return subject + note + done + user_id +deal_id +org_id +person_id;
+        }
     }
 }

@@ -34,7 +34,7 @@ public class Application implements CommandLineRunner {
         try {
 
             //Code here will run just once
-//            PD.clearPD(new ArrayList<>(), new ArrayList<>());
+//            PD.clearPD(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 //            VS.importOrganisationsAndContactsToPipedriveAndPrint();
 //            VS.importProjectsAndPhasesToPipedrive();
 

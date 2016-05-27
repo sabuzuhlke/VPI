@@ -1,7 +1,5 @@
 package VPI.VertecClasses.VertecOrganisations;
 
-import VPI.VertecClasses.VertecOrganisations.JSONContact;
-import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,7 +56,6 @@ public class ZUKOrganisations {
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{
-
             retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
         }
         catch(Exception e){

@@ -20,7 +20,7 @@ public class JSONProject {
     @JsonProperty("client_ref")
     private Long clientRef;
     @JsonProperty("leader_ref")
-    private Long leaderRef;
+    private String leaderRef;
     @JsonProperty("phases")
     private List<JSONPhase> phases;
     @JsonProperty("customer_ref")
@@ -77,11 +77,11 @@ public class JSONProject {
         this.clientRef = clientRef;
     }
 
-    public Long getLeaderRef() {
+    public String getLeaderRef() {
         return leaderRef;
     }
 
-    public void setLeaderRef(Long leaderRef) {
+    public void setLeaderRef(String leaderRef) {
         this.leaderRef = leaderRef;
     }
 

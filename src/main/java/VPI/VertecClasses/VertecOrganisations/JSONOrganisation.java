@@ -1,7 +1,7 @@
 package VPI.VertecClasses.VertecOrganisations;
 
-import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -163,10 +163,30 @@ public class  JSONOrganisation {
         if( ! this.getAdditionalAdress().isEmpty()){
             address += this.getAdditionalAdress() + ", ";
         }
-        address += this.getStreetAddress() + ", ";
-        address += this.getCity() + ", ";
-        address += this.getZip() + ", ";
-        address += this.getCountry();
+        if ( ! this.getStreetAddress().isEmpty()) {
+            address += this.getStreetAddress() + ", ";
+        }
+        if ( ! this.getCity().isEmpty()) {
+            address += this.getCity() + ", ";
+        }
+        if ( ! this.getZip().isEmpty()) {
+            address += this.getZip() + ", ";
+        }
+        if ( ! this.getCountry().isEmpty()) {
+            address += this.getCountry();
+        }
         return address;
+    }
+
+    public String toPrettyJSON() {
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
+        }
+        return retStr;
     }
 }

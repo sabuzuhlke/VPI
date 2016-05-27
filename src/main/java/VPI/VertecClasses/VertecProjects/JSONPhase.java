@@ -42,6 +42,11 @@ public class JSONPhase {
     @JsonProperty("created")
     private String creationDate;
 
+    @JsonProperty("lost_time")
+    private String lost_time;
+    @JsonProperty("won_time")
+    private String won_time;
+
     public JSONPhase() {
     }
 
@@ -172,5 +177,21 @@ public class JSONPhase {
 
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getLost_time() {
+        return lost_time;
+    }
+
+    public void setLost_time(String lost_time) {
+        this.lost_time = lost_time;
+    }
+
+    public String getWon_time() {
+        return won_time;
+    }
+
+    public void setWon_time(String won_time) {
+        this.won_time = won_time;
     }
 }

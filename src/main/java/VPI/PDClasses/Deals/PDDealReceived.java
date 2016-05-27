@@ -27,9 +27,10 @@ public class PDDealReceived {
     private String visible_to;
     private int pipeline_id;
     private String lost_reason;
+    private String won_time;
+    private String lost_time;
     //won_time
     //lost_time
-    //lost_reason
     @JsonProperty("7513bc1ddf030d16508c593c097537da6d2b5865")
     private String zuhlke_office;
     @JsonProperty("3d133ca0d93126ed643d314ac98f0c8bdb485b1f")
@@ -224,6 +225,22 @@ public class PDDealReceived {
 
     public void setV_id(Long v_id) {
         this.v_id = v_id;
+    }
+
+    public String getWon_time() {
+        return won_time;
+    }
+
+    public void setWon_time(String won_time) {
+        this.won_time = won_time;
+    }
+
+    public String getLost_time() {
+        return lost_time;
+    }
+
+    public void setLost_time(String lost_time) {
+        this.lost_time = lost_time;
     }
 
     @Override

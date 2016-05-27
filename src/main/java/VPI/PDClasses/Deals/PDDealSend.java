@@ -3,6 +3,7 @@ package VPI.PDClasses.Deals;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by sabu on 12/05/2016.
@@ -34,6 +35,13 @@ public class PDDealSend {
     private String add_time;
     @JsonProperty("visible_to")
     private Integer visible_to = 3;
+
+    @JsonProperty("lost_time")
+    private String lost_time;
+
+    @JsonProperty("won_time")
+    private String won_time;
+
 
     @JsonIgnore
     private String modified;
@@ -239,5 +247,34 @@ public class PDDealSend {
 
     public void setModified(String modified) {
         this.modified = modified;
+    }
+
+    public String getWon_time() {
+        return won_time;
+    }
+
+    public void setWon_time(String won_time) {
+        this.won_time = won_time;
+    }
+
+    public String getLost_time() {
+        return lost_time;
+    }
+
+    public void setLost_time(String lost_time) {
+        this.lost_time = lost_time;
+    }
+
+    @Override
+    public String toString() {
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert PDDealSend to JSON: " + e.toString());
+        }
+        return retStr;
     }
 }

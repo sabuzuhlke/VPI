@@ -1,6 +1,7 @@
 package VPI.VertecClasses;
 
 import VPI.MyCredentials;
+import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import org.springframework.http.HttpMethod;
@@ -52,7 +53,6 @@ public class VertecService {
     /**
      * Returns a ZUKOrganisations containing all organisastions relevant to ZUK along with nested contacts
      * and a list of dangling contacts not attached to organisations
-     * @return
      */
     public ResponseEntity<ZUKOrganisations> getZUKOrganisations(){
         return getFromVertec("https://" + server + "/organisations/ZUK", ZUKOrganisations.class);
@@ -60,16 +60,21 @@ public class VertecService {
 
     /**
      * Returns a ZUKProjects containing all projects relevant to ZUK along with their nested Project Phases
-     * @return
      */
     public ResponseEntity<ZUKProjects> getZUKProjects() {
         return getFromVertec("https://" + server + "/projects/ZUK", ZUKProjects.class);
     }
 
     /**
+     * Returns a list of all activities assigned to members of the ZUK sales team
+     */
+    public ResponseEntity<ZUKActivities> getZUKActivities() {
+        return getFromVertec("https://" + server + "/activities/ZUK", ZUKActivities.class);
+    }
+
+    /**
      * Returns "Success!" if request is properly authenticated and access permissions are not limited otherwise returns
      * appropriate error string
-     * @return
      */
     public String ping() {
         return getFromVertec("https://" + server + "/ping", String.class).getBody();

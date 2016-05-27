@@ -1,5 +1,6 @@
 package VPI.PDClasses;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,16 +39,16 @@ public class PDBulkDeleteResponse extends PDResponse {
 
     class PDBulkDeletedIdsReq {
 
-        private List<Long> ids;
+        private Collection<Long> ids;
 
         public PDBulkDeletedIdsReq() {
         }
 
-        public List<Long> getIds() {
+        public Collection<Long> getIds() {
             return ids;
         }
 
-        public void setIds(List<Long> ids) {
+        public void setIds(Collection<Long> ids) {
             this.ids = ids;
         }
     }
