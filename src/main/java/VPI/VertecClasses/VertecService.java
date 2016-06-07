@@ -2,7 +2,10 @@ package VPI.VertecClasses;
 
 import VPI.MyCredentials;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
+import VPI.VertecClasses.VertecOrganisations.JSONContact;
+import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
@@ -66,6 +69,20 @@ public class VertecService {
     }
 
     /**
+     * Returns the project with the specified projectCode
+     */
+    public ResponseEntity<JSONProject> getProject(String code){
+        return getFromVertec("https://" + server + "/projects/" + code, JSONProject.class);
+    }
+
+    /**
+     * Returns the project with the specified id
+     */
+    public ResponseEntity<JSONProject> getProject(Long id){
+        return getFromVertec("https://" + server + "/projects/" + id, JSONProject.class);
+    }
+
+    /**
      * Returns a list of all activities assigned to members of the ZUK sales team
      */
     public ResponseEntity<ZUKActivities> getZUKActivities() {
@@ -78,5 +95,17 @@ public class VertecService {
      */
     public String ping() {
         return getFromVertec("https://" + server + "/ping", String.class).getBody();
+    }
+
+    public ResponseEntity<JSONOrganisation> getOrganisation(Long v_id){
+        return getFromVertec("https://" + server + "/organisations/" + v_id, JSONOrganisation.class);
+    }
+
+    public ResponseEntity<JSONContact> getContact(long v_id){
+        return getFromVertec("https://" + server + "/contacts/" + v_id, JSONContact.class);
+    }
+
+    public ResponseEntity<String> getAddressEntry(Long v_id) {
+        return getFromVertec("https://" + server + "/addressEntry/" + v_id, String.class);
     }
 }

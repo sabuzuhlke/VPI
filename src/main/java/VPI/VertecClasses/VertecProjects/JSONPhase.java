@@ -167,6 +167,17 @@ public class JSONPhase {
         return modifiedDate;
     }
 
+    public String getPDformatModifiedTime(){
+        try {
+            String[] dateTime = this.modifiedDate.split("T");
+            String date = dateTime[0];
+            String time = dateTime[1];
+            return date + " " + time;
+        } catch (Exception e) {
+            return "2000-01-01 00:00:00";
+        }
+    }
+
     public void setModifiedDate(String modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
@@ -194,4 +205,5 @@ public class JSONPhase {
     public void setWon_time(String won_time) {
         this.won_time = won_time;
     }
+
 }

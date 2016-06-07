@@ -1,5 +1,7 @@
 package CurrentTests;
 
+import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.StringReader;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -159,6 +162,35 @@ public class VertecServiceTests {
                 "    \"objid\" : 4\n" +
                 "  } ]\n" +
                 "}\n";
+    }
+
+    @Test
+    public void canGetOrgById(){
+        Long id = 709814L;
+
+        JSONOrganisation org = VS.getOrganisation(id).getBody();
+
+        assertTrue(org.getName().equals("Deutsche Telekom"));
+
+    }
+
+    @Test
+    public void canCetProjectByCode(){
+        String code = "c15823";
+
+        JSONProject p = VS.getProject(code).getBody();
+
+        assertEquals(p.getTitle(), "HSBC HSS off-line demo");
+
+    }
+
+    @Test
+    public void canGetProjectById(){
+        Long id = 12065530L;
+
+        JSONProject p = VS.getProject(id).getBody();
+
+        assertEquals(p.getTitle(), "HSBC HSS off-line demo");
     }
 
 

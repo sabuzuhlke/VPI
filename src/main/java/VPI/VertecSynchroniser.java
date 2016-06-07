@@ -5,6 +5,7 @@ import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
+import VPI.PDClasses.Contacts.PDFollower;
 import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
@@ -20,12 +21,11 @@ import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
 import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -52,6 +52,10 @@ public class VertecSynchroniser {
     private List<PDActivitySend> activityPutList;
     private HashMap<String, String> typeMap;
     private HashMap<Long, Long> dealIdMap;
+
+    //IMMEDIATELY DELETE
+    private int orgCounter = 0;
+    private int contactCounter = 0;
 
 
     public VertecSynchroniser() {
@@ -326,7 +330,7 @@ public class VertecSynchroniser {
         }
     }
 
-    public Long extractVID(String note) {
+    public static Long extractVID(String note) {
         if (note.contains("V_ID:")) {
             String[] vIdAndRest = note.split("#");
             String vIdString = vIdAndRest[0];
@@ -459,65 +463,17 @@ public class VertecSynchroniser {
 
                 //currency
                 String currency = project.getCurrency();
+                //stage_id
+                setStageId(deal, phase);
+
                 deal.setCurrency(currency);
 
                 //sets the person responsible to be the leader of the phase,
                 //but if this is null the leader of whole project? or check other phase owners?;
-                // TODO: check other phases for user_id if null
                 Long user_id = teamIdMap.get(phase.getPersonResponsible());
-//TODO: set proper id
-                deal.setUser_id(user_id == null ? teamIdMap.get(project.getLeaderRef()) : user_id);
 
-                //person_id
-                deal.setPerson_id(contactIdMap.get(project.getCustomerRef()));
-
-                //org_id
-                deal.setOrg_id(orgIdMap.get(project.getClientRef()));
-
-                //stage_id
-                //TODO: change to correct stage_ids once in production
-                String salesStatus = phase.getSalesStatus();
-                String code = salesStatus.substring(0, Math.min(salesStatus.length(), 2));
-                Integer num = Integer.parseInt(code);
-
-                //for setting status
-                String status = "open";
-
-                switch (num) {
-                    //Exploratory = 1, NewLead/Extension = 2, QualifiedLead = 3
-                    case 5: deal.setStage_id(2);
-                        break;
-                    //Rfp Recieved = 3
-                    case 10: deal.setStage_id(4);
-                        break;
-                    //Offered = 6
-                    case 11: deal.setStage_id(5);
-                        break;
-                    //UnderNegotiation = 5
-                    case 12: deal.setStage_id(7);
-                        break;
-                    //VerballySold = 7
-                    case 20: deal.setStage_id(6);
-                        break;
-                    //SOLD = WON
-                    case 21: status = "won";
-                        break;
-                    //LOST = LOST
-                    case 30: status = "lost";
-                        deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map
-                        deal.setLost_time(phase.getLost_time());
-                        break;
-                    //FINISHED = WON
-                    case 40: status = "won";
-                        deal.setWon_time(phase.getWon_time());
-                        break;
-                    default: System.out.println(num);
-                        break;
-                }
-
-                //status ('open' = Open, 'won' = Won, 'lost' = Lost, 'deleted' = Deleted)
-                //deal.setStatus(status);
-                deal.setStatus(status);
+                user_id = (user_id == null ? teamIdMap.get(project.getLeaderRef()) : user_id);
+                deal.setUser_id(user_id == null ? teamIdMap.get("wolfgang.emmerich@zuhlke.com") : user_id);
 
                 //add_time
                 try {
@@ -543,23 +499,17 @@ public class VertecSynchroniser {
                 String dealPhase = phase.getCode();
                 deal.setPhase(dealPhase);
 
-                //cost
-                //TODO: Ensure we can ignore cost, lead type and zuhlke office
-
                 //modified
-                try {
-                    String[] dateTime = phase.getModifiedDate().split("T");
-                    String date = dateTime[0];
-                    String time = dateTime[1];
-                    String newDateTime = date + " " + time;
-                    deal.setModified(newDateTime);
-                } catch (Exception e) {
-                    deal.setModified("2000-01-01 00:00:00");
-                }
+                deal.setModified(phase.getPDformatModifiedTime());
 
-                if (deal.getUser_id() == null) {
-                    System.out.println(deal);
-                }
+
+                //person_id
+                dealwithCustomerRef(deal, project);
+
+
+                //org_id
+                dealWithClientRef(deal, project);
+
                 //add deal to list
                 deals.add(deal);
             }
@@ -568,6 +518,159 @@ public class VertecSynchroniser {
         }
 
         return deals;
+    }
+
+    private void setStageId(PDDealSend deal, JSONPhase phase){
+
+        //TODO: change to correct stage_ids once in production
+        String salesStatus = phase.getSalesStatus();
+        String code = salesStatus.substring(0, Math.min(salesStatus.length(), 2));
+        Integer num = Integer.parseInt(code);
+
+        //for setting status
+        String status = "open";
+
+        switch (num) {
+            //Exploratory = 1, NewLead/Extension = 2, QualifiedLead = 3
+            case 5: deal.setStage_id(2);
+                break;
+            //Rfp Recieved = 3
+            case 10: deal.setStage_id(4);
+                break;
+            //Offered = 6
+            case 11: deal.setStage_id(5);
+                break;
+            //UnderNegotiation = 5
+            case 12: deal.setStage_id(7);
+                break;
+            //VerballySold = 7
+            case 20: deal.setStage_id(6);
+                break;
+            //SOLD = WON
+            case 21: status = "won";
+                break;
+            //LOST = LOST
+            case 30: status = "lost";
+                deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map
+                String lostTime = phase.getLost_time();
+                deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
+                break;
+            //FINISHED = WON
+            case 40: status = "won";
+                String wonTime = phase.getWon_time();
+                deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
+                break;
+            default: System.out.println(num);
+                break;
+        }
+        //status ('open' = Open, 'won' = Won, 'lost' = Lost, 'deleted' = Deleted)
+        //deal.setStatus(status);
+        deal.setStatus(status);
+    }
+
+    private Long dealwithCustomerRef(PDDealSend deal, JSONProject project){
+
+        System.out.println("Setting person_id for deal: " + deal.getV_id());
+        System.out.println("Person_id/afutraggeber: " + project.getCustomerRef());
+        deal.setPerson_id(contactIdMap.get(project.getCustomerRef()));
+
+        if(project.getCustomerRef() != null && deal.getPerson_id() == null){
+            if( ! contactIdMap.containsKey(project.getCustomerRef())){
+                JSONContact c = VS.getContact(project.getCustomerRef()).getBody();
+
+                PDContactSend cs = new PDContactSend(c, deal.getUser_id());
+
+                //cs.setOrg_id(orgIdMap.get(c.getOrg)); //Set org id of contact TODO: add orgid to JSONContact
+
+                Long cid = PDS.postContact(cs).getBody().getData().getId();
+
+                PDFollower fol = new PDFollower(cid,teamIdMap.get("wolfgang.emmerich@zuhlke.com"));
+                PDS.postFollowerToContact(fol);
+
+                contactIdMap.put(c.getObjid(), cid);
+
+            }
+            deal.setPerson_id(contactIdMap.get(project.getCustomerRef()));
+
+        }
+        return deal.getPerson_id();
+    }
+
+    private Long dealWithClientRef(PDDealSend deal, JSONProject project) {
+        deal.setOrg_id(orgIdMap.get(project.getClientRef()));
+
+        if (project.getClientRef() != null && deal.getOrg_id() == null) {
+
+            if (!orgIdMap.containsKey(project.getClientRef())) {
+
+                String addressenrty = VS.getAddressEntry(project.getClientRef()).getBody();
+                ObjectMapper mapper = new ObjectMapper();
+
+                try {
+                    JSONOrganisation org =  mapper.readValue(addressenrty, JSONOrganisation.class);
+                    PDOrganisationSend pdOrg = new PDOrganisationSend(org, deal.getUser_id());
+
+                    //post to pd
+                    Long id = PDS.postOrganisation(pdOrg).getBody().getData().getId();
+                    //add to map
+                    orgIdMap.put(org.getObjid(), id);
+
+                    PDFollower fol = new PDFollower(id,teamIdMap.get("wolfgang.emmerich@zuhlke.com"));
+                    PDS.postFollowerToOrganisation(fol);
+
+                    for (JSONContact c : org.getContacts()) {
+                        if (!contactIdMap.containsKey(c.getObjid())) {
+                            PDContactSend cs = new PDContactSend(c, deal.getUser_id());
+                            //cs.setOrg_id(orgIdMap.get(c.getObjid())); TODO: add orgid to JSONContact
+
+                            Long cid = PDS.postContact(cs).getBody().getData().getId();
+
+                            PDFollower folow = new PDFollower(cid,teamIdMap.get("wolfgang.emmerich@zuhlke.com"));
+                            PDS.postFollowerToContact(folow);
+
+                            contactIdMap.put(c.getObjid(), cid);
+                        }
+                    }
+
+                } catch (IOException ioe) { //thrown by object mapper, when a contact instead of an organisation is returned
+
+                    try {
+                        JSONContact cont = mapper.readValue(addressenrty,JSONContact.class);
+                        deal.setPerson_id(contactIdMap.get(project.getClientRef()));
+
+                        if(project.getClientRef() != null && deal.getPerson_id() == null){
+                            if( ! contactIdMap.containsKey(project.getClientRef())){
+                                JSONContact c = VS.getContact(project.getClientRef()).getBody();
+
+                                PDContactSend cs = new PDContactSend(c, deal.getUser_id());
+
+                                //cs.setOrg_id(orgIdMap.get(c.getOrg)); //Set org id of contact TODO: add orgid to JSONContact
+
+                                Long cid = PDS.postContact(cs).getBody().getData().getId();
+
+                                PDFollower fol = new PDFollower(cid,teamIdMap.get("wolfgang.emmerich@zuhlke.com"));
+                                PDS.postFollowerToContact(fol);
+
+                                contactIdMap.put(c.getObjid(), cid);
+
+                            }
+                            deal.setPerson_id(contactIdMap.get(project.getClientRef()));
+
+                        }
+
+                    } catch (IOException e) {
+                        System.out.println("Client not an Organisation, nor a Contact, its v_id: " + project.getClientRef());
+                        return null;
+                    }
+                }
+
+
+            }
+
+            //setOrgid
+            deal.setOrg_id(orgIdMap.get(project.getClientRef()));
+        }
+        return deal.getOrg_id();
     }
 
     private Boolean addMissingInformation(PDDealSend vDeal, PDDealReceived pdDeal){
@@ -713,7 +816,7 @@ public class VertecSynchroniser {
     public void compareContacts(List<JSONContact> vConts, List<PDContactReceived> pContacts) {
 
         for(JSONContact vc : vConts) {
-            Boolean matchedName = false;
+            Boolean matched = false;
             Boolean modified = false;
             PDContactReceived temp = null;
             Long tempOrgID = null;
@@ -722,19 +825,27 @@ public class VertecSynchroniser {
 
                 if (pc.getOrg_id() != null && pc.getOrg_id().getValue() != null) tempOrgID = pc.getOrg_id().getValue();
 
-                if(pc.getV_id() == null) continue;
-                if (vc.getObjid().longValue() == pc.getV_id().longValue()) {
-                    matchedName = true;
 
+
+
+                if (pc.getV_id() != null && vc.getObjid().longValue() == pc.getV_id().longValue()) matched = true;
+                if(! matched){
+                    //Collects all pipedrive emails to a list and checks whether the Vertec email is contained in it
+                    if(pc.getEmail().stream()
+                            .map(ContactDetail::getValue)
+                            .collect(toList())
+                            .contains(vc.getEmail())) matched = true;
+                }
+
+                if (matched) {
                     //resolve internal contact details;
                     modified = resolveContactDetails(vc, pc);
                     if(modified) {
                         temp = pc;
                     }
                 }
-
             }
-            if (!matchedName) {
+            if (!matched) {
                 Long owner = teamIdMap.get(vc.getOwner().toLowerCase());
                 PDContactSend newContact = new PDContactSend(vc,owner);
                 newContact.setOrg_id(tempOrgID);
@@ -966,7 +1077,6 @@ public class VertecSynchroniser {
         map.put("sabine.strauss@zuhlke.com", 1424149L); //Sabine
         map.put("ileana.meehan@zuhlke.com", 1424149L); //Ileana
         map.put("ina.hristova@zuhlke.com", 1424149L); //Ina
-        map.put(null, 1277584L); //null
 
         this.teamIdMap = map;
 

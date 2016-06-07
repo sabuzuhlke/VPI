@@ -2,9 +2,6 @@ package VPI.PDClasses.Activities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * Created by sabu on 17/05/2016.
- */
 public class PDActivityReceived {
 
     private Long id;
@@ -25,6 +22,7 @@ public class PDActivityReceived {
     private String note;
     private Long assigned_to_user_id;
     private Long created_by_user_id;
+    private String done_date;
 
     public PDActivityReceived() {
     }
@@ -172,6 +170,15 @@ public class PDActivityReceived {
     public void setDuration(String duration) {
         this.duration = duration;
     }
+
+    public String getDone_date() {
+        return done_date;
+    }
+
+    public void setDone_date(String done_date) {
+        this.done_date = done_date;
+    }
+
     @Override
     public String toString(){
         String retStr = null;

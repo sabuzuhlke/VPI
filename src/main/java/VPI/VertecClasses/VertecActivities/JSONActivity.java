@@ -15,6 +15,7 @@ public class JSONActivity {
     private Long project_link;
     private String date;
     private String type;//
+    private String done_date;
 
     public JSONActivity() {
     }
@@ -97,5 +98,31 @@ public class JSONActivity {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getDone_date() {
+        return done_date;
+    }
+
+    public void setDone_date(String done_date) {
+        this.done_date = done_date;
+    }
+
+    public String getFormattedDone_date(){
+        try{
+            if(this.done_date != null){
+                if (this.done_date.contains("1900-01-01")) {
+                    return "1900-01-01 00:00:00";
+                } else {
+                    String[] dateFormatter = this.done_date.split("T");
+                    String date = dateFormatter[0];
+                    String time = dateFormatter[1];
+                    return date + " " + time;
+                }
+            }
+        } catch (Exception e){
+            System.out.println("Could not split done date of activity: " + this.getTitle());
+        }
+        return null;
     }
 }

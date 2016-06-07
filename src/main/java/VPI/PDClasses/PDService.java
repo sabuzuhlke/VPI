@@ -9,15 +9,14 @@ import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
+import VPI.VertecSynchroniser;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.SynchronousQueue;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class PDService {
 
@@ -490,10 +489,16 @@ public class PDService {
      * Followers
      */
 //------------------------------------------------------------------------------------------------------------------POST
-    public ResponseEntity<String> postFollower(PDFollower f){
+    public ResponseEntity<String> postFollowerToContact(PDFollower f){
         //TODO: change res to accept new pojo instead of string (followers)
-        return postToPipedrive(server + "persons/"+ f.getContactID() + "/followers" + apiKey, f, String.class);
+        return postToPipedrive(server + "persons/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
     }
+
+    public ResponseEntity<String> postFollowerToOrganisation(PDFollower f){
+        //TODO: change res to accept new pojo instead of string (followers)
+        return postToPipedrive(server + "organizations/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+    }
+
 
 
     /**
@@ -538,9 +543,16 @@ public class PDService {
                 .map(PDDealReceived::getId)
                 .collect(toList());
 
+        List<Long> activitiesToDel = getAllActivities().stream()
+                                        .filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
+                                        .map(PDActivityReceived::getId)
+                                        .collect(toList());
+
+
         if (!orgsToDel.isEmpty()) deleteOrganisationList(orgsToDel);
         if (!contsToDel.isEmpty()) deleteContactList(contsToDel);
         if (!dealsToDel.isEmpty()) deleteDealList(dealsToDel);
+        if(!activitiesToDel.isEmpty()) deleteActivityList(activitiesToDel);
 
     }
 

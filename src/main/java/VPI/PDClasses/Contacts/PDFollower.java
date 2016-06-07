@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class PDFollower {
     @JsonProperty("id")
-    private Long contactID;
+    private Long objectID;
 
     @JsonProperty("user_id")
     private Long userID;
@@ -15,8 +15,8 @@ public class PDFollower {
     public PDFollower() {
     }
 
-    public PDFollower(Long contactID, Long userID) {
-        this.contactID = contactID;
+    public PDFollower(Long objectID, Long userID) {
+        this.objectID = objectID;
         this.userID = userID;
     }
 
@@ -28,11 +28,11 @@ public class PDFollower {
         this.userID = userID;
     }
 
-    public Long getContactID() {
-        return contactID;
+    public Long getObjectID() {
+        return objectID;
     }
 
-    public void setContactID(Long contactID) {
-        this.contactID = contactID;
+    public void setObjectID(Long objectID) {
+        this.objectID = objectID;
     }
 }

@@ -13,6 +13,7 @@ import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecSynchroniser;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -34,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
-public class VertecSynchroniserUnitTests {
+public class VertecSynchroniserTests {
 
     private VertecSynchroniser sync;
 
@@ -576,4 +577,54 @@ public class VertecSynchroniserUnitTests {
         System.out.println(pt);
     }
 
+    @Test
+    public void nullQueryMap(){
+        sync.constructTestTeamMap();
+        Long habba  = sync.getTeamIdMap().get(null);
+        assertTrue(habba == null);
+        habba = sync.getTeamIdMap().get("");
+        assertTrue(habba == null);
+    }
+
+
+    @Test
+    public void canCreateDealObjectsWhenMapsNotInitialised(){
+        String Code = "c15600";
+
+        sync.constructTestTeamMap();
+        JSONProject project = sync.getVS().getProject(Code).getBody();
+
+
+        assertEquals(project.getPhases().size(),1);
+        assertEquals(project.getTitle(), "Alstom, Resourcing");
+        assertEquals(project.getClientRef().longValue(), 1679954);
+        assertEquals(project.getCurrency(),"GBP");
+        assertEquals(project.getType(),"BU DSI");
+        List<JSONProject> ps = new ArrayList<>();
+        ps.add(project);
+
+        List<PDDealSend> deals = sync.createDealObjects(ps);
+        PDDealSend deal = deals.get(0);
+
+
+        assertEquals(deals.size(),1);
+
+        assertTrue(deal.getTitle().contains("Alstom, Resourcing: Software engineers for Solar"));
+        assertEquals(deal.getValue(), "0.00");
+        assertEquals(deal.getCurrency(), "GBP");
+        System.out.println(deal.getUser_id());
+        assertEquals(deal.getUser_id().longValue(), 1363410);
+        assertEquals(deal.getAdd_time(), "2012-05-17 16:19:03");
+        assertEquals(deal.getProject_number(), "C15600");
+        assertEquals(deal.getPhase(), "10_RESCOURCING_METHODOLOGIES_FOR_TOOLS");
+        assertEquals(deal.getStatus(), "lost");
+
+        System.out.println(deal);
+
+
+        assertTrue(sync.getPDS().deleteOrganisation(deals.get(0).getOrg_id()).getBody().getSuccess());
+        if(deal.getPerson_id() != null){
+            assertTrue(sync.getPDS().deleteOrganisation(deals.get(0).getPerson_id()).getBody().getSuccess());
+        }
+    }
 }

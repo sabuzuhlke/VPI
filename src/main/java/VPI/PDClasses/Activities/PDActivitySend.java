@@ -2,11 +2,9 @@ package VPI.PDClasses.Activities;
 
 import VPI.VertecClasses.VertecActivities.JSONActivity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * Created by sabu on 18/05/2016.
- */
 public class PDActivitySend {
 
     @JsonIgnore
@@ -22,6 +20,8 @@ public class PDActivitySend {
     private Long person_id;
     private String note;
     private Long user_id;
+    @JsonProperty("marked_as_done_time")
+    private String done_date;
 
     public PDActivitySend() {
     }
@@ -35,6 +35,7 @@ public class PDActivitySend {
         this.person_id = contact_id;
         this.note = "V_ID:" + a.getId() + "#\n" + a.getText(); //TODO: make this hack known
         this.user_id = user_id;
+        this.done_date = a.getDone_date();
     }
 
     public Long getId() {
@@ -127,6 +128,14 @@ public class PDActivitySend {
 
     public Long getUser_id() {
         return user_id;
+    }
+
+    public String getDone_date() {
+        return done_date;
+    }
+
+    public void setDone_date(String done_date) {
+        this.done_date = done_date;
     }
 
     public void setUser_id(Long user_id) {

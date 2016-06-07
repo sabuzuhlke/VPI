@@ -2,7 +2,6 @@ package CurrentTests;
 
 import VPI.*;
 import VPI.PDClasses.*;
-import VPI.PDClasses.Activities.PDActivityItemsResponse;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
 import VPI.PDClasses.Activities.PDActivitySend;
@@ -18,14 +17,11 @@ import org.springframework.boot.test.OutputCapture;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.yaml.snakeyaml.events.Event;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -664,7 +660,7 @@ public class PipedriveServiceTests {
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(!res.getBody().getData().isEmpty());
-        assertTrue(res.getBody().getData().size() == 11);
+        assertTrue(res.getBody().getData().size() == 13);
         assertTrue(res.getBody().getData().get(0).getEmail() != null);
         assertTrue(res.getBody().getData().get(0).getId() != null);
 
@@ -686,7 +682,7 @@ public class PipedriveServiceTests {
 
         PDFollower f = new PDFollower(id, 1363410L);
 
-        ResponseEntity<String> res = PS.postFollower(f);
+        ResponseEntity<String> res = PS.postFollowerToContact(f);
 
         assertTrue(res.getStatusCode() == HttpStatus.CREATED);
         assertTrue( ! res.getBody().isEmpty());
