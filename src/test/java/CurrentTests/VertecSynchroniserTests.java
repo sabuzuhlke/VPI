@@ -262,7 +262,6 @@ public class VertecSynchroniserTests {
 
     public List<PDContactReceived> getListOfDanglingPipedriveContacts() {
         List<PDContactReceived> list = new ArrayList<>();
-        //TODO: add modifed date to contact recieved to choose prevelance
         PDContactReceived c1 = new PDContactReceived();
         c1.setName("c1 surname1");
         c1.setOrg_id(null);

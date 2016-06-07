@@ -28,6 +28,9 @@ public class PDContactReceived {
     @JsonProperty("add_time")
     private String creationTime;
 
+    @JsonProperty("update_time")
+    private String modifiedTime;
+
     public PDContactReceived() {
         this.phone = new ArrayList<>();
         this.email = new ArrayList<>();
@@ -111,5 +114,13 @@ public class PDContactReceived {
 
     public void setV_id(Long v_id) {
         this.v_id = v_id;
+    }
+
+    public String getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(String modifiedTime) {
+        this.modifiedTime = modifiedTime;
     }
 }

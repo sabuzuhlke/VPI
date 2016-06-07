@@ -36,6 +36,7 @@ public class PDActivitySend {
         this.note = "V_ID:" + a.getId() + "#\n" + a.getText(); //TODO: make this hack known
         this.user_id = user_id;
         this.done_date = a.getDone_date();
+        this.due_date = a.getDate();
     }
 
     public Long getId() {

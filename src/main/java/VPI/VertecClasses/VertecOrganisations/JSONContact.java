@@ -37,6 +37,9 @@ public class JSONContact {
     @JsonProperty("creationTime")
     private String creationTime;
 
+    @JsonProperty("organisation_ref")
+    private Long organisation;
+
     @JsonProperty("followers")
     private List<String> followers;
 
@@ -122,5 +125,13 @@ public class JSONContact {
 
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    public Long getOrganisation() {
+        return organisation;
+    }
+
+    public void setOrganisation(Long organisation) {
+        this.organisation = organisation;
     }
 }

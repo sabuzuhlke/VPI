@@ -26,6 +26,9 @@ public class PDContactSend {
     @JsonProperty("add_time")
     private String creationTime;
 
+    @JsonProperty("update_time")
+    private String modifiedTime;
+
     private Long owner_id;
     @JsonIgnore
     private List<Long> followers;
@@ -87,6 +90,7 @@ public class PDContactSend {
         this.owner_id = owner;
 
         this.followers = new ArrayList<>();
+        this.modifiedTime = c.getModified();
 
     }
 
@@ -107,6 +111,8 @@ public class PDContactSend {
             this.owner_id = pc.getOwner_id().getId();
         }
         this.followers = new ArrayList<>();
+
+        this.modifiedTime = pc.getModifiedTime();
 
     }
 
@@ -212,6 +218,14 @@ public class PDContactSend {
 
     public void setFollowers(List<Long> followers) {
         this.followers = followers;
+    }
+
+    public String getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(String modifiedTime) {
+        this.modifiedTime = modifiedTime;
     }
 
     @Override

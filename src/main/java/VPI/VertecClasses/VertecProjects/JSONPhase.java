@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Created by sabu on 16/05/2016.
  */
 public class JSONPhase {
-    //TODO: Get currency
 
     @JsonProperty("v_id")
     private Long v_id;

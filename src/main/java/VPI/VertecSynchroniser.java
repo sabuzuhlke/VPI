@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -257,10 +258,10 @@ public class VertecSynchroniser {
 
     private void constructActivityTypeMap() {
 
-        String vType = "{362309 : Vertrag / Contract\n" + //Filtered out
-                "{362308 : Organigramm / Organizational Chart\n" +
-                "{573113 : Auftragsbestätigung / Order Confirmation\n" +
-                "{362307 : Angebot / Offer\n" +
+        String vType = "{362309 : Vertrag / Contract\n" + //Only header returned
+                "{362308 : Organigramm / Organizational Chart\n" + //Filtered
+                "{573113 : Auftragsbestätigung / Order Confirmation\n" + //Filtered
+                "{362307 : Angebot / Offer\n" + //Filtered
                 "{586078 : Kundenfeedback / Customer Feedback\n" +
                 "{505823 : Eventteilnahme / Event Participation\n" +
                 "{279647 : Dokument / Document\n" + //Filtered out
@@ -294,7 +295,7 @@ public class VertecSynchroniser {
                 Long org_id = orgIdMap.get(va.getCustomer_link());
                 //attempt to get link to project phase, if fails then try link to project which will link to all phases;
                 Long deal_id = dealIdMap.get(va.getProject_phase_link());
-                //TODO: find out how to handle missing phase links
+                //TODO: find out how to handle missing phase links -- TO Keep or not to Keep
                 //attempt to get type, if fails add to misc type instead
                 String type = typeMap.get(va.getType());
                 if (type == null) type = "misc";
@@ -312,12 +313,12 @@ public class VertecSynchroniser {
         return !(va.getTitle().equals(pa.getSubject())
                         && va.getText().equals(getNoteFromNoteWithVID(pa.getNote()))
                         && teamIdMap.get(va.getAssignee()).equals(pa.getUser_id()) &&
-                        (contactIdMap.get(va.getCustomer_link()).equals(pa.getPerson_id()) //TODO: fix
+                        (contactIdMap.get(va.getCustomer_link()).equals(pa.getPerson_id()) //TODO: fix -- got null pointer
                                 || orgIdMap.get(va.getCustomer_link()).equals(pa.getOrg_id()))
                         && va.getDone() == pa.getDone()
                         && (pa.getType()).equals(typeMap.get(va.getType()))
                         && dealIdMap.get(va.getProject_phase_link()).longValue() == pa.getDeal_id()
-                //TODO: handle project if we decide to link to project if phase link null
+                //TODO: if activity linked to project, but not to phase, then should we link the activity to every phase or none or else?
                 );
     }
 
@@ -522,7 +523,7 @@ public class VertecSynchroniser {
 
     private void setStageId(PDDealSend deal, JSONPhase phase){
 
-        //TODO: change to correct stage_ids once in production
+        //TODO: change to correct stage_ids once in production -- get rid of magic numbers ( load all stages from pd)
         String salesStatus = phase.getSalesStatus();
         String code = salesStatus.substring(0, Math.min(salesStatus.length(), 2));
         Integer num = Integer.parseInt(code);
@@ -551,7 +552,7 @@ public class VertecSynchroniser {
                 break;
             //LOST = LOST
             case 30: status = "lost";
-                deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map
+                deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
                 String lostTime = phase.getLost_time();
                 deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
                 break;
@@ -569,9 +570,8 @@ public class VertecSynchroniser {
     }
 
     private Long dealwithCustomerRef(PDDealSend deal, JSONProject project){
+        //TODO Customer ref returns addresses, currently we only deal with contacts -- add same support as for dealWithClientRef()
 
-        System.out.println("Setting person_id for deal: " + deal.getV_id());
-        System.out.println("Person_id/afutraggeber: " + project.getCustomerRef());
         deal.setPerson_id(contactIdMap.get(project.getCustomerRef()));
 
         if(project.getCustomerRef() != null && deal.getPerson_id() == null){
@@ -580,7 +580,7 @@ public class VertecSynchroniser {
 
                 PDContactSend cs = new PDContactSend(c, deal.getUser_id());
 
-                //cs.setOrg_id(orgIdMap.get(c.getOrg)); //Set org id of contact TODO: add orgid to JSONContact
+                cs.setOrg_id(orgIdMap.get(c.getOrganisation())); //Set org id of contact
 
                 Long cid = PDS.postContact(cs).getBody().getData().getId();
 
@@ -621,7 +621,7 @@ public class VertecSynchroniser {
                     for (JSONContact c : org.getContacts()) {
                         if (!contactIdMap.containsKey(c.getObjid())) {
                             PDContactSend cs = new PDContactSend(c, deal.getUser_id());
-                            //cs.setOrg_id(orgIdMap.get(c.getObjid())); TODO: add orgid to JSONContact
+                            cs.setOrg_id(orgIdMap.get(c.getOrganisation()));
 
                             Long cid = PDS.postContact(cs).getBody().getData().getId();
 
@@ -644,7 +644,7 @@ public class VertecSynchroniser {
 
                                 PDContactSend cs = new PDContactSend(c, deal.getUser_id());
 
-                                //cs.setOrg_id(orgIdMap.get(c.getOrg)); //Set org id of contact TODO: add orgid to JSONContact
+                                cs.setOrg_id(orgIdMap.get(c.getOrganisation()));
 
                                 Long cid = PDS.postContact(cs).getBody().getData().getId();
 
@@ -666,7 +666,6 @@ public class VertecSynchroniser {
 
 
             }
-
             //setOrgid
             deal.setOrg_id(orgIdMap.get(project.getClientRef()));
         }
@@ -733,7 +732,7 @@ public class VertecSynchroniser {
 
     }
 
-    //TODO: at some point work out exactly what eachof the post functions should return;
+    //TODO: at some point work out exactly what eachof the post functions should return; --> TO TRACK ACTIVITY OF SYNCHRONISER
     public void postRelationshipList(List<PDRelationship> relationships) {
 
         for (PDRelationship rel : relationships) {
@@ -813,7 +812,9 @@ public class VertecSynchroniser {
         compareContacts(jo.getContacts(), pdContacts);
     }
 
-    public void compareContacts(List<JSONContact> vConts, List<PDContactReceived> pContacts) {
+    public List<List<Long>> compareContacts(List<JSONContact> vConts, List<PDContactReceived> pContacts) {
+        List<Long> contsPut_pid = new ArrayList<>();
+        List<Long> contsPosted_vid = new ArrayList<>();
 
         for(JSONContact vc : vConts) {
             Boolean matched = false;
@@ -855,15 +856,18 @@ public class VertecSynchroniser {
                     newContact.getFollowers().add(teamIdMap.get(f));
                 }
                 contactPostList.add(newContact);
+                contsPosted_vid.add(newContact.getV_id());
             }
             if(modified) {
                 contactPutList.add(new PDContactSend(temp));
+                contsPut_pid.add(temp.getId());
             }
 
         }
-
-
-
+        List<List<Long>> retlist = new ArrayList<>();
+        retlist.add(contsPosted_vid);
+        retlist.add(contsPut_pid);
+        return retlist;
     }
 
     public Boolean resolveContactDetails(JSONContact v, PDContactReceived p){
@@ -961,20 +965,13 @@ public class VertecSynchroniser {
 
     public List<List<Long>> postVOrganisations(){
 
-        int orgCounter = 0;
-        int contCounter = 0;
-
         ResponseEntity<PDOrganisationResponse> res = null;
         List<List<Long>> both = new ArrayList<>();
         List<Long> orgsPosted = new ArrayList<>();
         List<Long> contactsPosted = new ArrayList<>();
         for(JSONOrganisation o : organisationPostList){
             Long ownerid = teamIdMap.get(o.getOwner());
-            if (ownerid == null || ownerid == 1277584L) {
-                System.out.println(o.toPrettyJSON()); //TODO: remove once figured out
-            }
             res = PDS.postOrganisation(new PDOrganisationSend(o, ownerid));
-            orgCounter++; //TODO: remove
             orgsPosted.add(res.getBody().getData().getId());
 
             orgIdMap.put(o.getObjid(), res.getBody().getData().getId());
@@ -988,14 +985,11 @@ public class VertecSynchroniser {
                 }
                 s.setOrg_id(res.getBody().getData().getId());
                 Long pdId = PDS.postContact(s).getBody().getData().getId();
-                contCounter++;
                 this.contactIdMap.put(c.getObjid(), pdId);
                 contactsPosted.add(pdId);
             }
         }
 
-        System.out.println("Posted " + orgCounter + " organisations");
-        System.out.println("Posted " + contCounter + " contacts attached to organisations");
         both.add(orgsPosted);
         both.add(contactsPosted);
         return both;
@@ -1016,6 +1010,17 @@ public class VertecSynchroniser {
         return PDS.putContactList(contactPutList);
     }
 
+
+    public List<List<Long>> compareAllContacts(ZUKOrganisations ZukResponse, List<PDContactReceived> pdContacts){
+        List<JSONContact> vContacts = new ArrayList<>();
+        ZukResponse.getOrganisationList().stream()
+                .map(JSONOrganisation::getContacts)
+                .map(vContacts::addAll);
+        vContacts.addAll(ZukResponse.getDanglingContacts());
+
+        return compareContacts(vContacts,pdContacts);
+    }
+
     public Map<String, Long> getTeamIdMap() {
         return teamIdMap;
     }
@@ -1033,7 +1038,6 @@ public class VertecSynchroniser {
             for (JSONContact cont : org.getContacts()) {
 
                 v_emails.add(cont.getOwner());
-
             }
 
         }
