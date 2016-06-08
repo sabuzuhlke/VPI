@@ -38,7 +38,7 @@ public class Importer {
     public Map<Long, Long> organisationIdMap;
     public Map<Long, Long> contactIdMap;
     public Map<Long, Long> dealIdMap;
-    private Map<String, Long> teamIdMap;
+    public Map<String, Long> teamIdMap;
 
     private Map<String, String> activityTypeMap;
 

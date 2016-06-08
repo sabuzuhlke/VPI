@@ -355,7 +355,29 @@ public class ImporterTest {
                 iSpy.organisationPostList.stream()
                     .map(PDOrganisationSend::getV_id)
                 .collect(toSet()).size());
+    }
+    
+    @Test
+    public void postOrganisationPostListWillPostAllMembers() {
+        when(pipedrive.postOrganisationList(anyList())).thenReturn(getDummyPipedriveOrganisationPostResponse());
 
+        importer.importOrganisationsAndContactsFromVertec();
+
+        assertTrue(! importer.teamIdMap.isEmpty());
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+
+        verify(pipedrive).postOrganisationList(anyList());
+
+        importer.organisationPostList.stream()
+                .forEach(org -> {
+                    assertTrue(importer.organisationIdMap.get(org.getV_id()) != -1L);
+                });
+    }
+
+    private List<Long> getDummyPipedriveOrganisationPostResponse() {
+        return new ArrayList<>();
     }
 
 }
