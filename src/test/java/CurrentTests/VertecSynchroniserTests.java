@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static VPI.VertecSynchroniser.extractVID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -524,15 +525,15 @@ public class VertecSynchroniserTests {
     @Test
     public void canCorrectlyExtractVidFromNoteWithItSet() {
         String note = "V_ID:132412312542#seoibfl ernglbnreipiqt naerdb aaowri hnd";
-        Long id = sync.extractVID(note);
+        Long id = extractVID(note);
         assertTrue(id == 132412312542L);
 
         String note2 = "wiephsfgpaorejfpboamfbdp";
-        Long id2 = sync.extractVID(note2);
+        Long id2 = extractVID(note2);
         assertTrue(id2 == -1L);
 
         String note3 = "oiadfniaodnfbpn#oianfbindfb";
-        Long id3 = sync.extractVID(note3);
+        Long id3 = extractVID(note3);
         assertTrue(id3 == -1L);
     }
 

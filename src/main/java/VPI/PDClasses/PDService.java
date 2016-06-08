@@ -151,6 +151,7 @@ public class PDService {
         }
 
         res.getBody().setData(dealsReceived);
+        System.out.println(res);
         return res;
 
     }
@@ -326,6 +327,7 @@ public class PDService {
 
         }
         res.getBody().setData(contactsRecieved);
+        System.out.println(res);
         return res;
     }
 
