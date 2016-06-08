@@ -3,6 +3,7 @@ package CurrentTests;
 import VPI.Importer;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
+import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -327,6 +329,33 @@ public class ImporterTest {
         ObjectMapper m =  new ObjectMapper();
         PDDealItemsResponse body = m.readValue(new File("src/test/resources/Pipedrive getAllDealsResponse.json"), PDDealItemsResponse.class);
         return new ResponseEntity<>(body, HttpStatus.OK);
+    }
+
+    @Test
+    public void populateOrganisationPostListFillsPostList() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        
+        Importer iSpy = spy(importer);
+
+        assertTrue(iSpy.organisationPostList.isEmpty());
+
+        iSpy.importOrganisationsAndContactsFromVertec();
+        iSpy.populateOrganisationPostList();
+
+        verify(iSpy, times(iSpy.getVertecOrganisationList().size())).convertToPDSend(anyObject());
+
+        assertEquals("Did not create a PipedriveOrganisation for every Vertec Organisation",
+                iSpy.getVertecOrganisationList().size(),
+                iSpy.organisationPostList.size());
+
+        assertEquals("Did not create a unique PipedriveOrganisation for every Vertec Organisation",
+                iSpy.getVertecOrganisationList().stream()
+                    .map(JSONOrganisation::getObjid)
+                .collect(toSet()).size(),
+                iSpy.organisationPostList.stream()
+                    .map(PDOrganisationSend::getV_id)
+                .collect(toSet()).size());
+
     }
 
 }

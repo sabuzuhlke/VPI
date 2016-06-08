@@ -4,7 +4,9 @@ import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.Deals.PDDealReceived;
+import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDService;
+import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecActivities.JSONActivity;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
@@ -18,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -34,6 +38,7 @@ public class Importer {
     public Map<Long, Long> organisationIdMap;
     public Map<Long, Long> contactIdMap;
     public Map<Long, Long> dealIdMap;
+    private Map<String, Long> teamIdMap;
 
     private Map<String, String> activityTypeMap;
 
@@ -46,6 +51,8 @@ public class Importer {
     private PDContactListReceived pipedriveContacts;
     private PDDealItemsResponse pipedriveDeals;
 
+    public List<PDOrganisationSend> organisationPostList;
+
     public Importer(PDService pipedrive, VertecService vertec) {
         this.pipedrive = pipedrive;
         this.vertec    = vertec;
@@ -55,6 +62,8 @@ public class Importer {
         this.contactIdMap      = new HashMap<>();
         this.dealIdMap         = new HashMap<>();
 
+        constructTestTeamMap();
+
         this.activityTypeMap   = new HashMap<>();
 
         this.vertecOrganisations    = new ZUKOrganisations();
@@ -63,6 +72,8 @@ public class Importer {
 
         this.missingOrganisationIds = new HashSet<>();
         this.missingContactIds      = new HashSet<>();
+
+        this.organisationPostList = new ArrayList<>();
     }
 
     /**
@@ -234,6 +245,13 @@ public class Importer {
     }
 
     public void populateOrganisationPostList() {
+        this.organisationPostList = getVertecOrganisationList().stream()
+                .map(this::convertToPDSend)
+                .collect(toList());
+    }
+
+    public PDOrganisationSend convertToPDSend(JSONOrganisation jsonOrganisation) {
+        return new PDOrganisationSend(jsonOrganisation, teamIdMap.get(jsonOrganisation.getOwner()));
     }
 
     public void postOrganisationPostList() {
@@ -290,5 +308,43 @@ public class Importer {
 
     public List<PDDealReceived> getPipedriveDealList() {
         return pipedriveDeals.getData();
+    }
+
+    @SuppressWarnings("all") //TODO: replace with actual solution
+    private void constructTestTeamMap() {
+        Map<String,Long> map = new HashMap<>();
+
+        map.put("wolfgang.emmerich@zuhlke.com", 1363410L); //Wolfgang
+        map.put("tim.cianchi@zuhlke.com", 1363402L); //Tim
+        map.put("neil.moorcroft@zuhlke.com", 1363429L); //Neil
+        map.put("mike.hogg@zuhlke.com", 1363424L); //Mike
+        map.put("justin.cowling@zuhlke.com", 1363416L); //Justin
+        map.put("brewster.barclay@zuhlke.com", 1363403L); //Brewster
+        map.put("keith.braithwaite@zuhlke.com", 1363488L); //Keith
+        map.put("peter.brown@zuhlke.com", 1415840L); //Peter Brown
+        map.put("steve.freeman@zuhlke.com", 1415845L); //Steve Freeman
+        map.put("john.seston@zuhlke.com", 1424149L); //John Seston
+        map.put("sabine.streuss@zuhlke.com", 1424149L); //Sabine
+        map.put("sabine.strauss@zuhlke.com", 1424149L); //Sabine
+        map.put("ileana.meehan@zuhlke.com", 1424149L); //Ileana
+        map.put("ina.hristova@zuhlke.com", 1424149L); //Ina
+
+        this.teamIdMap = map;
+    }
+
+    @SuppressWarnings("all")
+    public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
+        for (String v_email : v_emails) {
+            Boolean mapped = false;
+            for (PDUser pd_user : pd_users) {
+                if (v_email.toLowerCase().equals(pd_user.getEmail().toLowerCase())) {
+                    this.teamIdMap.put(v_email, pd_user.getId());
+                    mapped = true;
+                }
+            }
+            if (!mapped) {
+                this.teamIdMap.put(v_email, 1363410L); //TODO: replace id with appropriate id, wolfgangs or admin?
+            }
+        }
     }
 }
