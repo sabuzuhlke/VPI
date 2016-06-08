@@ -549,17 +549,19 @@ public class VertecSynchroniser {
                 break;
             //SOLD = WON
             case 21: status = "won";
+                String wonTime = phase.getCompletion_date();
+                deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
                 break;
             //LOST = LOST
             case 30: status = "lost";
                 deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
-                String lostTime = phase.getLost_time();
+                String lostTime = phase.getRejection_date();
                 deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
                 break;
             //FINISHED = WON
             case 40: status = "won";
-                String wonTime = phase.getWon_time();
-                deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
+                String wonTime2 = phase.getCompletion_date();
+                deal.setWon_time(wonTime2 == null ? phase.getPDformatModifiedTime() : wonTime2 + " 00:00:00");
                 break;
             default: System.out.println(num);
                 break;
