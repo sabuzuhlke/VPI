@@ -134,4 +134,11 @@ public class JSONContact {
     public void setOrganisation(Long organisation) {
         this.organisation = organisation;
     }
+
+    public String getPipedriveCreationTime() {
+        String[] dateTime = creationTime.split("T");
+        String date = dateTime[0];
+        String time = dateTime[1];
+        return date + " " + time;
+    }
 }

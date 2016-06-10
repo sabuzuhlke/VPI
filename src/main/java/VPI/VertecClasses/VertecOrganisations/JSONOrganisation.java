@@ -160,19 +160,19 @@ public class  JSONOrganisation {
 
     public String getFormattedAddress(){
         String address = "";
-        if( ! this.getAdditionalAdress().isEmpty()){
+        if(this.getAdditionalAdress() != null && !this.getAdditionalAdress().isEmpty()){
             address += this.getAdditionalAdress() + ", ";
         }
-        if ( ! this.getStreetAddress().isEmpty()) {
+        if (this.getStreetAddress() != null && !this.getStreetAddress().isEmpty()) {
             address += this.getStreetAddress() + ", ";
         }
-        if ( ! this.getCity().isEmpty()) {
+        if (this.getCity() != null && !this.getCity().isEmpty()) {
             address += this.getCity() + ", ";
         }
-        if ( ! this.getZip().isEmpty()) {
+        if (this.getZip() != null && !this.getZip().isEmpty()) {
             address += this.getZip() + ", ";
         }
-        if ( ! this.getCountry().isEmpty()) {
+        if (this.getCountry() != null && !this.getCountry().isEmpty()) {
             address += this.getCountry();
         }
         return address;

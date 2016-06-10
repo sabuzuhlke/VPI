@@ -1,9 +1,13 @@
 package CurrentTests;
 
 import VPI.Importer;
+import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactListReceived;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
+import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
@@ -12,24 +16,23 @@ import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 /**
  * Created by gebo on 07/06/2016.
@@ -53,8 +56,12 @@ public class ImporterTest {
         when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
         when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
         when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
-        when(vertec.getOrganisation(anyLong())).thenReturn(getDummyMissingOrganisationResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
         when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.organisationPostList.size()));
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
 
         Importer iSpy = spy(importer);
         iSpy.importToPipedrive();
@@ -73,10 +80,12 @@ public class ImporterTest {
 
         inOrder.verify(iSpy).populateOrganisationPostList();
         inOrder.verify(iSpy).postOrganisationPostList();
-        inOrder.verify(iSpy).buildOrganisationHierarchyMap();
+        inOrder.verify(iSpy).builOrganisationHierarchies();
+        inOrder.verify(iSpy).postOrganisationHierarchies(anyList());
 
         inOrder.verify(iSpy).populateContactPostAndPutLists();
         inOrder.verify(iSpy).postAndPutContactPostAndPutLists();
+        inOrder.verify(iSpy).populateFollowerPostList();
         inOrder.verify(iSpy).postContactFollowers();
 
         inOrder.verify(iSpy).populateDealPostAndPutList();
@@ -190,7 +199,15 @@ public class ImporterTest {
         when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
         when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
         when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
-        when(vertec.getOrganisation(anyLong())).thenReturn(getDummyMissingOrganisationResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+
+        //Following when statements used to test the while(parentOrgNeeded) loop in importMissingOrganisationsFromVertec
+        when(vertec.getOrganisation(7700L)).thenReturn(getOrgWithParent1());
+        when(vertec.getOrganisation(7777L)).thenReturn(getOrgWithParent2());
+        when(vertec.getOrganisation(9999L)).thenReturn(getOrgWithParent3());
+        //Magic number 2  because there are 2 new fake parent organisations being imported (7777, 9999)
+        int numberOfFakeParents = 2;
+
 
         importer.importOrganisationsAndContactsFromVertec();
         importer.importDealsFromVertec();
@@ -204,35 +221,29 @@ public class ImporterTest {
         assertTrue(importer.missingOrganisationIds.isEmpty());
         assertTrue(importer.missingContactIds.isEmpty());
 
+        int missingOrgSize = importer.extractListOfMissingOrganisationIds().size();
+
         importer.importMissingOrganistationsFromVertec();
 
         int orgListSizeAfter = importer.getVertecOrganisationList().size();
         int orgMapSizeAfter  = importer.organisationIdMap.size();
         int contMapSizeAfter = importer.contactIdMap.size();
 
-        assertEquals(orgListSize + importer.extractListOfMissingOrganisationIds().size(), orgListSizeAfter);
-        assertEquals(orgMapSize + 1, orgMapSizeAfter);
+        assertEquals(orgListSize + missingOrgSize + numberOfFakeParents, orgListSizeAfter);
+        assertEquals(orgMapSize + missingOrgSize + numberOfFakeParents, orgMapSizeAfter);
         assertEquals(contMapSize + 1, contMapSizeAfter);
 
         assertEquals("Missing org id not added to missingorgids List",
-                1, //value is 1 because stubbed call to getOrganisation always returns Organisation with id: 1L
+                missingOrgSize, //value is 1 because stubbed call to getOrganisation always returns Organisation with id: 1L
                 importer.missingOrganisationIds.size());
         assertEquals("Missing nested contact id not added to missingcontids List",
                 1, //value is 1 because stubbed call to getOrganisation always returns Organisation with id: 1L
                 importer.missingContactIds.size());
 
-        verify(vertec, times(importer.extractListOfMissingOrganisationIds().size())).getOrganisation(anyLong());
-    }
+        assertTrue("The while(parentOrgNeeded) loop in importMissingOrganisationsFromVertec FAILED"
+                ,(importer.organisationIdMap.containsKey(7777L) && importer.organisationIdMap.containsKey(9999L)));
 
-    private ResponseEntity<JSONOrganisation> getDummyMissingOrganisationResponse() {
-        JSONOrganisation org = new JSONOrganisation();
-        org.setObjid(1L);
-        JSONContact contact = new JSONContact();
-        contact.setObjid(6996L);
-        List<JSONContact> contacts = new ArrayList<>();
-        contacts.add(contact);
-        org.setContacts(contacts);
-        return new ResponseEntity<>(org, HttpStatus.OK);
+        verify(vertec, times(missingOrgSize + numberOfFakeParents)).getOrganisation(anyLong());
     }
 
     @Test
@@ -358,26 +369,348 @@ public class ImporterTest {
     }
     
     @Test
-    public void postOrganisationPostListWillPostAllMembers() {
-        when(pipedrive.postOrganisationList(anyList())).thenReturn(getDummyPipedriveOrganisationPostResponse());
+    public void postOrganisationPostListWillPostAllMembers() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
 
         importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+
+        importer.importMissingOrganistationsFromVertec();
+
+        assertTrue(! importer.teamIdMap.isEmpty());
+
+        importer.populateOrganisationPostList();
+
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.getVertecOrganisationList().size()));
+
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        importer.postOrganisationPostList();
+
+        verify(pipedrive).postOrganisationList(anyList());
+
+        importer.organisationPostList.stream()
+                .map(org -> importer.organisationIdMap.get(org.getV_id()))
+                .forEach(id -> assertTrue(id != -1L));
+
+        importer.getVertecOrganisationList().stream()
+                .map(org -> importer.organisationIdMap.get(org.getObjid()))
+                .forEach(id -> {
+                    assertTrue(id != -1L);
+                });
+
+        assertTrue(! importer.organisationIdMap.containsValue(-1L));
+        //TODO: test that lists returned in same order
+    }
+
+    private Answer<ResponseEntity<JSONOrganisation>> getOrgResponseEntityAnswer() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+
+            JSONOrganisation org = new JSONOrganisation();
+            org.setObjid((Long) args[0]);
+            JSONContact contact = new JSONContact();
+            contact.setObjid(6996L);
+            List<JSONContact> contacts = new ArrayList<>();
+            contacts.add(contact);
+            org.setContacts(contacts);
+            return new ResponseEntity<>(org, HttpStatus.OK);
+        };
+    }
+
+    private List<Long> getDummyPipedriveOrganisationPostResponse( int n) {
+        return new ArrayList<>(Collections.nCopies(n, 5L));
+    }
+
+    @Test
+    public void canBuildOrganisationHierarchyMap() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+        //This forces the id passed into getOrganisation to be returned in the dummy response entity
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+
+        importer.importMissingOrganistationsFromVertec();
+
+        assertTrue(! importer.teamIdMap.isEmpty());
+
+        importer.populateOrganisationPostList();
+
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.organisationPostList.size()));
+
+        importer.postOrganisationPostList();
+
+        List<PDRelationship> relationships = importer.builOrganisationHierarchies();
+
+        int parentrelCount = importer.getVertecOrganisationList().stream()
+                .filter(organisation -> organisation.getParentOrganisationId() != null)
+                .collect(toList())
+                .size();
+
+        int numberOfCorretlyBuiltRelationships = relationships.stream()
+                .filter(rel -> rel.getRel_owner_org_id() == 5L)
+                .collect(toList()).size();
+
+        importer.postOrganisationHierarchies(relationships);
+
+        verify(pipedrive, times(parentrelCount)).postOrganisationRelationship(anyObject());
+        assertEquals("Not all relationships were resolved correctly",parentrelCount, numberOfCorretlyBuiltRelationships);
+
+    }
+
+    private ResponseEntity<JSONOrganisation> getOrgWithParent1() {
+        JSONOrganisation org = new JSONOrganisation();
+        org.setObjid(7700L);
+        JSONContact contact = new JSONContact();
+        contact.setObjid(6996L);
+        List<JSONContact> contacts = new ArrayList<>();
+        contacts.add(contact);
+        org.setContacts(contacts);
+        org.setParentOrganisationId(7777L);
+        return new ResponseEntity<>(org, HttpStatus.OK);
+    }
+
+    private ResponseEntity<JSONOrganisation> getOrgWithParent2() {
+        JSONOrganisation org = new JSONOrganisation();
+        org.setObjid(7777L);
+        JSONContact contact = new JSONContact();
+        contact.setObjid(6996L);
+        org.setParentOrganisationId(9999L);
+        return new ResponseEntity<>(org, HttpStatus.OK);
+    }
+
+    private ResponseEntity<JSONOrganisation> getOrgWithParent3() {
+        JSONOrganisation org = new JSONOrganisation();
+        org.setObjid(9999L);
+        JSONContact contact = new JSONContact();
+        contact.setObjid(6996L);
+        List<JSONContact> contacts = new ArrayList<>();
+        contacts.add(contact);
+        org.setContacts(contacts);
+        return new ResponseEntity<>(org, HttpStatus.OK);
+    }
+
+    @Test
+    public void canPopulateContactPostAndPutListsCorrectly() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importContactsFromPipedrive();
+
+        assertTrue(importer.contactPostList.isEmpty());
+        assertTrue(importer.contactPutList.isEmpty());
+
+        importer.populateContactPostAndPutLists();
+
+        assertTrue(! importer.contactPostList.isEmpty());
+        assertTrue(! importer.contactPutList.isEmpty());
+
+        assertEquals(importer.getVertecContactList().size(), importer.contactPostList.size() + importer.contactPutList.size());
+
+        assertTrue(importer.contactPutList.size() <= importer.getPipedriveContactList().size());
+
+        List<String> vertecEmailList = importer.getVertecContactList().stream()
+                .map(JSONContact::getEmail)
+                .filter(email -> !email.equals(""))
+                .collect(toList());
+
+        List<String> pipedriveEmailList = importer.getPipedriveContactList().stream()
+                .map(PDContactReceived::getEmail)
+                .flatMap(Collection::stream)
+                .map(ContactDetail::getValue)
+                .filter(email -> !email.equals(""))
+                .collect(toList());
+
+        //Case where there is one pipedrive contact containing two emails which are split accross two vertec contact entries
+        int NUMBER_OF_CONTACTS_THAT_FALL_INTO_ROWAN_CASE = 1;
+        System.out.println("Names printed below fall into rowan case:");
+
+        //checks that each contact
+        Set<String> emailsFoundInBoth = importer.contactPutList.stream()
+                .map(contact -> {
+                    assertNotNull(contact.getId());
+                    assertNotNull(contact.getName());
+                    assertNotNull(contact.getVisible_to());
+                    assertNotNull(contact.getActive_flag());
+                    assertNotNull(contact.getV_id());
+                    assertNotNull(contact.getCreationTime());
+                    assertTrue(! contact.getEmail().isEmpty());
+                    return contact;
+                })
+                .map(contact -> {
+                   Set<String> emailsForContact = contact.getEmail().stream()
+                           .map(ContactDetail::getValue)
+                            .filter((email -> vertecEmailList.contains(email) && pipedriveEmailList.contains(email)))
+                            .collect(toSet());
+                    assertTrue( ! emailsForContact.isEmpty());
+                    if (emailsForContact.size() > 1) {
+                        System.out.println(contact.getName());
+                    }
+                    return emailsForContact;
+                }) //at this point we have a stream of lists of emails found in both (one per contact)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        //checks that each member of put list corresponds to an email found in both
+        assertEquals(emailsFoundInBoth.size(), importer.contactPutList.size() + NUMBER_OF_CONTACTS_THAT_FALL_INTO_ROWAN_CASE);
+//
+//        importer.contactPostList.stream()
+//                .map(PDContactSend::getEmail)
+//                .flatMap(Collection::stream)
+//                .map(ContactDetail::getValue)
+//                .forEach(email -> assertTrue( ! pipedriveEmailList.contains(email)));
+
+        importer.contactPostList.stream()
+                .forEach(contact -> {
+                    assertNull(contact.getId());
+                    assertNotNull(contact.getName());
+                    assertNotNull(contact.getVisible_to());
+                    assertNotNull(contact.getActive_flag());
+                    assertNotNull(contact.getV_id());
+                    assertNotNull(contact.getCreationTime());
+                    assertTrue(! contact.getEmail().isEmpty());
+                });
+    }
+
+    @Test
+    public void CanCorrectlyCompareDate() {
+
+        String pdTime = "2013-03-27 13:20:08";
+        String vTime  = "2015-05-20T12:06:19";
+
+        assertTrue(importer.vertecDateMoreRecentThanPdDate(vTime, pdTime));
+
+    }
+
+    @Test
+    public void canPostAndPutContactPostAndPutlist() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenAnswer(getContResponseEntityAnswer());
+
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.getVertecOrganisationList().size()));
+        when(pipedrive.postContactList(anyList()))
+                .thenAnswer(getDummyPipedriveContactPostResponse());
+        when(pipedrive.putContactList(anyList()))
+                .thenAnswer(getDummyPipedriveContactPostResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+
+        importer.importMissingOrganistationsFromVertec();
+        importer.importMissingContactsFromVertec();
+
+        importer.importContactsFromPipedrive();
 
         assertTrue(! importer.teamIdMap.isEmpty());
 
         importer.populateOrganisationPostList();
         importer.postOrganisationPostList();
 
-        verify(pipedrive).postOrganisationList(anyList());
+        importer.populateContactPostAndPutLists();
 
-        importer.organisationPostList.stream()
-                .forEach(org -> {
-                    assertTrue(importer.organisationIdMap.get(org.getV_id()) != -1L);
+        importer.postAndPutContactPostAndPutLists();
+
+        verify(pipedrive).postContactList(anyList());
+        verify(pipedrive).putContactList(anyList());
+
+        importer.contactPostList.stream()
+                .map(contact -> importer.contactIdMap.get(contact.getV_id()))
+                .forEach(id -> assertTrue(id != -1L));
+
+
+        importer.contactPutList.stream()
+                .map(contact -> importer.contactIdMap.get(contact.getV_id()))
+                .forEach(id -> assertTrue(id != -1L));
+
+        assertTrue(! importer.contactIdMap.containsValue(-1L));
+
+    }
+
+    private Answer<Map<Long, Long>> getDummyPipedriveContactPostResponse() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+            Map<Long,Long> map = new HashMap<>();
+
+            ((List<PDContactSend>) args[0]).stream()
+                    .forEach(cont -> map.put(cont.getV_id(), 5L));
+            return map;
+        };
+    }
+
+    private Answer<ResponseEntity<JSONContact>> getContResponseEntityAnswer() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+
+            JSONContact cont = new JSONContact();
+            cont.setObjid((Long) args[0]);
+
+            return new ResponseEntity<>(cont, HttpStatus.OK);
+        };
+    }
+
+    @Test
+    public void postsAllFollowers() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+
+
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+
+
+        importer.importContactsFromPipedrive();
+
+        assertTrue(! importer.teamIdMap.isEmpty());
+
+        importer.populateContactPostAndPutLists();
+
+        importer.postAndPutContactPostAndPutLists();
+
+        importer.populateFollowerPostList();
+
+        importer.postContactFollowers();
+
+        int nrFollowers = importer.getVertecContactList().stream()
+                .map(JSONContact::getFollowers)
+                .flatMap(Collection::stream)
+                .collect(toList())
+                .size();
+
+        assertEquals("Not all followers added to post list", nrFollowers,importer.followerPostList.size());
+
+
+        importer.followerPostList.stream()
+                .forEach(follower -> {
+                 assertTrue("Contact " + follower.getObjectID() + " is not part of contactIdMap, but got added to followers"
+                         , importer.contactIdMap.containsValue(follower.getObjectID()));
+
+                 assertTrue("User " + follower.getUserID() + " is not part of team, but got added to foillowers"
+                         ,importer.teamIdMap.containsValue(follower.getUserID()));
                 });
+
+        verify(pipedrive, times(importer.followerPostList.size())).postFollowerToContact(anyObject());
     }
 
-    private List<Long> getDummyPipedriveOrganisationPostResponse() {
-        return new ArrayList<>();
+
+    @Test
+    public void canPopulateDealPutAndPostLists(){
+
     }
+
 
 }
