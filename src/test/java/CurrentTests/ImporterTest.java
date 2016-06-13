@@ -1,11 +1,13 @@
 package CurrentTests;
 
 import VPI.Importer;
+import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
+import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.PDService;
@@ -13,10 +15,10 @@ import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -59,7 +61,7 @@ public class ImporterTest {
         when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
         when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
         when(pipedrive.postOrganisationList(anyList()))
-                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.organisationPostList.size()));
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
         when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
         when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
 
@@ -152,6 +154,22 @@ public class ImporterTest {
         ObjectMapper m =  new ObjectMapper();
         ZUKProjects body = m.readValue(new File("src/test/resources/VRAPI projects.json"), ZUKProjects.class);
         return new ResponseEntity<>(body, HttpStatus.OK);
+    }
+
+    @Test
+    public void ImportingDealsBuildsVertecProjectToPhaseIdsMap() throws IOException {
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+
+        importer.importDealsFromVertec();
+
+        assertNotNull(importer.projectPhasesMap);
+        assertEquals(importer.projectPhasesMap.size(), importer.getVertecProjectList().size());
+        importer.getVertecProjectList().stream()
+                .forEach(project ->
+                        assertEquals(
+                                project.getPhases().size(),
+                                importer.projectPhasesMap.get(project.getV_id()).size()));
+
     }
 
     @Test
@@ -386,7 +404,7 @@ public class ImporterTest {
         importer.populateOrganisationPostList();
 
         when(pipedrive.postOrganisationList(anyList()))
-                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.getVertecOrganisationList().size()));
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
 
         when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
         importer.postOrganisationPostList();
@@ -422,8 +440,14 @@ public class ImporterTest {
         };
     }
 
-    private List<Long> getDummyPipedriveOrganisationPostResponse( int n) {
-        return new ArrayList<>(Collections.nCopies(n, 5L));
+    private Answer<List<Long>> getDummyPipedriveOrganisationPostAnswer() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+
+            return ((List<PDOrganisationSend>) args[0]).stream()
+                    .map(PDOrganisationSend::getV_id)
+                    .map(id -> 5L).collect(toList());
+        };
     }
 
     @Test
@@ -445,7 +469,7 @@ public class ImporterTest {
         importer.populateOrganisationPostList();
 
         when(pipedrive.postOrganisationList(anyList()))
-                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.organisationPostList.size()));
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
 
         importer.postOrganisationPostList();
 
@@ -601,7 +625,7 @@ public class ImporterTest {
 
         when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
         when(pipedrive.postOrganisationList(anyList()))
-                .thenReturn(getDummyPipedriveOrganisationPostResponse(importer.getVertecOrganisationList().size()));
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
         when(pipedrive.postContactList(anyList()))
                 .thenAnswer(getDummyPipedriveContactPostResponse());
         when(pipedrive.putContactList(anyList()))
@@ -666,12 +690,9 @@ public class ImporterTest {
     @Test
     public void postsAllFollowers() throws IOException {
         when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
-
-
         when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
 
         importer.importOrganisationsAndContactsFromVertec();
-
 
         importer.importContactsFromPipedrive();
 
@@ -708,8 +729,292 @@ public class ImporterTest {
 
 
     @Test
-    public void canPopulateDealPutAndPostLists(){
+    public void canPopulateDealPutAndPostLists() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
 
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
+
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+
+        importer.importMissingOrganistationsFromVertec();
+        importer.importMissingContactsFromVertec();
+
+        importer.importContactsFromPipedrive();
+        importer.importDealsFromPipedrive();
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+        importer.builOrganisationHierarchies();
+        importer.postOrganisationHierarchies(anyList());
+
+        importer.populateContactPostAndPutLists();
+        importer.postAndPutContactPostAndPutLists();
+        importer.populateFollowerPostList();
+        importer.postContactFollowers();
+
+        assertTrue(importer.dealPostList.isEmpty());
+        assertTrue(importer.dealPutList.isEmpty());
+
+        importer.populateDealPostAndPutList();
+
+        assertTrue( ! importer.dealPostList.isEmpty());
+        assertTrue( ! importer.dealPutList.isEmpty());
+
+        int numOfPhases = importer.getVertecProjectList().stream()
+                .map(JSONProject::getPhases)
+                .flatMap(Collection::stream)
+                .collect(toList()).size();
+
+        assertEquals("Not every deal received has been sent to pipedrive",
+                numOfPhases,
+                importer.dealPostList.size() + importer.dealPutList.size());
+
+        List<String> vertecCodePhasePairs = importer.getVertecProjectList().stream()
+                .map(project -> project.getPhases().stream()
+                        .map(phase -> project.getCode() + phase.getCode()).collect(toList()))
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        List<String> pipedriveCodePhasePairs = importer.getPipedriveDealList().stream()
+                .map(project -> project.getProject_number() + project.getPhase())
+                .collect(toList());
+
+        List<String> foundInBoth = importer.dealPutList.stream()
+                .map(deal -> {
+                    assertNotNull(deal.getId());
+                    assertNotNull(deal.getVisible_to());
+                    assertNotNull(deal.getStatus());
+                    assertNotNull(deal.getAdd_time());
+                    assertNotNull(deal.getPhase());
+                    assertNotNull(deal.getProject_number());
+                    assertNotNull(deal.getTitle());
+                    assertNotNull(deal.getStage_id());
+                    assertNotNull(deal.getValue());
+                    assertNotNull(deal.getAdd_time());
+                    assertNotNull(deal.getV_id());
+                    return deal;
+                })
+                .map(deal -> {
+                    String codePhase = deal.getProject_number()+deal.getPhase();
+                    assertTrue(pipedriveCodePhasePairs.contains(codePhase));
+                    assertTrue(vertecCodePhasePairs.contains(codePhase));
+                    return codePhase;
+                }).collect(Collectors.toList());
+
+        assertEquals(foundInBoth.size(), importer.dealPutList.size());
+
+        importer.dealPostList.stream()
+                .forEach(deal -> {
+                    assertNull(deal.getId());
+                    assertNotNull(deal.getVisible_to());
+                    assertNotNull(deal.getStatus());
+                    if (deal.getStatus().equals("won")) {
+                        assertNotNull(deal.getWon_time());
+                    }
+                    if (deal.getStatus().equals("lost")) {
+                        assertNotNull(deal.getLost_time());
+                        assertNotNull(deal.getLost_reason());
+                    }
+                    assertNotNull(deal.getAdd_time());
+                    assertNotNull(deal.getPhase());
+                    assertNotNull(deal.getProject_number());
+                    assertNotNull(deal.getTitle());
+                    assertNotNull(deal.getStage_id());
+                    assertNotNull(deal.getValue());
+                    assertNotNull(deal.getAdd_time());
+                    assertNotNull(deal.getV_id());
+                });
+        //TODO: finish once re-import done
+    }
+
+    //TODO: write postAndPutDeals test
+    @Test
+    public void canPostAndPutDealPostAndPutLists() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
+
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
+
+        when(pipedrive.postDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+        when(pipedrive.updateDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+
+        importer.importMissingOrganistationsFromVertec();
+        importer.importMissingContactsFromVertec();
+
+        importer.importContactsFromPipedrive();
+        importer.importDealsFromPipedrive();
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+        importer.builOrganisationHierarchies();
+        importer.postOrganisationHierarchies(anyList());
+
+        importer.populateContactPostAndPutLists();
+        importer.postAndPutContactPostAndPutLists();
+        importer.populateFollowerPostList();
+        importer.postContactFollowers();
+
+        importer.populateDealPostAndPutList();
+        importer.postAndPutDealPostAndPutList();
+
+        verify(pipedrive).postDealList(anyList());
+        verify(pipedrive).updateDealList(anyList());
+
+        importer.dealPostList.stream()
+                .forEach(deal -> assertTrue(importer.dealIdMap.get(deal.getV_id()) != -1L));
+
+        importer.dealPutList.stream()
+                .forEach(deal -> assertTrue(importer.dealIdMap.get(deal.getV_id()) != -1L));
+
+    }
+
+    private Answer<Map<Long, Long>> getDummyPipedriveDealPostOrPutResponse() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+            Map<Long,Long> map = new HashMap<>();
+
+            ((List<PDDealSend>) args[0]).stream()
+                    .forEach(deal -> map.put(deal.getV_id(), 5L));
+            return map;
+        };
+    }
+
+    @Test
+    public void canPopulateActivityPostList() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
+
+        when(pipedrive.postDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+        when(pipedrive.updateDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+        importer.importMissingOrganistationsFromVertec();
+        importer.importMissingContactsFromVertec();
+
+        importer.importContactsFromPipedrive();
+        importer.importDealsFromPipedrive();
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+
+        importer.populateContactPostAndPutLists();
+        importer.postAndPutContactPostAndPutLists();
+
+        importer.populateDealPostAndPutList();
+        importer.postAndPutDealPostAndPutList();
+
+        //TODO: add code to call deal functions, revert dealIdMap to not be a default value map
+
+        assertTrue("Activity postlist not empty to start with", importer.activityPostList.isEmpty());
+
+        importer.populateActivityPostList();
+//
+//        assertEquals("ActivitypostList does not contain all activities",
+//                importer.getVertecActivityList(),
+//                importer.activityPostList.size());
+
+        importer.activityPostList.stream()
+                .forEach(activity -> {
+                    assertNull(activity.getId());
+                    assertNotNull(activity.getType());
+                    assertNotNull(activity.getSubject());
+                    assertNotNull(activity.getDue_date());
+                    assertNotNull(activity.getDone());
+                    if (activity.getDone()) {
+                        assertNotNull(activity.getDone_date());
+                    }
+                    assertNotNull(activity.getNote());
+                    assertTrue(activity.getDeal_id() != null
+                            || activity.getOrg_id() != null
+                            || activity.getPerson_id() != null);
+                });
+
+    }
+
+    @Test
+    public void postActivityListWillPostActivityList() throws IOException {
+
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
+
+        when(pipedrive.postDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+        when(pipedrive.updateDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+        when(pipedrive.postActivityList(anyList())).thenAnswer(getDummyPipedriveActivityPOSTResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+        importer.importMissingOrganistationsFromVertec();
+        importer.importMissingContactsFromVertec();
+
+        importer.importContactsFromPipedrive();
+        importer.importDealsFromPipedrive();
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+
+        importer.populateContactPostAndPutLists();
+        importer.postAndPutContactPostAndPutLists();
+
+        importer.populateDealPostAndPutList();
+        importer.postAndPutDealPostAndPutList();
+
+        importer.populateActivityPostList();
+
+        importer.postActivityPostList();
+
+        verify(pipedrive).postActivityList(anyList());
+
+    }
+
+    private Answer<List<Long>> getDummyPipedriveActivityPOSTResponse() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+           List<Long> list  = new ArrayList<>();
+
+            ((List<PDActivitySend>) args[0]).stream()
+                    .forEach(activity -> list.add( 5L));
+            return list;
+        };
     }
 
 

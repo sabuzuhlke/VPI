@@ -238,10 +238,10 @@ public class VertecSynchroniser {
         System.out.println("That was interesting, found " + dealPostList.size() + " new deals, and " + dealPutList.size() + " deals to update");
 
         dealIdMap = PDS.postDealList(dealPostList);
-        List<Long> projPut = PDS.updateDealList(dealPutList);
-        projPut.addAll(dealIdMap.values());
+        Map<Long, Long> projPut = PDS.updateDealList(dealPutList);
+        projPut.putAll(dealIdMap);
 
-        return projPut;
+        return projPut.values().stream().collect(Collectors.toList());
     }
 
     public List<Long> importActivitiesToPipedrive() {
@@ -853,10 +853,6 @@ public class VertecSynchroniser {
                 PDContactSend newContact = new PDContactSend(vc,owner);
                 newContact.setOrg_id(tempOrgID);
                 newContact.setOwner_id(teamIdMap.get(vc.getOwner()));
-                newContact.setFollowers(new ArrayList<>());
-                for(String f : vc.getFollowers()){
-                    newContact.getFollowers().add(teamIdMap.get(f));
-                }
                 contactPostList.add(newContact);
                 contsPosted_vid.add(newContact.getV_id());
             }
@@ -981,10 +977,6 @@ public class VertecSynchroniser {
             for(JSONContact c : o.getContacts()){
                 Long owner = teamIdMap.get(c.getOwner());
                 PDContactSend s = new PDContactSend(c,owner);
-                s.setFollowers(new ArrayList<>());
-                for(String f : c.getFollowers()){
-                    s.getFollowers().add(teamIdMap.get(f));
-                }
                 s.setOrg_id(res.getBody().getData().getId());
                 Long pdId = PDS.postContact(s).getBody().getData().getId();
                 this.contactIdMap.put(c.getObjid(), pdId);

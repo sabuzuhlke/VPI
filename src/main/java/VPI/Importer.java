@@ -1,8 +1,13 @@
 package VPI;
 
-import VPI.PDClasses.Contacts.*;
+import VPI.PDClasses.Activities.PDActivitySend;
+import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.PDContactReceived;
+import VPI.PDClasses.Contacts.PDContactSend;
+import VPI.PDClasses.Contacts.PDFollower;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.Deals.PDDealReceived;
+import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.PDService;
@@ -28,9 +33,6 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-/**
- * Created by gebo on 07/06/2016.
- */
 public class Importer {
 
     //Services to access both APIs
@@ -60,6 +62,12 @@ public class Importer {
 
     public List<PDFollower> followerPostList;
 
+    public List<PDDealSend> dealPostList;
+    public List<PDDealSend> dealPutList;
+
+    public List<PDActivitySend> activityPostList;
+    public Map<Long, List<Long>> projectPhasesMap;
+
     public Importer(PDService pipedrive, VertecService vertec) {
         this.pipedrive = pipedrive;
         this.vertec    = vertec;
@@ -70,10 +78,11 @@ public class Importer {
 
         constructTestTeamMap();
 
-        this.activityTypeMap   = new HashMap<>();
+        constructActivityTypeMap();
 
         this.vertecOrganisations    = new ZUKOrganisations();
         this.vertecProjects         = new ZUKProjects();
+        this.projectPhasesMap       = new HashMap<>();
         this.vertecActivities       = new ZUKActivities();
 
         this.missingOrganisationIds = new HashSet<>();
@@ -86,6 +95,10 @@ public class Importer {
 
         this.followerPostList = new ArrayList<>();
 
+        this.dealPostList = new ArrayList<>();
+        this.dealPutList = new ArrayList<>();
+
+        this.activityPostList = new ArrayList<>();
     }
 
     /**
@@ -93,31 +106,50 @@ public class Importer {
      */
     public void importToPipedrive() {
         //import relevant information from vertec
+        System.out.println("Getting Contacts and Organisations from Vertec...");
         importOrganisationsAndContactsFromVertec();
+        System.out.println("Got 'em");
+        System.out.println("Getting projects and their phases from vertec...");
         importDealsFromVertec();
+        System.out.println("Got 'em");
+        System.out.println("Getting Activities from Vertec ...");
         importActivitiesFromVertec();
+        System.out.println("Got 'em");
         //find missing organisations and contacts linked to deals and activities
+        System.out.println("Getting missing organisations from Vertec...");
         importMissingOrganistationsFromVertec();
+        System.out.println("Getting missing Contacts from Vertec...");
         importMissingContactsFromVertec();
         //import contacts and deals from pipedrive to compare to vertec contacts and deals
+        System.out.println("Getting  Contacts from Pipedrive...");
         importContactsFromPipedrive();
+        System.out.println("Getting  Deals from Pipedrive...");
         importDealsFromPipedrive();
         //create and post organisatations from vertec to pipedrive, extract hierarchy and post
+        System.out.println("Doing applicationLogic...");
         populateOrganisationPostList();
+        System.out.println("Posting Organisations to Pipedrive...");
         postOrganisationPostList();
+        System.out.println("Posting Organisation Hierarchies to Pipedrive...");
         postOrganisationHierarchies(
                 builOrganisationHierarchies());
         //compare contacts by email and populate post and put lists, send to pipedrive and post followers
         populateContactPostAndPutLists();
+        System.out.println("Posting Contacts to Pipedrive...");
         postAndPutContactPostAndPutLists();
         populateFollowerPostList();
+        System.out.println("Posting Followers to Pipedrive...");
         postContactFollowers();
         //compare deals by phase number and project code and populate post and put lists, send to pipedrive
         populateDealPostAndPutList();
+        System.out.println("Posting Deals to Pipedrive...");
         postAndPutDealPostAndPutList();
         //craete and post activites once we have all vertec to pipedrive id maps populated from posting
+        System.out.println("Posting Activities to Pipedrive...");
         populateActivityPostList();
         postActivityPostList();
+        System.out.println("Import Successful!");
+
     }
 
     public void runOrgImport() {
@@ -165,8 +197,15 @@ public class Importer {
     }
 
     public void importDealsFromVertec() {
-        this.vertecProjects =  vertec.getZUKProjects().getBody();
+        this.vertecProjects = vertec.getZUKProjects().getBody();
         vertecProjects.getProjects().stream()
+                .map(project -> {
+                    List<Long> phaseIds = project.getPhases().stream().map(JSONPhase::getV_id).collect(toList());
+                    if (phaseIds.size() > 0) {
+                        projectPhasesMap.put(project.getV_id(), phaseIds);
+                    }
+                    return project;
+                })
                 .map(JSONProject::getPhases)
                 .flatMap(Collection::stream)
                 .map(JSONPhase::getV_id)
@@ -346,8 +385,6 @@ public class Importer {
 
     public void populateContactPostAndPutLists() {
         Map<Long, Boolean> matchedMap = new HashMap<>();
-        int putcount = 0;
-        int postcount = 0;
         Map<String, Integer> emailCountMap = new HashMap<>();
         getVertecContactList().stream()
                 .map(JSONContact::getEmail)
@@ -396,12 +433,10 @@ public class Importer {
 //                    System.out.println("Found pd contact already being put to: " + jc.getFirstName() + " " + jc.getSurname());
                     this.contactPostList.add(createPDContactSend(jc));
                 } else {
-                    putcount++;
                     this.contactPutList.add(createPDContactSend(jc, temp));
                     matchedMap.put(temp.getId(), true);
                 }
             } else {
-                postcount++;
                 this.contactPostList.add(createPDContactSend(jc));
             }
         }
@@ -531,15 +566,267 @@ public class Importer {
     }
 
     public void populateDealPostAndPutList() {
+        for(JSONProject project : getVertecProjectList()){
+            for(JSONPhase phase : project.getPhases()){
+                Boolean match = false;
+                PDDealReceived temp = null;
+                for(PDDealReceived deal : getPipedriveDealList()){
+                    if(project.getCode().equals(deal.getProject_number()) && phase.getCode().equals(deal.getPhase())) {
+                        match = true;
+                       temp = deal;
+                    }
+                }
+                if(match){
+                    dealPutList.add(createDealObject(project,phase, temp));
+                } else {
+                    dealPostList.add(createDealObject(project,phase));
+                }
+            }
+        }
+    }
+
+    //creates a Deal object from a Vertec project and phase, this is added to POST list
+    private PDDealSend createDealObject(JSONProject project, JSONPhase phase) {
+        //Try get owner of phase, if n/a then owner of project, if n/a then wolfgang will be assigned
+        Long userId = teamIdMap.get(phase.getPersonResponsible());
+        userId = userId == null ? teamIdMap.get(project.getLeaderRef()) : userId;
+        userId = userId == null ? teamIdMap.get("wolfgang.emmerich@zuhlke.com") : userId;
+
+        //Try to get personId from contactId map
+        Long personId = contactIdMap.get(project.getClientRef());
+        personId = personId == null ? contactIdMap.get(project.getCustomerRef()) : personId;
+
+        //Try to get organisationId from organisationIdMap
+        Long orgId = organisationIdMap.get(project.getClientRef());
+        orgId = orgId == null ? organisationIdMap.get(project.getCustomerRef()) : orgId;
+
+        //create our deal object
+        PDDealSend deal = new PDDealSend(project, phase, userId, personId, orgId);
+
+        setStageId(deal, phase);
+
+        return deal;
+    }
+
+    //create a Deal object from a Vertec project/phase and matching pipedrive entrym this is added to PUT list
+    private PDDealSend createDealObject(JSONProject project, JSONPhase phase, PDDealReceived temp) {
+        if(vertecDateMoreRecentThanPdDate(phase.getModifiedDate(), temp.getUpdate_time())){
+            return getPdDealSendVertecMoreRecent(project, phase, temp);
+        } else {
+            return getPdDealSendPipedriveMoreRecent(project, phase, temp);
+        }
+    }
+
+    private PDDealSend getPdDealSendPipedriveMoreRecent(JSONProject project, JSONPhase phase, PDDealReceived dr) {
+        PDDealSend ds = new PDDealSend();
+        //ID
+        ds.setId(dr.getId());
+        //Title
+        if(dr.getTitle().contains(":")) ds.setTitle(dr.getTitle());
+        else {
+            if (project.getTitle() != null && !project.getTitle().equals("")) {
+                String title = project.getTitle() + ": " + phase.getDescription();
+                ds.setTitle(title);
+            } else {
+                ds.setTitle(phase.getDescription());
+            }
+        }
+        //Value
+        ds.setValue(dr.getValue());
+        if(ds.getValue() == null) ds.setValue(phase.getExternalValue());
+        //Currency
+        ds.setCurrency(dr.getCurrency());
+        if(ds.getCurrency() == null) ds.setCurrency(project.getCurrency());
+        //user_id
+        ds.setUser_id(dr.getUser_id().getId());
+        if(ds.getUser_id() == null){
+            Long userId = teamIdMap.get(phase.getPersonResponsible());
+            userId = userId == null ? teamIdMap.get(project.getLeaderRef()) : userId;
+            userId = userId == null ? teamIdMap.get("wolfgang.emmerich@zuhlke.com") : userId;
+            ds.setUser_id(userId);
+        }
+        //personId
+        ds.setPerson_id(dr.getPerson_id() == null ? null : dr.getPerson_id().getValue());
+        if(ds.getPerson_id() == null){
+            Long personId = contactIdMap.get(project.getClientRef());
+            personId = personId == null ? contactIdMap.get(project.getCustomerRef()) : personId;
+            ds.setPerson_id(personId);
+        }
+        //org_id
+        ds.setOrg_id(dr.getOrg_id() == null ? null : dr.getOrg_id().getValue());
+        if(ds.getOrg_id() == null){
+            Long orgId = organisationIdMap.get(project.getClientRef());
+            orgId = orgId == null ? organisationIdMap.get(project.getCustomerRef()) : orgId;
+            ds.setOrg_id(orgId);
+        }
+        //add_time
+        try {
+            String[] dateTime = phase.getCreationDate().split("T");
+            String date = dateTime[0];
+            String time = dateTime[1];
+            ds.setAdd_time(date + " " + time);
+        } catch (Exception e) {
+            ds.setAdd_time("2000-01-01 00:00:00");
+        }
+        ds.setVisible_to(3);
+
+        //Visible_to
+        //Phase
+        ds.setPhase(dr.getPhase());
+        //project number
+        ds.setProject_number(dr.getProject_number());
+        //vid
+        ds.setV_id(phase.getV_id());
+        //stageId, status, wonTime,LostTime,LostReason
+        ds.setStage_id(dr.getStage_id());
+        ds.setStatus(dr.getStatus());
+        ds.setWon_time(dr.getWon_time());
+        ds.setLost_time(dr.getLost_time());
+        ds.setLost_reason(dr.getLost_reason());
+
+        return ds;
+    }
+
+    private PDDealSend getPdDealSendVertecMoreRecent(JSONProject project, JSONPhase phase, PDDealReceived dr) {
+        PDDealSend ds = new PDDealSend();
+
+        ds.setId(dr.getId());
+
+        //Title
+        if (project.getTitle() != null && !project.getTitle().equals("")) {
+            String title = project.getTitle() + ": " + phase.getDescription();
+            ds.setTitle(title);
+        } else {
+            ds.setTitle(phase.getDescription());
+        }
+        //Value
+        ds.setValue(phase.getExternalValue());
+        if(ds.getValue() == null) ds.setValue(dr.getValue());
+        //currency
+        ds.setCurrency(project.getCurrency());
+        if(ds.getCost_currency() == null) ds.setCurrency(dr.getCurrency());
+        //user_id
+        Long userId = teamIdMap.get(phase.getPersonResponsible());
+        userId = userId == null ? teamIdMap.get(project.getLeaderRef()) : userId;
+        userId = userId == null ? dr.getUser_id().getId() : userId;
+        userId = userId == null ? teamIdMap.get("wolfgang.emmerich@zuhlke.com") : userId;
+        ds.setUser_id(userId);
+        //Try to get personId from contactId map
+        Long personId = contactIdMap.get(project.getClientRef());
+        personId = personId == null ? contactIdMap.get(project.getCustomerRef()) : personId;
+        personId = personId == null ? (dr.getPerson_id() == null ? null : dr.getPerson_id().getValue()) : personId;
+        ds.setPerson_id(personId);
+        //Try to get organisationId from organisationIdMap
+        Long orgId = organisationIdMap.get(project.getClientRef());
+        orgId = orgId == null ? organisationIdMap.get(project.getCustomerRef()) : orgId;
+        orgId = orgId == null ? (dr.getOrg_id() == null ? null : dr.getOrg_id().getValue()) : orgId;
+        ds.setOrg_id(orgId);
+        //add_time
+        try {
+            String[] dateTime = phase.getCreationDate().split("T");
+            String date = dateTime[0];
+            String time = dateTime[1];
+            ds.setAdd_time(date + " " + time);
+        } catch (Exception e) {
+            ds.setAdd_time("2000-01-01 00:00:00");
+        }
+        //visible_to
+        ds.setVisible_to(3);
+        //phase
+        ds.setPhase(phase.getCode());
+        //project number
+        ds.setProject_number(project.getCode());
+        //v_id
+        ds.setV_id(phase.getV_id());
+        //stageId, status, wonTime, LostTime, LostReason
+        setStageId(ds, phase);
+
+        return ds;
+    }
+
+    @SuppressWarnings("all")
+    private void setStageId(PDDealSend deal, JSONPhase phase){
+
+        //TODO: change to correct stage_ids once in production -- get rid of magic numbers ( load all stages from pd)
+        String salesStatus = phase.getSalesStatus();
+        String code = salesStatus.substring(0, Math.min(salesStatus.length(), 2));
+        Integer num = Integer.parseInt(code);
+
+        //for setting status
+        String status = "open";
+
+        switch (num) {
+            //Exploratory = 1, NewLead/Extension = 2, QualifiedLead = 3
+            case 5: deal.setStage_id(2);
+                break;
+            //Rfp Recieved = 3
+            case 10: deal.setStage_id(4);
+                break;
+            //Offered = 6
+            case 11: deal.setStage_id(5);
+                break;
+            //UnderNegotiation = 5
+            case 12: deal.setStage_id(7);
+                break;
+            //VerballySold = 7
+            case 20: deal.setStage_id(6);
+                break;
+            //SOLD = WON
+            case 21: status = "won";
+                String wonTime = phase.getCompletion_date();
+                deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
+                break;
+            //LOST = LOST
+            case 30: status = "lost";
+                deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
+                String lostTime = phase.getRejection_date();
+                deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
+                break;
+            //FINISHED = WON
+            case 40: status = "won";
+                String wonTime2 = phase.getCompletion_date();
+                deal.setWon_time(wonTime2 == null ? phase.getPDformatModifiedTime() : wonTime2 + " 00:00:00");
+                break;
+            default: System.out.println(num);
+                break;
+        }
+        //status ('open' = Open, 'won' = Won, 'lost' = Lost, 'deleted' = Deleted)
+        //deal.setStatus(status);
+        deal.setStatus(status);
     }
 
     public void postAndPutDealPostAndPutList() {
+        dealIdMap.putAll(pipedrive.postDealList(dealPostList));
+        dealIdMap.putAll(pipedrive.updateDealList(dealPutList));
     }
 
     public void populateActivityPostList() {
+        getVertecActivityList().stream()
+                .forEach(activity -> {
+                    Long contact_id = contactIdMap.get(activity.getCustomer_link());
+                    Long org_id = organisationIdMap.get(activity.getCustomer_link());
+                    Long phase_id = dealIdMap.get(activity.getProject_phase_link());
+                    if (activity.getProject_link() != null && projectPhasesMap.get(activity.getProject_link()) != null) {
+                        phase_id = phase_id == null ? dealIdMap.get(projectPhasesMap.get(activity.getProject_link()).get(0)) : phase_id;
+                    }
+                    String type = activityTypeMap.get(activity.getType());
+                    if(phase_id != null
+                            || org_id != null
+                            || contact_id != null) {
+                        activityPostList.add(
+                                new PDActivitySend(
+                                        activity,
+                                        teamIdMap.get(activity.getAssignee()),
+                                        contact_id,
+                                        org_id,
+                                        phase_id,
+                                        type));
+                    } // else dont add to post list as this will be a floating activity not related to anything else in pipedrive
+                });
     }
 
-    public void postActivityPostList() {
+    public List<Long> postActivityPostList() {
+       return pipedrive.postActivityList(activityPostList);
     }
 
     public List<JSONOrganisation> getVertecOrganisationList() {
@@ -556,7 +843,9 @@ public class Importer {
     }
 
     public List<JSONProject> getVertecProjectList() {
-       return vertecProjects.getProjects();
+       return vertecProjects.getProjects().stream()
+               .filter(project -> project.getPhases().size() > 0)
+               .collect(toList());
     }
 
     public List<JSONActivity> getVertecActivityList() {
@@ -609,4 +898,24 @@ public class Importer {
             }
         }
     }
+
+    private void constructActivityTypeMap() { //TODO: test construction of activity type map
+        //if unable to find type link then set to misc type (custom type added to pipedrive dev instance)
+        activityTypeMap = new DefaultHashMap<>("misc");
+
+        String vTypes = "{362309 : Vertrag / Contract\n" + //Only header returned
+                "{362308 : Organigramm / Organizational Chart\n" + //Filtered
+                "{573113 : Auftragsbestätigung / Order Confirmation\n" + //Filtered
+                "{362307 : Angebot / Offer\n" + //Filtered
+                "{586078 : Kundenfeedback / Customer Feedback\n" +
+                "{505823 : Eventteilnahme / Event Participation\n" +
+                "{279647 : Dokument / Document\n" + //Filtered out
+                "{270569 : Sales"; //TODO: ask if we should filter
+
+        activityTypeMap.put("Meeting", "meeting");
+        activityTypeMap.put("Aufgabe / Task", "task");
+        activityTypeMap.put("EMail", "email");
+
+    }
+
 }

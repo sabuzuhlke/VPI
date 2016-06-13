@@ -1,9 +1,13 @@
 package VPI.PDClasses.Deals;
 
+import VPI.VertecClasses.VertecProjects.JSONPhase;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
 
 /**
  * Created by sabu on 12/05/2016.
@@ -85,6 +89,58 @@ public class PDDealSend {
         this.cost = d.getCost();
         this.cost_currency = d.getCost_currency();
         this.v_id = d.getV_id();
+
+    }
+
+    public PDDealSend(JSONProject project, JSONPhase phase, Long user_id, Long person_id, Long org_id){
+
+        //Title
+        if (project.getTitle() != null && !project.getTitle().equals("")) {
+            String title = project.getTitle() + ": " + phase.getDescription();
+           this.title = title;
+        } else {
+            this.title = phase.getDescription();
+        }
+
+        //Value
+        this.value = phase.getExternalValue();
+        //currency
+        this.currency = project.getCurrency();
+
+        //User_id
+        this.user_id = user_id;
+        //Person_id
+        this.person_id = person_id;
+        //org_id
+        this.org_id = org_id;
+        //add_time
+        try {
+            String[] dateTime = phase.getCreationDate().split("T");
+            String date = dateTime[0];
+            String time = dateTime[1];
+            this.add_time = date + " " + time;
+        } catch (Exception e) {
+            this.add_time = "2000-01-01 00:00:00";
+        }
+
+        //visible_to (1 = owner and followers, 3 = everyone)
+        this.visible_to = 3;
+
+        //v_id
+        this. v_id = phase.getV_id();
+
+        //project number
+       this.project_number = project.getCode();
+
+        //phase
+        this.phase = phase.getCode();
+
+        //modified
+       this.modified = phase.getPDformatModifiedTime();
+
+
+
+        //stageId --- SET OUTSIDE
 
     }
 

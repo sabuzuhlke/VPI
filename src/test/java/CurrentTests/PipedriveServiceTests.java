@@ -164,6 +164,7 @@ public class PipedriveServiceTests {
     public void canGetAllDeals() {
 
         ResponseEntity<PDDealItemsResponse> res = PS.getAllDeals();
+        System.out.println(res);
         assertEquals(res.getStatusCode(), HttpStatus.OK);
     }
 
@@ -224,10 +225,9 @@ public class PipedriveServiceTests {
             index++;
         }
 
-        List<Long> puttedIds = PS.updateDealList(deals);
+        Map<Long, Long> puttedIds = PS.updateDealList(deals);
 
         assertTrue(postedIds.size() == puttedIds.size());
-        assertEquals(postedIds, puttedIds);
 
         PS.deleteDealList(postedIds);
 

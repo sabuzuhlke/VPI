@@ -151,7 +151,6 @@ public class PDService {
         }
 
         res.getBody().setData(dealsReceived);
-        System.out.println(res);
         return res;
 
     }
@@ -161,12 +160,13 @@ public class PDService {
         return putToPipedrive(server + "deals/" + deal.getId() + apiKey, deal, PDDealResponse.class);
     }
 
-    public List<Long> updateDealList(List<PDDealSend> pds) {
-        return pds.stream()
+    public Map<Long, Long> updateDealList(List<PDDealSend> pds) {
+        Map<Long, Long> map = new HashMap<>();
+        pds.stream()
                 .map(this::updateDeal)
                 .filter(response -> response.getStatusCode() == HttpStatus.OK)
-                .map(deal -> deal.getBody().getData().getId())
-                .collect(toList());
+                .forEach(deal -> map.put(deal.getBody().getData().getV_id(), deal.getBody().getData().getId()));
+        return map;
     }
 
 //----------------------------------------------------------------------------------------------------------------DELETE
@@ -327,7 +327,6 @@ public class PDService {
 
         }
         res.getBody().setData(contactsRecieved);
-        System.out.println(res);
         return res;
     }
 
@@ -522,31 +521,31 @@ public class PDService {
      * UTILITIES
      */
 //-----------------------------------------------------------------------------------------------------------------CLEAR
-    public void clearPD(List<Long> orgsToKeep, List<Long> contsToKeep, List<Long>  dealsToKeep){
+    public void clearPD(/*List<Long> orgsToKeep, List<Long> contsToKeep, List<Long>  dealsToKeep*/){
 
         List<Long> orgsToDel = getAllOrganisations().getBody().getData()
                 .stream()
-                .filter(res -> res.getV_id() != null)
-                .filter(org -> !orgsToKeep.contains(org.getId()))
+                //.filter(res -> res.getV_id() != null)
+                //.filter(org -> !orgsToKeep.contains(org.getId()))
                 .map(PDOrganisationReceived::getId)
                 .collect(toList());
 
         List<Long> contsToDel = getAllContacts().getBody().getData()
                 .stream()
-                .filter(res -> res.getV_id() != null)
-                .filter(contact -> !contsToKeep.contains(contact.getId()))
+                //.filter(res -> res.getV_id() != null)
+                //.filter(contact -> !contsToKeep.contains(contact.getId()))
                 .map(PDContactReceived::getId)
                 .collect(toList());
 
         List<Long> dealsToDel = getAllDeals().getBody().getData()
                 .stream()
-                .filter(res -> res.getV_id() != null)
-                .filter(deal -> !dealsToKeep.contains(deal.getId()))
+                //.filter(res -> res.getV_id() != null)
+                //.filter(deal -> !dealsToKeep.contains(deal.getId()))
                 .map(PDDealReceived::getId)
                 .collect(toList());
 
         List<Long> activitiesToDel = getAllActivities().stream()
-                                        .filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
+                                      //  .filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
                                         .map(PDActivityReceived::getId)
                                         .collect(toList());
 

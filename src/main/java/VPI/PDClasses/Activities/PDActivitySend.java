@@ -26,12 +26,12 @@ public class PDActivitySend {
     public PDActivitySend() {
     }
 
-    public PDActivitySend(JSONActivity a, Long user_id, Long contact_id, Long ord_id, Long deal_id, String type) {
+    public PDActivitySend(JSONActivity a, Long user_id, Long contact_id, Long org_id, Long deal_id, String type) {
         this.done = a.getDone();
         this.type = type;
         this.subject = a.getTitle();
         this.deal_id = deal_id;
-        this.org_id = ord_id;
+        this.org_id = org_id;
         this.person_id = contact_id;
         this.note = "V_ID:" + a.getId() + "#\n" + a.getText(); //TODO: make this hack known
         this.user_id = user_id;

@@ -1,6 +1,7 @@
 package VPI;
 
 import VPI.PDClasses.PDService;
+import VPI.VertecClasses.VertecService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -37,6 +38,15 @@ public class Application implements CommandLineRunner {
 //            PD.clearPD(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 //            VS.importOrganisationsAndContactsToPipedriveAndPrint();
 //            VS.importProjectsAndPhasesToPipedrive();
+
+            Importer i = new Importer(
+                    new PDService("https://api.pipedrive.com/v1/", creds.getApiKey()),
+                    new VertecService("localhost:9999")
+            );
+
+            //i.runOrgImport();
+            //PD.clearPD();
+            i.importToPipedrive();
 
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {

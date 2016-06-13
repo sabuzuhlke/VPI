@@ -62,7 +62,7 @@ public class ImportZUK {
 //
 //    }
 
-    @Test
+    @Test @Ignore
     public void canImportOrganisationsContactsAndProjectsAndActivities() {
 
         VertecSynchroniser VS = new VertecSynchroniser();
@@ -75,7 +75,7 @@ public class ImportZUK {
             dealsToKeep.add((long) i);
         }
 
-        PD.clearPD(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
         System.out.println("Importing orgs and contacts");
         VS.importOrganisationsAndContactsToPipedrive();
         System.out.println("Imported orgs n conts, importing deals");
@@ -96,6 +96,6 @@ public class ImportZUK {
         for (int i = 0; i < 75; i++) {
             dealsToKeep.add((long) i);
         }
-        PD.clearPD(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
     }
 }
