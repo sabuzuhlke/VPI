@@ -1,5 +1,6 @@
 package VPI.VertecClasses.VertecOrganisations;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -43,8 +44,12 @@ public class JSONContact {
     @JsonProperty("followers")
     private List<String> followers;
 
+    @JsonIgnore
+    private Boolean ownedByTeam;
+
     public JSONContact() {
         this.followers = new ArrayList<>();
+        this.ownedByTeam = true;
     }
 
     public List<String> getFollowers() {
@@ -135,10 +140,22 @@ public class JSONContact {
         this.organisation = organisation;
     }
 
+    public Boolean getOwnedByTeam() {
+        return ownedByTeam;
+    }
+
+    public void setOwnedByTeam(Boolean ownedByTeam) {
+        this.ownedByTeam = ownedByTeam;
+    }
+
     public String getPipedriveCreationTime() {
-        String[] dateTime = creationTime.split("T");
-        String date = dateTime[0];
-        String time = dateTime[1];
-        return date + " " + time;
+        try {
+            String[] dateTime = creationTime.split("T");
+            String date = dateTime[0];
+            String time = dateTime[1];
+            return date + " " + time;
+        } catch (Exception e) {
+            return "2000-01-01 00:00:00";
+        }
     }
 }

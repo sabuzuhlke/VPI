@@ -16,6 +16,8 @@ public class PDOrganisationSend {
     private Long v_id;
     @JsonProperty("add_time")
     private String creationTime;
+    @JsonProperty("276ed9c14c8766ac63ab668678b779a9b813658b")
+    private String ownedBy;
 
     public PDOrganisationSend(String name, Integer visible_to) {
         this.name = name;
@@ -57,6 +59,7 @@ public class PDOrganisationSend {
         this.active_flag = true;
         this.owner_id = ownerId;
 
+
         this.address = jo.getFormattedAddress();
 
         try{
@@ -75,6 +78,9 @@ public class PDOrganisationSend {
             System.out.println("Name: " + this.name + " VId: " + this.v_id);
             System.out.println(jo.getCreationTime());
         }
+
+        if(jo.getOwnedByTeam()) this.ownedBy = "ZUK";
+        else this.ownedBy = "Not ZUK";
     }
 
     public PDOrganisationSend(JSONOrganisation o, Long owner_id){
@@ -104,6 +110,9 @@ public class PDOrganisationSend {
         }
 
         this.owner_id = owner_id;
+
+        if(o.getOwnedByTeam()) this.ownedBy = "ZUK";
+        else this.ownedBy = "Not ZUK";
     }
 
     public Long getV_id() {
@@ -168,6 +177,14 @@ public class PDOrganisationSend {
 
     public void setCreationTime(String creationTime) {
         this.creationTime = creationTime;
+    }
+
+    public String getOwnedBy() {
+        return ownedBy;
+    }
+
+    public void setOwnedBy(String ownedBy) {
+        this.ownedBy = ownedBy;
     }
 
     @Override

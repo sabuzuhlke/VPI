@@ -11,6 +11,7 @@ import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.PDService;
+import VPI.VertecClasses.VertecActivities.JSONActivity;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
@@ -27,8 +28,8 @@ import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
 /**
  * Created by gebo on 07/06/2016.
  */
@@ -87,11 +89,12 @@ public class ImporterTest {
 
         inOrder.verify(iSpy).populateContactPostAndPutLists();
         inOrder.verify(iSpy).postAndPutContactPostAndPutLists();
-        inOrder.verify(iSpy).populateFollowerPostList();
-        inOrder.verify(iSpy).postContactFollowers();
 
         inOrder.verify(iSpy).populateDealPostAndPutList();
         inOrder.verify(iSpy).postAndPutDealPostAndPutList();
+
+        inOrder.verify(iSpy).populateFollowerPostList();
+        inOrder.verify(iSpy).postContactFollowers();
 
         inOrder.verify(iSpy).populateActivityPostList();
         inOrder.verify(iSpy).postActivityPostList();
@@ -252,7 +255,7 @@ public class ImporterTest {
         assertEquals(contMapSize + 1, contMapSizeAfter);
 
         assertEquals("Missing org id not added to missingorgids List",
-                missingOrgSize, //value is 1 because stubbed call to getOrganisation always returns Organisation with id: 1L
+                missingOrgSize + numberOfFakeParents, //value is 1 because stubbed call to getOrganisation always returns Organisation with id: 1L
                 importer.missingOrganisationIds.size());
         assertEquals("Missing nested contact id not added to missingcontids List",
                 1, //value is 1 because stubbed call to getOrganisation always returns Organisation with id: 1L
@@ -696,6 +699,8 @@ public class ImporterTest {
 
         importer.importContactsFromPipedrive();
 
+
+
         assertTrue(! importer.teamIdMap.isEmpty());
 
         importer.populateContactPostAndPutLists();
@@ -712,10 +717,10 @@ public class ImporterTest {
                 .collect(toList())
                 .size();
 
-        assertEquals("Not all followers added to post list", nrFollowers,importer.followerPostList.size());
+        assertEquals("Not all followers added to post list", nrFollowers,importer.contactFollowerPostList.size());
 
 
-        importer.followerPostList.stream()
+        importer.contactFollowerPostList.stream()
                 .forEach(follower -> {
                  assertTrue("Contact " + follower.getObjectID() + " is not part of contactIdMap, but got added to followers"
                          , importer.contactIdMap.containsValue(follower.getObjectID()));
@@ -724,7 +729,7 @@ public class ImporterTest {
                          ,importer.teamIdMap.containsValue(follower.getUserID()));
                 });
 
-        verify(pipedrive, times(importer.followerPostList.size())).postFollowerToContact(anyObject());
+        verify(pipedrive, times(importer.contactFollowerPostList.size())).postFollowerToContact(anyObject());
     }
 
 
@@ -772,9 +777,13 @@ public class ImporterTest {
         assertTrue( ! importer.dealPutList.isEmpty());
 
         int numOfPhases = importer.getVertecProjectList().stream()
+                .filter(proj -> proj.getCode().charAt(0) != 'I')
                 .map(JSONProject::getPhases)
                 .flatMap(Collection::stream)
                 .collect(toList()).size();
+
+        System.out.println("dealputlist size : " + importer.dealPutList.size());
+        System.out.println("dealpostlist size : " + importer.dealPostList.size());
 
         assertEquals("Not every deal received has been sent to pipedrive",
                 numOfPhases,
@@ -1014,6 +1023,187 @@ public class ImporterTest {
             ((List<PDActivitySend>) args[0]).stream()
                     .forEach(activity -> list.add( 5L));
             return list;
+        };
+    }
+
+    @Test
+    public void canSaveStringLongMap() throws IOException {
+        Map<String, Long> map = new HashMap<>();
+        map.put("habba@babba.ed", 990990L);
+        map.put("hubba@bubba.hu", 990998L);
+
+        importer.saveMap("testmap.txt", map);
+
+
+            File file = new File("testmap.txt");
+            String line;
+
+
+            FileReader reader = new FileReader(file.getAbsolutePath());
+            BufferedReader breader = new BufferedReader(reader);
+            while ((line = breader.readLine()) != null) {
+                String[] dateFormatter = line.split(",");
+                String email= dateFormatter[0];
+                Long id = Long.parseLong(dateFormatter[1]);
+                assertEquals("Entry either does not exist in map or has got wrong key", map.get(email), id);
+            }
+    }
+
+    @Test
+    public void canSaveLongLongMap() throws IOException {
+        Map<Long, Long> map = new HashMap<>();
+        map.put(999L,888L);
+        map.put(234L,2344L);
+
+        importer.saveMap("testmap.txt", map);
+
+
+        File file = new File("testmap.txt");
+        String line;
+
+
+        FileReader reader = new FileReader(file.getAbsolutePath());
+        BufferedReader breader = new BufferedReader(reader);
+        while ((line = breader.readLine()) != null) {
+            String[] dateFormatter = line.split(",");
+            Long id1 = Long.parseLong(dateFormatter[0]);
+            Long id = Long.parseLong(dateFormatter[1]);
+            assertEquals("Entry either does not exist in map or has got wrong key",map.get(id1), id);
+        }
+
+    }
+
+    @Test
+    public void canSaveSet() throws IOException {
+        Set<Long> idsToSave = new HashSet<>();
+        idsToSave.add(5L);
+        idsToSave.add(6L);
+
+        importer.saveSet("testList.txt", idsToSave);
+
+
+        File file = new File("testList.txt");
+        Long id;
+        String line;
+
+        FileReader reader = new FileReader(file.getAbsolutePath());
+        BufferedReader bufferedReader = new BufferedReader(reader);
+
+        while((line = bufferedReader.readLine()) != null){
+            id = Long.parseLong(line);
+            assertTrue("Id not saved or saved in wrong order", idsToSave.contains(id));
+        }
+    }
+
+    @Test
+    public void canreformatEmail() throws IOException {
+        ResponseEntity<ZUKActivities> activitiesres = getDummyActivitiesResponse();
+        String email = null;
+
+        List<JSONActivity> activities = activitiesres.getBody().getActivityList();
+
+        for(JSONActivity a : activities) {
+            if (a.getId() == 23768770L) {
+                PDActivitySend as = new PDActivitySend(a,1403429L ,null,null,null,"email");
+                email = as.getNote();
+            }
+        }
+
+        System.out.println(email);
+
+        email = PDActivitySend.reformat(email);
+
+        int newlineSplitSize = email.split("\n").length;
+
+        assertEquals("Some newlines left", 1, newlineSplitSize);
+
+        int tabSplitSize = email.split("\t").length;
+
+        assertEquals("Some tabs left", 1, tabSplitSize);
+
+ }
+    @Test
+    public void canRecogniseTab(){
+        String s = "haba\tbaba";
+
+        System.out.println(s);
+        System.out.println("");
+
+        String rs = PDActivitySend.reformat(s);
+
+        System.out.println(rs);
+        assertTrue( ! rs.contains("\t"));
+
+    }
+
+    @Test
+    public void canDealWithContactsofMissingOrg() throws IOException {
+
+        Long danglingContact = 762805L;
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getOrganisation(1317625L)).thenAnswer(getSpecificMissingOrg());
+
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+
+
+        importer.importOrganisationsAndContactsFromVertec();
+
+        importer.importMissingOrganistationsFromVertec();
+
+        importer.getVertecOrganisations().getDanglingContacts().stream()
+                .forEach(c -> assertNotEquals("Contact didnt get deleted from dangling contacts",
+                        danglingContact, c.getObjid()));
+
+        importer.getVertecOrganisations().getOrganisationList().stream()
+                .filter(facility -> facility.getObjid() == 1317625L)
+                .map(JSONOrganisation::getContacts)
+                .flatMap(Collection::stream)
+                .filter(cont -> cont.getObjid() == 1L)
+                .forEach(cont -> {
+                    assertFalse("Guy/Gal should not be owned by team", cont.getOwnedByTeam());
+                });
+
+        List<JSONContact> nonDanglingContIdList = importer.getVertecOrganisations().getOrganisationList().stream()
+                .map(JSONOrganisation::getContacts)
+                .flatMap(Collection::stream)
+                .filter(cont -> cont.getObjid().longValue() == danglingContact)
+                    .map(cont -> {
+                    assertTrue("Guy/Gal should be owned by team", cont.getOwnedByTeam());
+                    return cont;
+                })
+                .collect(toList());
+
+
+        assertEquals("Failed to put contact amongst non-dongling contacts", 1, nonDanglingContIdList.size());
+    }
+
+    private Answer<ResponseEntity<JSONOrganisation>> getSpecificMissingOrg() {
+        return invocation -> {
+
+            JSONOrganisation org = new JSONOrganisation();
+            org.setOwnedByTeam(false);
+            org.setObjid(1317625L);
+            org.setParentOrganisationId(null);
+
+            JSONContact contact = new JSONContact();
+            contact.setFirstName("Contact in id map");
+            contact.setObjid(762805L);
+            contact.setEmail("adamcarney@lookers.co.uk");
+
+            org.getContacts().add(contact);
+
+            contact = new JSONContact();
+            contact.setFirstName("Contact not in id map");
+            contact.setObjid(1L);
+            contact.setEmail("hahbv@ha.bla");
+
+            org.getContacts().add(contact);
+
+            return new ResponseEntity<>(org, HttpStatus.OK);
         };
     }
 

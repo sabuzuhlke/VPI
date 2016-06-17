@@ -4,6 +4,7 @@ import VPI.InsightClasses.VContact;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.sym.Name;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,8 @@ public class PDContactSend {
     private String modifiedTime;
 
     private Long owner_id;
+    @JsonProperty("2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
+    private String ownedBy;
 
     public PDContactSend() {
         this.email = new ArrayList<>();
@@ -73,15 +76,24 @@ public class PDContactSend {
         this.phone.add(mobiled);
         this.v_id = c.getObjid();
 
-        if(c.getCreationTime() != null){
-            String[] dateFormatter = c.getCreationTime().split("T");
-            String date = dateFormatter[0];
-            String time = dateFormatter[1];
-            this.creationTime = date + " " + time;
+        try {
+            if(c.getCreationTime() != null){
+                String[] dateFormatter = c.getCreationTime().split("T");
+                String date = dateFormatter[0];
+                String time = dateFormatter[1];
+                this.creationTime = date + " " + time;
+            }
+        } catch (Exception e){
+            System.out.println("Could not set creation time for "  + this.name);
+            this.creationTime = "1999-01-01 00:00:00";
         }
+
 
         this.owner_id = owner;
         this.modifiedTime = c.getModified();
+
+        if(c.getOwnedByTeam()) this.ownedBy = "ZUK";
+        else this.ownedBy = "Not ZUK";
 
     }
 
@@ -102,6 +114,7 @@ public class PDContactSend {
             this.owner_id = pc.getOwner_id().getId();
         }
         this.modifiedTime = pc.getModifiedTime();
+
 
     }
 
@@ -207,6 +220,14 @@ public class PDContactSend {
 
     public void setModifiedTime(String modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public String getOwnedBy() {
+        return ownedBy;
+    }
+
+    public void setOwnedBy(String ownedBy) {
+        this.ownedBy = ownedBy;
     }
 
     @Override

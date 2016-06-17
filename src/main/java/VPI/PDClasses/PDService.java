@@ -291,6 +291,7 @@ public class PDService {
                         contact.getBody().getData().getId())
                 )
                 .collect(toList());
+
         return mymap;
     }
 
@@ -355,7 +356,7 @@ public class PDService {
                 .map(this::updateContact)
                 .filter(response -> response.getStatusCode() == HttpStatus.OK)
                 .map(response -> response.getBody().getData())
-                .map(contact -> map.put(contact.getV_id(), contact.getId()));
+                .forEach(contact -> map.put(contact.getV_id(), contact.getId()));
         return map;
     }
 
@@ -492,7 +493,12 @@ public class PDService {
 //------------------------------------------------------------------------------------------------------------------POST
     public ResponseEntity<String> postFollowerToContact(PDFollower f){
         //TODO: change res to accept new pojo instead of string (followers)
-        return postToPipedrive(server + "persons/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+        try {
+            return postToPipedrive(server + "persons/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+        } catch (Exception e) {
+            System.out.println("Caught Exception posting follower: " + f.toPrettyString());
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
     }
 
     public ResponseEntity<String> postFollowerToOrganisation(PDFollower f){
@@ -500,6 +506,15 @@ public class PDService {
         return postToPipedrive(server + "organizations/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
     }
 
+    public ResponseEntity<String> postFollowerToDeal(PDFollower f){
+        //TODO: change res to accept new pojo instead of string (followers)
+        try {
+            return postToPipedrive(server + "deals/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+        } catch (Exception e) {
+            System.out.println("Caught Exception posting follower: " + f.toPrettyString());
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+    }
 
 
     /**
@@ -523,19 +538,28 @@ public class PDService {
 //-----------------------------------------------------------------------------------------------------------------CLEAR
     public void clearPD(/*List<Long> orgsToKeep, List<Long> contsToKeep, List<Long>  dealsToKeep*/){
 
+        /**
+         * ORganisations do not need to be cleared atm as they work correctly
+         */
+
         List<Long> orgsToDel = getAllOrganisations().getBody().getData()
                 .stream()
                 //.filter(res -> res.getV_id() != null)
                 //.filter(org -> !orgsToKeep.contains(org.getId()))
                 .map(PDOrganisationReceived::getId)
                 .collect(toList());
+        System.out.println("Found " + orgsToDel.size() + " organisations to delete");
 
+        /**
+         * Keep contacts as they were already matched up and wed loose a lot of data
+         */
         List<Long> contsToDel = getAllContacts().getBody().getData()
                 .stream()
-                //.filter(res -> res.getV_id() != null)
+                //.filter(res -> res.getV_id() != null )
                 //.filter(contact -> !contsToKeep.contains(contact.getId()))
                 .map(PDContactReceived::getId)
                 .collect(toList());
+        System.out.println("Found " + contsToDel.size() + " contacts to delete");
 
         List<Long> dealsToDel = getAllDeals().getBody().getData()
                 .stream()
@@ -543,16 +567,22 @@ public class PDService {
                 //.filter(deal -> !dealsToKeep.contains(deal.getId()))
                 .map(PDDealReceived::getId)
                 .collect(toList());
+        System.out.println("Found " + dealsToDel.size() + " deals to delete");
 
         List<Long> activitiesToDel = getAllActivities().stream()
-                                      //  .filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
+                                        //.filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
                                         .map(PDActivityReceived::getId)
                                         .collect(toList());
+        System.out.println("Found " + activitiesToDel.size() + " Activities to delete");
+//
 
-
-        if (!orgsToDel.isEmpty()) deleteOrganisationList(orgsToDel);
+        System.out.println("Deleting organisations...");
+      //  if (!orgsToDel.isEmpty()) deleteOrganisationList(orgsToDel);
+        System.out.println("Deleting contacts...");
         if (!contsToDel.isEmpty()) deleteContactList(contsToDel);
+        System.out.println("Deleting deals...");
         if (!dealsToDel.isEmpty()) deleteDealList(dealsToDel);
+        System.out.println("Deleting Activities...");
         if(!activitiesToDel.isEmpty()) deleteActivityList(activitiesToDel);
 
     }
