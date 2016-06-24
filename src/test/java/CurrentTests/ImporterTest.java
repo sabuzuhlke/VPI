@@ -707,7 +707,7 @@ public class ImporterTest {
     }
 
     @Test
-    public void postsAllFollowers() throws IOException {
+    public void postsAllContactFollowers() throws IOException {
         when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
         when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
 
