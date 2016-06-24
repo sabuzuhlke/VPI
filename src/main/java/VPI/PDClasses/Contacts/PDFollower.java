@@ -1,6 +1,7 @@
 package VPI.PDClasses.Contacts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by gebo on 11/05/2016.
@@ -34,5 +35,17 @@ public class PDFollower {
 
     public void setObjectID(Long objectID) {
         this.objectID = objectID;
+    }
+
+    public String toPrettyString() {
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not display Follower Relation as a pretty string: " + e.toString());
+        }
+        return retStr;
     }
 }

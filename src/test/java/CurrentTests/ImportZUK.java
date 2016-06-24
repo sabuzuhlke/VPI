@@ -1,9 +1,12 @@
 package CurrentTests;
 
 import VPI.Application;
+import VPI.Importer;
 import VPI.MyCredentials;
+import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
+import VPI.VertecClasses.VertecService;
 import VPI.VertecSynchroniser;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -25,10 +28,20 @@ import static org.junit.Assert.assertTrue;
 public class ImportZUK {
 
     private VertecSynchroniser sync;
+    private Importer importer;
+    private VertecService VS;
+    private PDService PDS;
 
     @Before
     public void setUp() {
         this.sync = new VertecSynchroniser();
+        MyCredentials creds = new MyCredentials();
+
+        //set up Pipedrive and Vertec services
+        this.PDS = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+        this.VS = new VertecService("localhost:9999");
+
+        this.importer = new Importer(PDS, VS);
     }
 
 //    @Test
@@ -97,5 +110,11 @@ public class ImportZUK {
             dealsToKeep.add((long) i);
         }
         PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
+    }
+
+    @Test @Ignore("takes too long, way too long")
+    public void ImporterCanImport(){
+        this.importer.importToPipedrive();
+        assertTrue(true);
     }
 }

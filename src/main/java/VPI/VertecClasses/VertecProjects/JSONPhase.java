@@ -51,6 +51,7 @@ public class JSONPhase {
 //    private String won_time;
 
     public JSONPhase() {
+
     }
 
     public Long getV_id() {

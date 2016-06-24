@@ -33,7 +33,7 @@ public class PDActivitySend {
         this.deal_id = deal_id;
         this.org_id = org_id;
         this.person_id = contact_id;
-        this.note = "V_ID:" + a.getId() + "#\n" + a.getText(); //TODO: make this hack known
+        this.note = "V_ID:" + a.getId() + "#<br>" + reformat(a.getText()); //TODO: make this hack known
         this.user_id = user_id;
         this.done_date = a.getDone_date();
         this.due_date = a.getDate();
@@ -141,6 +141,26 @@ public class PDActivitySend {
 
     public void setUser_id(Long user_id) {
         this.user_id = user_id;
+    }
+
+    public static String reformat(String s) { //makes content of note field legible on pipedrive
+        int ptr = 0;
+        String[] parts = s.split("\n");
+
+        String formattedString = "";
+
+        for (String part : parts) {
+            formattedString += part + "<br>";
+        }
+
+        String[] parts2 = formattedString.split("\t");
+
+
+        formattedString = "";
+        for(String part2 : parts2){
+            formattedString+= part2 + "    ";//four spaces to replace tabs
+        }
+        return formattedString;
     }
 
     public String toPrettyJSON() {

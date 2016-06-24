@@ -1,5 +1,6 @@
 package VPI.VertecClasses.VertecOrganisations;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -50,6 +51,9 @@ public class  JSONOrganisation {
     @JsonProperty("childOrganisationList")
     private List<Long> childOrganisationList;
 
+    @JsonIgnore
+    private Boolean ownedByTeam;
+
     public Long getParentOrganisationId() {
         return parentOrganisationId;
     }
@@ -76,6 +80,7 @@ public class  JSONOrganisation {
 
     public JSONOrganisation() {
         this.contacts = new ArrayList<>();
+        this.ownedByTeam = true;
     }
 
     public String getName() {
@@ -188,5 +193,13 @@ public class  JSONOrganisation {
             System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
         }
         return retStr;
+    }
+
+    public Boolean getOwnedByTeam() {
+        return ownedByTeam;
+    }
+
+    public void setOwnedByTeam(Boolean ownedByTeam) {
+        this.ownedByTeam = ownedByTeam;
     }
 }

@@ -33,6 +33,8 @@ public class JSONProject {
     private String modified;
     @JsonProperty("created")
     private String created;
+    @JsonProperty("account_manager")
+    private String accountManager;
 
     public JSONProject() {
     }
@@ -131,5 +133,13 @@ public class JSONProject {
 
     public void setCreated(String created) {
         this.created = created;
+    }
+
+    public String getAccountManager() {
+        return accountManager;
+    }
+
+    public void setAccountManager(String accountManager) {
+        this.accountManager = accountManager;
     }
 }
