@@ -637,6 +637,7 @@ public class Importer {
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getLeaderRef())));
                             }
                             if(teamIdMap.get((project.getAccountManager())) != null && dealIdMap.get(phase.getV_id()) != null){
+                                System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getDescription());
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getAccountManager())));
                             }
                         }));
