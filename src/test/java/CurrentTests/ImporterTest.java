@@ -422,7 +422,6 @@ public class ImporterTest {
                 });
 
         assertTrue(! importer.organisationIdMap.containsValue(-1L));
-        //TODO: test that lists returned in same order
     }
 
     private Answer<ResponseEntity<JSONOrganisation>> getOrgResponseEntityAnswer() {
@@ -580,6 +579,11 @@ public class ImporterTest {
                     if (emailsForContact.size() > 1) {
                         System.out.println(contact.getName());
                     }
+                    if (contact.getName().equals("Carl Powell")) {
+                        System.out.println(contact.getId());
+                    }if (contact.getName().equals("Mark Smith")) {
+                        System.out.println(contact.getId());
+                    }
                     return emailsForContact;
                 }) //at this point we have a stream of lists of emails found in both (one per contact)
                 .flatMap(Collection::stream)
@@ -629,7 +633,7 @@ public class ImporterTest {
         when(pipedrive.postContactList(anyList()))
                 .thenAnswer(getDummyPipedriveContactPostResponse());
         when(pipedrive.putContactList(anyList()))
-                .thenAnswer(getDummyPipedriveContactPostResponse());
+                .thenAnswer(getDummyPipedriveContactPutResponse());
 
         importer.importOrganisationsAndContactsFromVertec();
         importer.importDealsFromVertec();
@@ -662,6 +666,7 @@ public class ImporterTest {
                 .forEach(id -> assertTrue(id != -1L));
 
         assertTrue(! importer.contactIdMap.containsValue(-1L));
+        assertTrue(importer.contactIdMap.containsValue(18194L));
 
     }
 
@@ -672,6 +677,17 @@ public class ImporterTest {
 
             ((List<PDContactSend>) args[0]).stream()
                     .forEach(cont -> map.put(cont.getV_id(), 5L));
+            return map;
+        };
+    }
+
+    private Answer<Map<Long, Long>> getDummyPipedriveContactPutResponse() {
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+            Map<Long,Long> map = new HashMap<>();
+
+            ((List<PDContactSend>) args[0]).stream()
+                    .forEach(cont -> map.put(cont.getV_id(), cont.getId()));
             return map;
         };
     }
@@ -835,10 +851,8 @@ public class ImporterTest {
                     assertNotNull(deal.getAdd_time());
                     assertNotNull(deal.getV_id());
                 });
-        //TODO: finish once re-import done
     }
 
-    //TODO: write postAndPutDeals test
     @Test
     public void canPostAndPutDealPostAndPutLists() throws IOException {
         when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
@@ -934,8 +948,6 @@ public class ImporterTest {
 
         importer.populateDealPostAndPutList();
         importer.postAndPutDealPostAndPutList();
-
-        //TODO: add code to call deal functions, revert dealIdMap to not be a default value map
 
         assertTrue("Activity postlist not empty to start with", importer.activityPostList.isEmpty());
 
