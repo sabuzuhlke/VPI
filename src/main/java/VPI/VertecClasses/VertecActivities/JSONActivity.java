@@ -16,6 +16,7 @@ public class JSONActivity {
     private String date;
     private String type;//
     private String done_date;
+    private String creation_date_time;
 
     public JSONActivity() {
     }
@@ -106,6 +107,14 @@ public class JSONActivity {
 
     public void setDone_date(String done_date) {
         this.done_date = done_date;
+    }
+
+    public String getCreation_date_time() {
+        return creation_date_time;
+    }
+
+    public void setCreation_date_time(String creation_date_time) {
+        this.creation_date_time = creation_date_time;
     }
 
     public String getFormattedDone_date(){

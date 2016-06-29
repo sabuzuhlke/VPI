@@ -46,6 +46,8 @@ public class PDDealSend {
     @JsonProperty("won_time")
     private String won_time;
 
+    @JsonProperty("expected_close_date")
+    private String exp_close_date;
 
     @JsonIgnore
     private String modified;
@@ -320,6 +322,15 @@ public class PDDealSend {
     public void setLost_time(String lost_time) {
         this.lost_time = lost_time;
     }
+
+    public String getExp_close_date() {
+        return exp_close_date;
+    }
+
+    public void setExp_close_date(String exp_close_date) {
+        this.exp_close_date = exp_close_date;
+    }
+
 
     @Override
     public String toString() {

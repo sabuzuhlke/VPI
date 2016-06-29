@@ -10,6 +10,7 @@ import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1129,10 +1130,22 @@ public class PipedriveServiceTests {
         }
     }
 
+    @Test @Ignore
+    public void canPostExpectedCloseDate() {
+        PDDealSend deal = new PDDealSend();
+        deal.setTitle("TESTING TIMELINE VIEW SUPPORT");
+        deal.setExp_close_date("2015-06-06");
 
-    /**
-     * REFACTOR TEST====================================================================================================
-     */
+        PS.postDeal(deal);
+    }
 
+    @Test @Ignore
+    public void canPostActivityAddTime() {
+        PDActivitySend activity = new PDActivitySend();
+        activity.setSubject("TEST ACTIVITY");
+        activity.setType("call");
+        activity.setAdd_time("2014-01-01 09:30:00");
 
+        System.out.println(PS.postActivity(activity).getBody().getData().getId());
+    }
 }

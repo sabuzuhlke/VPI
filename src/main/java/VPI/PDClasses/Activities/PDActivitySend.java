@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDate;
+
 public class PDActivitySend {
 
     @JsonIgnore
@@ -22,6 +24,7 @@ public class PDActivitySend {
     private Long user_id;
     @JsonProperty("marked_as_done_time")
     private String done_date;
+    private String add_time;
 
     public PDActivitySend() {
     }
@@ -29,7 +32,7 @@ public class PDActivitySend {
     public PDActivitySend(JSONActivity a, Long user_id, Long contact_id, Long org_id, Long deal_id, String type) {
         this.done = a.getDone();
         this.type = type;
-        this.subject = a.getTitle();
+        this.subject = createActivitySubject(a, type);
         this.deal_id = deal_id;
         this.org_id = org_id;
         this.person_id = contact_id;
@@ -37,6 +40,28 @@ public class PDActivitySend {
         this.user_id = user_id;
         this.done_date = a.getDone_date();
         this.due_date = a.getDate();
+        this.add_time = a.getCreation_date_time();
+        if(isInThePast(a.getCreation_date_time()) || isInThePast(a.getDate()) || isInThePast(a.getDone_date())) {
+            this.done = true;
+        }
+    }
+
+    private String createActivitySubject(JSONActivity a, String pipedriveType) {
+        if (!a.getTitle().isEmpty()) {
+            return a.getTitle();
+        } else {
+            return pipedriveType;
+        }
+    }
+
+
+    private boolean isInThePast(String dateTime) {
+        String date = dateTime.substring(0, 10);
+
+        LocalDate d = LocalDate.parse(date);
+        LocalDate now = LocalDate.now();
+        return d.isBefore(now);
+
     }
 
     public Long getId() {
@@ -141,6 +166,14 @@ public class PDActivitySend {
 
     public void setUser_id(Long user_id) {
         this.user_id = user_id;
+    }
+
+    public String getAdd_time() {
+        return add_time;
+    }
+
+    public void setAdd_time(String add_time) {
+        this.add_time = add_time;
     }
 
     public static String reformat(String s) { //makes content of note field legible on pipedrive

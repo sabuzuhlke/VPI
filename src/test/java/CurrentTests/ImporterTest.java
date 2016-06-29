@@ -28,8 +28,11 @@ import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -326,6 +329,7 @@ public class ImporterTest {
     private ResponseEntity<JSONContact> getDummyMissingContactResponse() {
         JSONContact contact = new JSONContact();
         contact.setObjid(666L);
+        contact.setActive(true);
         return  new ResponseEntity<>(contact, HttpStatus.OK);
     }
 
@@ -434,6 +438,7 @@ public class ImporterTest {
             JSONOrganisation org = new JSONOrganisation();
             org.setObjid((Long) args[0]);
             JSONContact contact = new JSONContact();
+            contact.setActive(true);
             contact.setObjid(6996L);
             List<JSONContact> contacts = new ArrayList<>();
             contacts.add(contact);
@@ -497,6 +502,7 @@ public class ImporterTest {
         JSONOrganisation org = new JSONOrganisation();
         org.setObjid(7700L);
         JSONContact contact = new JSONContact();
+        contact.setActive(true);
         contact.setObjid(6996L);
         List<JSONContact> contacts = new ArrayList<>();
         contacts.add(contact);
@@ -509,6 +515,7 @@ public class ImporterTest {
         JSONOrganisation org = new JSONOrganisation();
         org.setObjid(7777L);
         JSONContact contact = new JSONContact();
+        contact.setActive(true);
         contact.setObjid(6996L);
         org.setParentOrganisationId(9999L);
         return new ResponseEntity<>(org, HttpStatus.OK);
@@ -518,6 +525,7 @@ public class ImporterTest {
         JSONOrganisation org = new JSONOrganisation();
         org.setObjid(9999L);
         JSONContact contact = new JSONContact();
+        contact.setActive(true);
         contact.setObjid(6996L);
         List<JSONContact> contacts = new ArrayList<>();
         contacts.add(contact);
@@ -541,7 +549,11 @@ public class ImporterTest {
         assertTrue(! importer.contactPostList.isEmpty());
         assertTrue(! importer.contactPutList.isEmpty());
 
-        assertEquals(importer.getVertecContactList().size(), importer.contactPostList.size() + importer.contactPutList.size());
+        assertEquals("Post and Put list dont match correct size",
+                importer.getVertecContactList().stream()
+                .filter(JSONContact::getActive).collect(toList())
+                        .size(),
+                importer.contactPostList.size() + importer.contactPutList.size());
 
         assertTrue(importer.contactPutList.size() <= importer.getPipedriveContactList().size());
 
@@ -700,6 +712,8 @@ public class ImporterTest {
             Object[] args = invocation.getArguments();
 
             JSONContact cont = new JSONContact();
+
+            cont.setActive(true);
             cont.setObjid((Long) args[0]);
 
             return new ResponseEntity<>(cont, HttpStatus.OK);
@@ -707,7 +721,7 @@ public class ImporterTest {
     }
 
     @Test
-    public void postsAllContactFollowers() throws IOException {
+    public void postsContactFollowers() throws IOException {
         when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
         when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
 
@@ -716,8 +730,7 @@ public class ImporterTest {
         importer.importContactsFromPipedrive();
 
 
-
-        assertTrue(! importer.teamIdMap.isEmpty());
+        assertTrue(!importer.teamIdMap.isEmpty());
 
         importer.populateContactPostAndPutLists();
 
@@ -733,21 +746,100 @@ public class ImporterTest {
                 .collect(toList())
                 .size();
 
-        assertEquals("Not all followers added to post list", nrFollowers,importer.contactFollowerPostList.size());
+        assertEquals("Not all followers added to post list", nrFollowers, importer.contactFollowerPostList.size());
 
 
         importer.contactFollowerPostList.stream()
                 .forEach(follower -> {
-                 assertTrue("Contact " + follower.getObjectID() + " is not part of contactIdMap, but got added to followers"
-                         , importer.contactIdMap.containsValue(follower.getObjectID()));
+                    assertTrue("Contact " + follower.getObjectID() + " is not part of contactIdMap, but got added to followers"
+                            , importer.contactIdMap.containsValue(follower.getObjectID()));
 
-                 assertTrue("User " + follower.getUserID() + " is not part of team, but got added to foillowers"
-                         ,importer.teamIdMap.containsValue(follower.getUserID()));
+                    assertTrue("User " + follower.getUserID() + " is not part of team, but got added to foillowers"
+                            , importer.teamIdMap.containsValue(follower.getUserID()));
                 });
 
         verify(pipedrive, times(importer.contactFollowerPostList.size())).postFollowerToContact(anyObject());
     }
 
+
+    @Test
+    public void postsDealFollowers() throws IOException {
+
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
+
+        when(pipedrive.postDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+        when(pipedrive.updateDealList(anyList())).thenAnswer(getDummyPipedriveDealPostOrPutResponse());
+        when(pipedrive.postActivityList(anyList())).thenAnswer(getDummyPipedriveActivityPOSTResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+        importer.importActivitiesFromVertec();
+        importer.importMissingOrganistationsFromVertec();
+        importer.importMissingContactsFromVertec();
+
+        importer.importContactsFromPipedrive();
+        importer.importDealsFromPipedrive();
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+
+        importer.populateContactPostAndPutLists();
+        importer.postAndPutContactPostAndPutLists();
+
+        importer.populateDealPostAndPutList();
+        importer.postAndPutDealPostAndPutList();
+
+        assertTrue(! importer.teamIdMap.isEmpty());
+
+        importer.populateContactPostAndPutLists();
+
+        importer.postAndPutContactPostAndPutLists();
+
+        importer.populateDealPostAndPutList();
+        importer.postAndPutDealPostAndPutList();
+
+        importer.populateFollowerPostList();
+
+        importer.postDealFollowers();
+
+
+
+        int nrPhases = importer.getVertecProjectList().stream()
+                .map(JSONProject::getPhases)
+                .flatMap(Collection::stream)
+                .collect(toList())
+                .size();
+
+        int nrAccountManagers = importer.getVertecProjectList().stream()
+                .filter(proj -> proj.getAccountManager() != null)
+                .map(JSONProject::getPhases)
+                .flatMap(Collection::stream)
+                .collect(toList())
+                .size();
+
+        //nrPhases+ nrAccountmanagers is how many dealfollowers we post as for each deal the owner gets posted as a follower and the account manager as well, where its specified
+        assertEquals("Not all followers added to post list", nrPhases + nrAccountManagers,importer.dealFollowerPostList.size());
+
+
+        importer.dealFollowerPostList.stream()
+                .forEach(follower -> {
+                    assertTrue("Deal " + follower.getObjectID() + " is not part of DealIdMap, but got added to followers"
+                            , importer.dealIdMap.containsValue(follower.getObjectID()));
+
+                    assertTrue("User " + follower.getUserID() + " is not part of team, but got added to foillowers"
+                            ,importer.teamIdMap.containsValue(follower.getUserID()));
+                });
+
+        verify(pipedrive, times(importer.dealFollowerPostList.size())).postFollowerToDeal(anyObject());
+    }
 
     @Test
     public void canPopulateDealPutAndPostLists() throws IOException {
@@ -781,8 +873,6 @@ public class ImporterTest {
 
         importer.populateContactPostAndPutLists();
         importer.postAndPutContactPostAndPutLists();
-        importer.populateFollowerPostList();
-        importer.postContactFollowers();
 
         assertTrue(importer.dealPostList.isEmpty());
         assertTrue(importer.dealPutList.isEmpty());
@@ -846,10 +936,13 @@ public class ImporterTest {
                     assertNotNull(deal.getStatus());
                     if (deal.getStatus().equals("won")) {
                         assertNotNull(deal.getWon_time());
+                        assertNotNull(deal.getExp_close_date());
+                        assertTrue(deal.getStage_id() == 5);
                     }
                     if (deal.getStatus().equals("lost")) {
                         assertNotNull(deal.getLost_time());
                         assertNotNull(deal.getLost_reason());
+                        assertTrue(deal.getStage_id() == 5);
                     }
                     assertNotNull(deal.getAdd_time());
                     assertNotNull(deal.getPhase());
@@ -897,8 +990,6 @@ public class ImporterTest {
 
         importer.populateContactPostAndPutLists();
         importer.postAndPutContactPostAndPutLists();
-        importer.populateFollowerPostList();
-        importer.postContactFollowers();
 
         importer.populateDealPostAndPutList();
         importer.postAndPutDealPostAndPutList();
@@ -973,14 +1064,44 @@ public class ImporterTest {
                     assertNotNull(activity.getSubject());
                     assertNotNull(activity.getDue_date());
                     assertNotNull(activity.getDone());
-                    if (activity.getDone()) {
+                    if(isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) || isInThePast(activity.getDone_date())) {
+                        assertTrue(activity.getDone());
+                    }if (activity.getDone()) {
                         assertNotNull(activity.getDone_date());
                     }
                     assertNotNull(activity.getNote());
+                    assertNotNull(activity.getAdd_time());
                     assertTrue(activity.getDeal_id() != null
                             || activity.getOrg_id() != null
                             || activity.getPerson_id() != null);
+                    assertNotNull(activity.getSubject());
                 });
+
+    }
+
+    @Test
+    public void isInThePastWorks() {
+        String d1 = "2016-07-29";
+        String d2 = "2016-07-29 09:00:00";
+        String d3 = "2016-04-20";
+        String d4 = "2016-04-20 09:00:00";
+        String today = "2016-06-29";
+
+        assertFalse(isInThePast(d1));
+        assertFalse(isInThePast(d2));
+        assertTrue(isInThePast(d3));
+        assertTrue(isInThePast(d4));
+
+        assertFalse(isInThePast(today));
+
+    }
+
+    private boolean isInThePast(String dateTime) {
+        String date = dateTime.substring(0, 10);
+
+        LocalDate d = LocalDate.parse(date);
+        LocalDate now = LocalDate.now();
+        return d.isBefore(now);
 
     }
 
@@ -1204,11 +1325,14 @@ public class ImporterTest {
             JSONContact contact = new JSONContact();
             contact.setFirstName("Contact in id map");
             contact.setObjid(762805L);
+            contact.setActive(true);
             contact.setEmail("adamcarney@lookers.co.uk");
 
             org.getContacts().add(contact);
 
             contact = new JSONContact();
+
+            contact.setActive(true);
             contact.setFirstName("Contact not in id map");
             contact.setObjid(1L);
             contact.setEmail("hahbv@ha.bla");

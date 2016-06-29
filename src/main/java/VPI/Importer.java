@@ -218,7 +218,7 @@ public class Importer {
 
     public void importDealsFromVertec() {
         this.vertecProjects = vertec.getZUKProjects().getBody();
-        vertecProjects.getProjects().stream()
+        getVertecProjectList().stream()
                 .map(project -> {
                     List<Long> phaseIds = project.getPhases().stream().map(JSONPhase::getV_id).collect(toList());
                     if (phaseIds.size() > 0) {
@@ -242,25 +242,25 @@ public class Importer {
                     try {
                         JSONOrganisation org = vertec.getOrganisation(id).getBody();
                         org.setOwnedByTeam(false);
-                       // if(org.getObjid() != 7700L) {//Filter out zuhlke engineering AG
-                            dealWithContactsofMissingOrg(org);
+                        // if(org.getObjid() != 7700L) {//Filter out zuhlke engineering AG
+                        dealWithContactsofMissingOrg(org);
 
-                            vertecOrganisations.getOrganisationList().add(org);
-                            organisationIdMap.put(org.getObjid(), -1L);
-                            missingOrganisationIds.add(org.getObjid());
-                            //checks for missing parent organisation and retrieves from vertec, then checck parent of newly imported org
-                            Long parentID = org.getParentOrganisationId();
-                            Boolean parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
-                            while (parentOrgNeeded) {
-                                JSONOrganisation orgParent = vertec.getOrganisation(parentID).getBody();
-                                orgParent.setOwnedByTeam(false);
-                                dealWithContactsofMissingOrg(orgParent);
-                                vertecOrganisations.getOrganisationList().add(orgParent);
-                                organisationIdMap.put(orgParent.getObjid(), -1L);
-                                missingOrganisationIds.add(orgParent.getObjid());
-                                parentID = orgParent.getParentOrganisationId();
-                                parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
-                            }
+                        vertecOrganisations.getOrganisationList().add(org);
+                        organisationIdMap.put(org.getObjid(), -1L);
+                        missingOrganisationIds.add(org.getObjid());
+                        //checks for missing parent organisation and retrieves from vertec, then checck parent of newly imported org
+                        Long parentID = org.getParentOrganisationId();
+                        Boolean parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
+                        while (parentOrgNeeded) {
+                            JSONOrganisation orgParent = vertec.getOrganisation(parentID).getBody();
+                            orgParent.setOwnedByTeam(false);
+                            dealWithContactsofMissingOrg(orgParent);
+                            vertecOrganisations.getOrganisationList().add(orgParent);
+                            organisationIdMap.put(orgParent.getObjid(), -1L);
+                            missingOrganisationIds.add(orgParent.getObjid());
+                            parentID = orgParent.getParentOrganisationId();
+                            parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
+                        }
 
                     } catch (HttpClientErrorException e) { //TODO: work out how to test this properly
                         if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
@@ -272,6 +272,7 @@ public class Importer {
 
     public void dealWithContactsofMissingOrg(JSONOrganisation org){
         org.getContacts().stream()
+                .filter(JSONContact::getActive)
                 .forEach(contact -> {
 
                     if(contactIdMap.containsKey(contact.getObjid())){ //contact is amongst dangling contacts
@@ -335,10 +336,12 @@ public class Importer {
                 .forEach(id -> {
                     try {
                         JSONContact contact = vertec.getContact(id).getBody();
-                        contact.setOwnedByTeam(false);
-                        vertecOrganisations.getDanglingContacts().add(contact);
-                        contactIdMap.put(contact.getObjid(), -1L);
-                        missingContactIds.add(contact.getObjid());
+                        if (contact.getActive()) {
+                            contact.setOwnedByTeam(false);
+                            vertecOrganisations.getDanglingContacts().add(contact);
+                            contactIdMap.put(contact.getObjid(), -1L);
+                            missingContactIds.add(contact.getObjid());
+                        }
                         //TODO: check if we should import organisation containing this missing contact (can be done calling importMissingOrganisations again)
                     } catch (HttpClientErrorException e) {
                         System.out.println("Caught Exception getting contact from Vertec"); //TODO: work out how to test this properly
@@ -632,12 +635,11 @@ public class Importer {
                 .forEach(project
                         -> project.getPhases().stream()
                         .forEach(phase -> {
-
                             if (teamIdMap.get(project.getLeaderRef()) != null && dealIdMap.get(phase.getV_id()) != null) {
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getLeaderRef())));
                             }
-                            if( project.getAccountManager() != null && dealIdMap.get(phase.getV_id()) != null){
-                                System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getDescription());
+                            if( project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null && dealIdMap.get(phase.getV_id()) != null){
+                                //System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getCode());
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getAccountManager())));
                             }
                         }));
@@ -647,7 +649,7 @@ public class Importer {
         contactFollowerPostList.stream()
                 .forEach(pipedrive::postFollowerToContact);
     }
-    private void postDealFollowers() {
+    public void postDealFollowers() {
         dealFollowerPostList.stream()
                 .forEach(pipedrive::postFollowerToDeal);
     }
@@ -663,13 +665,13 @@ public class Importer {
                        temp = deal;
                     }
                 }
-                if(project.getCode().charAt(0) != 'I'){ //Filtering out internal projects
+                //if(project.getCode().charAt(0) != 'I'){ //Filtering out internal projects
                     if(match){
                         dealPutList.add(createDealObject(project,phase, temp));
                     } else {
                         dealPostList.add(createDealObject(project,phase));
                     }
-                }
+               // }
             }
         }
     }
@@ -863,21 +865,34 @@ public class Importer {
                 break;
             //SOLD = WON
             case 21: status = "won";
+                deal.setStage_id(5);
                 String wonTime = phase.getOfferedDate();
                 wonTime = wonTime == null ? phase.getCompletion_date() : wonTime;
                 deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
+                deal.setExp_close_date(deal.getWon_time());
                 break;
             //LOST = LOST
             case 30: status = "lost";
+                deal.setStage_id(5);
                 deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
                 String lostTime = phase.getRejection_date();
                 deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
                 break;
-            //FINISHED = WON
-            case 40: status = "won";
-                String wonTime2 = phase.getOfferedDate();
-                wonTime2 = wonTime2 == null ? phase.getCompletion_date() : wonTime2;
-                deal.setWon_time(wonTime2 == null ? phase.getPDformatModifiedTime() : wonTime2 + " 00:00:00");
+            //FINISHED = WON OR LOST (Check value)
+            case 40:
+                deal.setStage_id(5);
+                if (asFloat(deal.getValue()) > 0) {
+                    status = "won";
+                    String wonTime2 = phase.getOfferedDate();
+                    wonTime2 = wonTime2 == null ? phase.getCompletion_date() : wonTime2;
+                    deal.setWon_time(wonTime2 == null ? phase.getPDformatModifiedTime() : wonTime2 + " 00:00:00");
+                    deal.setExp_close_date(deal.getWon_time());
+                } else {
+                    status = "lost";
+                    deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
+                    lostTime = phase.getRejection_date();
+                    deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
+                }
                 break;
             default: System.out.println(num);
                 break;
@@ -885,6 +900,15 @@ public class Importer {
         //status ('open' = Open, 'won' = Won, 'lost' = Lost, 'deleted' = Deleted)
         //deal.setStatus(status);
         deal.setStatus(status);
+    }
+
+    private float asFloat(String value) {
+        String[] parts = value.split(",");
+        String numberWithoutCommas = "";
+        for(String s : parts) {
+            numberWithoutCommas += s;
+        }
+        return Float.parseFloat(numberWithoutCommas);
     }
 
     public void postAndPutDealPostAndPutList() {
@@ -939,6 +963,7 @@ public class Importer {
         try{
             return vertecProjects.getProjects().stream()
                     .filter(project -> project.getPhases().size() > 0)
+                    .filter(project -> project.getCode().charAt(0) != 'I')
                     .collect(toList());
         } catch (Exception e) {
             System.out.println("Exception while trying to get vertec project list, it has probably not been initialised!");
@@ -1025,6 +1050,10 @@ public class Importer {
         activityTypeMap.put("Meeting", "meeting");
         activityTypeMap.put("Aufgabe / Task", "task");
         activityTypeMap.put("EMail", "email");
+        activityTypeMap.put("Kundenfeedback / Customer Feedback", "customer_feedback");
+        activityTypeMap.put("Eventteilnahme / Event Participation", "event_participation");
+        activityTypeMap.put("Vertrag / Contract", "contract");
+        activityTypeMap.put("Sales", "sales");
 
     }
 
