@@ -56,11 +56,15 @@ public class PDActivitySend {
 
 
     private boolean isInThePast(String dateTime) {
-        String date = dateTime.substring(0, 10);
+        if (dateTime.length() >= 10) {
+            String date = dateTime.substring(0, 10);
 
-        LocalDate d = LocalDate.parse(date);
-        LocalDate now = LocalDate.now();
-        return d.isBefore(now);
+            LocalDate d = LocalDate.parse(date);
+            LocalDate now = LocalDate.now();
+            return d.isBefore(now);
+        } else {
+            return false;
+        }
 
     }
 

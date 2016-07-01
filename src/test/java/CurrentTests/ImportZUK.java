@@ -104,11 +104,6 @@ public class ImportZUK {
         MyCredentials creds = new MyCredentials();
         PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
 
-        List<Long> dealsToKeep = new ArrayList<>();
-
-        for (int i = 0; i < 75; i++) {
-            dealsToKeep.add((long) i);
-        }
         PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
     }
 

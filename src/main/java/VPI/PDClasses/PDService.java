@@ -574,10 +574,10 @@ public class PDService {
                                         .map(PDActivityReceived::getId)
                                         .collect(toList());
         System.out.println("Found " + activitiesToDel.size() + " Activities to delete");
-//
+
 
         System.out.println("Deleting organisations...");
-      //  if (!orgsToDel.isEmpty()) deleteOrganisationList(orgsToDel);
+        if (!orgsToDel.isEmpty()) deleteOrganisationList(orgsToDel);
         System.out.println("Deleting contacts...");
         if (!contsToDel.isEmpty()) deleteContactList(contsToDel);
         System.out.println("Deleting deals...");

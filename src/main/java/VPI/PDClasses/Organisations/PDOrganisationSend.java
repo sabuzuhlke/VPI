@@ -92,21 +92,17 @@ public class PDOrganisationSend {
         this.v_id = o.getObjid();
         this.active_flag = true;
         this.address = o.getFormattedAddress();
-        try{
-            if(o.getCreationTime() != null){
-                if (o.getCreationTime().contains("1900-01-01")) {
-                    this.creationTime = "1900-01-01 00:00:00";
-                } else {
-                    String[] dateFormatter = o.getCreationTime().split("T");
-                    String date = dateFormatter[0];
-                    String time = dateFormatter[1];
-                    this.creationTime = date + " " + time;
-                }
+        if(o.getCreationTime() != null){
+            if (o.getCreationTime().contains("1900-01-01")) {
+                this.creationTime = "1900-01-01 00:00:00";
+            } else {
+                String[] dateFormatter = o.getCreationTime().split("T");
+                String date = dateFormatter[0];
+                String time = dateFormatter[1];
+                this.creationTime = date + " " + time;
             }
-        } catch (Exception e){
-            System.out.println("Exception while creating pdorgsend from JSONorg: " + e);
-            System.out.println("Name: " + this.name + " VId: " + this.v_id);
-            System.out.println(o.getCreationTime());
+        } else {
+            System.out.println(o.toPrettyJSON());
         }
 
         this.owner_id = owner_id;

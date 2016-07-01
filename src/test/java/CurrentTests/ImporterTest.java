@@ -21,6 +21,7 @@ import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.MockitoAnnotations;
@@ -391,6 +392,8 @@ public class ImporterTest {
                 iSpy.organisationPostList.stream()
                     .map(PDOrganisationSend::getV_id)
                 .collect(toSet()).size());
+
+
     }
     
     @Test
@@ -429,6 +432,42 @@ public class ImporterTest {
                 });
 
         assertTrue(! importer.organisationIdMap.containsValue(-1L));
+
+        importer.organisationPostList.stream()
+                .forEach(org -> {
+                    assertNotNull(org.getName());
+                    assertNotNull(org.getVisible_to());
+                    assertNotNull(org.getV_id());
+                    assertNotNull(org.getOwner_id());
+                    assertNotNull(org.getOwnedBy());
+                    assertNotNull(org.getCreationTime());
+                });
+
+        List<Integer> before = new ArrayList<>();
+        List<Integer> after = new ArrayList<>();
+
+        importer.organisationPostList.stream()
+                .forEach(org -> {
+                    if (isBefore2008(org.getCreationTime())) {
+                        before.add(1);
+                    } else {
+                        after.add(1);
+                    }
+                });
+
+        System.out.println("Before: " + before.size());
+        System.out.println("After: " + after.size());
+    }
+
+    private boolean isBefore2008(String creationTime) {
+        try {
+            LocalDate date = LocalDate.parse(creationTime.substring(0, 10));
+            LocalDate date08 = LocalDate.parse("2008-01-01");
+            return date.isBefore(date08);
+        } catch (Exception e) {
+            System.out.println(creationTime);
+        }
+return false;
     }
 
     private Answer<ResponseEntity<JSONOrganisation>> getOrgResponseEntityAnswer() {
@@ -437,6 +476,9 @@ public class ImporterTest {
 
             JSONOrganisation org = new JSONOrganisation();
             org.setObjid((Long) args[0]);
+            org.setName("blah");
+            org.setOwner("wolfgang.emmerich@zuhlke.com");
+            org.setCreationTime("2006-01-01T00:00:00");
             JSONContact contact = new JSONContact();
             contact.setActive(true);
             contact.setObjid(6996L);
@@ -622,6 +664,21 @@ public class ImporterTest {
                     assertNotNull(contact.getCreationTime());
                     assertTrue(! contact.getEmail().isEmpty());
                 });
+
+        List<Integer> before = new ArrayList<>();
+        List<Integer> after = new ArrayList<>();
+
+        importer.contactPostList.stream()
+                .forEach(c -> {
+                    if (isBefore2008(c.getCreationTime())) {
+                        before.add(1);
+                    } else {
+                        after.add(1);
+                    }
+                });
+
+        System.out.println("Before: " + before.size());
+        System.out.println("After: " + after.size());
     }
 
     @Test
@@ -948,11 +1005,27 @@ public class ImporterTest {
                     assertNotNull(deal.getPhase());
                     assertNotNull(deal.getProject_number());
                     assertNotNull(deal.getTitle());
+                    assertNotEquals(deal.getTitle(), "");
                     assertNotNull(deal.getStage_id());
                     assertNotNull(deal.getValue());
                     assertNotNull(deal.getAdd_time());
                     assertNotNull(deal.getV_id());
                 });
+
+        List<Integer> before = new ArrayList<>();
+        List<Integer> after = new ArrayList<>();
+
+        importer.dealPostList.stream()
+                .forEach(org -> {
+                    if (isBefore2008(org.getAdd_time())) {
+                        before.add(1);
+                    } else {
+                        after.add(1);
+                    }
+                });
+
+        System.out.println("Before: " + before.size());
+        System.out.println("After: " + after.size());
     }
 
     @Test
@@ -1064,7 +1137,7 @@ public class ImporterTest {
                     assertNotNull(activity.getSubject());
                     assertNotNull(activity.getDue_date());
                     assertNotNull(activity.getDone());
-                    if(isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) || isInThePast(activity.getDone_date())) {
+                    if(/*isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) ||*/ isInThePast(activity.getDone_date())) {
                         assertTrue(activity.getDone());
                     }if (activity.getDone()) {
                         assertNotNull(activity.getDone_date());
@@ -1077,6 +1150,21 @@ public class ImporterTest {
                     assertNotNull(activity.getSubject());
                 });
 
+        List<Integer> before = new ArrayList<>();
+        List<Integer> after = new ArrayList<>();
+
+        importer.activityPostList.stream()
+                .forEach(org -> {
+                    if (isBefore2008(org.getAdd_time())) {
+                        before.add(1);
+                    } else {
+                        after.add(1);
+                    }
+                });
+
+        System.out.println("Before: " + before.size());
+        System.out.println("After: " + after.size());
+
     }
 
     @Test
@@ -1085,23 +1173,28 @@ public class ImporterTest {
         String d2 = "2016-07-29 09:00:00";
         String d3 = "2016-04-20";
         String d4 = "2016-04-20 09:00:00";
-        String today = "2016-06-29";
+        String empty = "";
 
         assertFalse(isInThePast(d1));
         assertFalse(isInThePast(d2));
         assertTrue(isInThePast(d3));
         assertTrue(isInThePast(d4));
 
-        assertFalse(isInThePast(today));
+        assertFalse(isInThePast(empty));
 
     }
 
+    @SuppressWarnings("all")
     private boolean isInThePast(String dateTime) {
-        String date = dateTime.substring(0, 10);
+        if (dateTime.length() >= 10) {
+            String date = dateTime.substring(0, 10);
 
-        LocalDate d = LocalDate.parse(date);
-        LocalDate now = LocalDate.now();
-        return d.isBefore(now);
+            LocalDate d = LocalDate.parse(date);
+            LocalDate now = LocalDate.now();
+            return d.isBefore(now);
+        } else {
+            return false;
+        }
 
     }
 
@@ -1342,6 +1435,5 @@ public class ImporterTest {
             return new ResponseEntity<>(org, HttpStatus.OK);
         };
     }
-
 
 }
