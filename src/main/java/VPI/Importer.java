@@ -114,58 +114,77 @@ public class Importer {
         //import relevant information from vertec
         saveMap("teamIdMap.txt", teamIdMap);
         System.out.println("Getting Contacts and Organisations from Vertec...");
+        //1
         importOrganisationsAndContactsFromVertec();
         System.out.println("Got 'em");
         System.out.println("Getting projects and their phases from vertec...");
+        //2
         importDealsFromVertec();
         System.out.println("Got 'em");
         System.out.println("Getting Activities from Vertec ...");
+        //3
         importActivitiesFromVertec();
         System.out.println("Got 'em");
         //find missing organisations and contacts linked to deals and activities
         System.out.println("Getting missing organisations from Vertec...");
 
+        //4
         importMissingOrganistationsFromVertec();
         saveSet("missingOrganisations.txt",missingOrganisationIds);
 
         System.out.println("Getting missing Contacts from Vertec...");
+        //5
         importMissingContactsFromVertec();
         saveSet("missingContacts.txt", missingContactIds);
 
         //import contacts and deals from pipedrive to compare to vertec contacts and deals
         System.out.println("Getting  Contacts from Pipedrive...");
+        //6
         importContactsFromPipedrive();
         System.out.println("Getting  Deals from Pipedrive...");
+        //7
         importDealsFromPipedrive();
         //create and post organisatations from vertec to pipedrive, extract hierarchy and post
+        //8
         populateOrganisationPostList();
         System.out.println("Posting Organisations to Pipedrive...");
+        //9
         postOrganisationPostList();
 
         saveMap("organisationIdMap.txt", organisationIdMap);
         System.out.println("Posting Organisation Hierarchies to Pipedrive...");
+        //10
         postOrganisationHierarchies(
                 builOrganisationHierarchies());
         //compare contacts by email and populate post and put lists, send to pipedrive and post followers
+        //11
         populateContactPostAndPutLists();
         System.out.println("Posting Contacts to Pipedrive...");
+        //12
         postAndPutContactPostAndPutLists();
 
         saveMap("contactIdMap.txt", contactIdMap);
         //compare deals by phase number and project code and populate post and put lists, send to pipedrive
+        //13
         populateDealPostAndPutList();
         System.out.println("Posting Deals to Pipedrive...");
+        //14
         postAndPutDealPostAndPutList();
 
         saveMap("dealIdMap.txt", dealIdMap);
         System.out.println("Posting Followers to Pipedrive...");
+        //15
         populateFollowerPostList();
+        //16
         postContactFollowers();
+        //17
         postDealFollowers(); //TODO add tests fro this
 
         //craete and post activites once we have all vertec to pipedrive id maps populated from posting
         System.out.println("Posting Activities to Pipedrive...");
+        //18
         populateActivityPostList();
+        //19
         postActivityPostList();
         System.out.println("Import Successful!");
 
