@@ -241,6 +241,7 @@ public class Importer {
                 .forEach(id -> {
                     try {
                         JSONOrganisation org = vertec.getOrganisation(id).getBody();
+
                         org.setOwnedByTeam(false);
                         // if(org.getObjid() != 7700L) {//Filter out zuhlke engineering AG
                         dealWithContactsofMissingOrg(org);
@@ -274,9 +275,7 @@ public class Importer {
         org.getContacts().stream()
                 .filter(JSONContact::getActive)
                 .forEach(contact -> {
-
                     if(contactIdMap.containsKey(contact.getObjid())){ //contact is amongst dangling contacts
-
                         vertecOrganisations.setDanglingContacts(vertecOrganisations.getDanglingContacts().stream()
                         .filter(danglingContact -> danglingContact.getObjid() != contact.getObjid().longValue())
                         .collect(toList()));
@@ -722,6 +721,9 @@ public class Importer {
                 ds.setTitle(phase.getDescription());
             }
         }
+        if(phase.getDescription().isEmpty()){
+            ds.setTitle(ds.getTitle() + " : " + phase.getCode());
+        }
         //Value
         ds.setValue(dr.getValue());
         if(ds.getValue() == null) ds.setValue(phase.getExternalValue());
@@ -789,6 +791,9 @@ public class Importer {
             ds.setTitle(title);
         } else {
             ds.setTitle(phase.getDescription());
+        }
+        if(phase.getDescription().isEmpty()){
+            ds.setTitle(ds.getTitle() + " : " + phase.getCode());
         }
         //Value
         ds.setValue(phase.getExternalValue());
@@ -980,7 +985,7 @@ public class Importer {
         return new ArrayList<>();
     }
 
-    public List<PDContactReceived> getPipedriveContactList() {
+    public List<PDContactReceived>  getPipedriveContactList() {
         return pipedriveContacts;
     }
 
