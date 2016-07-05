@@ -90,7 +90,7 @@ public class VertecSynchroniser {
         //get all Vertec Data
         ZUKOrganisations allVertecData = VS.getZUKOrganisations().getBody();
 
-        //constructTeamIdMap(getVertecUserEmails(allVertecData), getPipedriveUsers()); //TODO: use this instead of constructTestTeamMap() on deployment
+        constructTeamIdMap(getVertecUserEmails(allVertecData), getPipedriveUsers()); //TODO: use this instead of constructTestTeamMap() on deployment
         constructTestTeamMap();
 
         //get all Pipedrive organisations

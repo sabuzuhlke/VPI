@@ -3,6 +3,7 @@ package VPI.PDClasses.Contacts;
 //import com.sun.istack.internal.Nullable;
 
 import VPI.PDClasses.PDOwner;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 /**
  * Created by gebo on 14/04/2016.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDContactReceived {
 
     private Long id;
@@ -22,9 +24,10 @@ public class PDContactReceived {
     private List<ContactDetail> phone;
     private List<ContactDetail> email;
     private Integer visible_to;
-    @JsonProperty("174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
+    @JsonProperty("097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
-
+    @JsonProperty("c6502da83d3caff3be297fd2082f49c883f08374")
+    private String ownedBy;
     @JsonProperty("add_time")
     private String creationTime;
 
@@ -122,5 +125,13 @@ public class PDContactReceived {
 
     public void setModifiedTime(String modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public String getOwnedBy() {
+        return ownedBy;
+    }
+
+    public void setOwnedBy(String ownedBy) {
+        this.ownedBy = ownedBy;
     }
 }

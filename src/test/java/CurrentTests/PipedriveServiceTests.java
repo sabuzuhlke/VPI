@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.FileWriter;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -581,6 +582,14 @@ public class PipedriveServiceTests {
         assertTrue(contacts.getStatusCode() == HttpStatus.OK);
         assertTrue(contacts.getBody().getSuccess());
 
+        System.out.println(contacts.getBody().toString());
+        try {
+            FileWriter file = new FileWriter("contactsResponse.txt");
+            file.write(contacts.getBody().toString());
+            file.close();
+        } catch (Exception e) {
+            System.out.println("Failed to output to file");
+        }
         //assertTrue( ! contacts.getBody().getData().isEmpty());
         //assertTrue(contacts.getBody().getData().get(0) != null);
     }
@@ -816,7 +825,7 @@ public class PipedriveServiceTests {
         d.setPhase("00_EXTERNAL");
         d.setProject_number("007");
         d.setStatus("open");
-        d.setUser_id(1403429L);
+        d.setUser_id(1363403L);
         d.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> resD = PS.postDeal(d);

@@ -3,6 +3,7 @@ package VPI.PDClasses.Contacts;
 import VPI.InsightClasses.VContact;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.sym.Name;
 
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * Created by gebo on 14/04/2016.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDContactSend {
 
     private Long id;
@@ -21,8 +23,10 @@ public class PDContactSend {
     private List<ContactDetail> phone;
     private Integer visible_to;
     private Boolean active_flag;
-    @JsonProperty("174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
+    @JsonProperty("097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
+    @JsonProperty("c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
+    private String ownedBy;
 
     @JsonProperty("add_time")
     private String creationTime;
@@ -31,8 +35,6 @@ public class PDContactSend {
     private String modifiedTime;
 
     private Long owner_id;
-    @JsonProperty("2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
-    private String ownedBy;
 
     public PDContactSend() {
         this.email = new ArrayList<>();

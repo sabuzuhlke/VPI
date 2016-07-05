@@ -21,6 +21,7 @@ import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
+import VPI.VertecClasses.VertecTeam.TeamMember;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -46,7 +47,7 @@ public class Importer {
 
     private Map<String, String> activityTypeMap;
 
-    private ZUKOrganisations vertecOrganisations;
+    public ZUKOrganisations vertecOrganisations;
     private ZUKProjects vertecProjects;
     private ZUKActivities vertecActivities;
 
@@ -70,6 +71,14 @@ public class Importer {
     public Map<Long, List<Long>> projectPhasesMap;
     private String s;
 
+    private final int EXPLORATORY = 1;
+    private final int NEW_LEAD_EXTENTSION = 2;
+    private final int QUALIFIED_LEAD = 3;
+    private final int RFP_RECIEVED = 4;
+    private final int OFFERED = 5;
+    private final int UNDER_NEGOTIATION = 6;
+    private final int VERBALLY_SOLD = 7;
+
     public final String MAP_PATH = "productionMaps/";
 
     public Importer(PDService pipedrive, VertecService vertec) {
@@ -80,7 +89,7 @@ public class Importer {
         this.contactIdMap      = new HashMap<>();
         this.dealIdMap         = new HashMap<>();
 
-        constructTestTeamMap();
+        constructTeamIdMap(getVertecUserEmails(),getPipedriveUsers());
 
         constructActivityTypeMap();
 
@@ -633,10 +642,13 @@ public class Importer {
                 .forEach(project
                         -> project.getPhases().stream()
                         .forEach(phase -> {
+
                             if (teamIdMap.get(project.getLeaderRef()) != null && dealIdMap.get(phase.getV_id()) != null) {
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getLeaderRef())));
                             }
-                            if( project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null && dealIdMap.get(phase.getV_id()) != null){
+                            if( project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null
+                                    && dealIdMap.get(phase.getV_id()) != null
+                                    && ! project.getAccountManager().equals(project.getLeaderRef())){
                                 //System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getCode());
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getAccountManager())));
                             }
@@ -831,10 +843,10 @@ public class Importer {
     private void setDealTitle(JSONProject project, JSONPhase phase, PDDealSend ds) {
 
         if (project.getTitle() != null && !project.getTitle().equals("")) {
-            String title = project.getTitle() + ": " + (phase.getDescription() == null ? phase.getCode() : phase.getDescription());
+            String title = project.getTitle() + ": " + ((phase.getDescription() == null || phase.getDescription().isEmpty()) ? phase.getCode() : phase.getDescription());
             ds.setTitle(title);
         } else {
-            ds.setTitle(project.getCode() + ":" + (phase.getDescription() == null ? phase.getCode() : phase.getDescription()));
+            ds.setTitle(project.getCode() + ": " + ((phase.getDescription() == null || phase.getDescription().isEmpty()) ? phase.getCode() : phase.getDescription()));
         }
 
     }
@@ -852,23 +864,23 @@ public class Importer {
 
         switch (num) {
             //Exploratory = 1, NewLead/Extension = 2, QualifiedLead = 3
-            case 5: deal.setStage_id(2);
+            case 5: deal.setStage_id(NEW_LEAD_EXTENTSION);
                 break;
             //Rfp Recieved = 3
-            case 10: deal.setStage_id(4);
+            case 10: deal.setStage_id(RFP_RECIEVED);
                 break;
             //Offered = 6
-            case 11: deal.setStage_id(5);
+            case 11: deal.setStage_id(OFFERED);
                 break;
             //UnderNegotiation = 5
-            case 12: deal.setStage_id(7);
+            case 12: deal.setStage_id(UNDER_NEGOTIATION);
                 break;
             //VerballySold = 7
-            case 20: deal.setStage_id(6);
+            case 20: deal.setStage_id(VERBALLY_SOLD);
                 break;
             //SOLD = WON
             case 21: status = "won";
-                deal.setStage_id(5);
+                deal.setStage_id(OFFERED);
                 String wonTime = phase.getOfferedDate();
                 wonTime = wonTime == null ? phase.getCompletion_date() : wonTime;
                 deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
@@ -876,14 +888,14 @@ public class Importer {
                 break;
             //LOST = LOST
             case 30: status = "lost";
-                deal.setStage_id(5);
+                deal.setStage_id(OFFERED);
                 deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
                 String lostTime = phase.getRejection_date();
                 deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
                 break;
             //FINISHED = WON OR LOST (Check value)
             case 40:
-                deal.setStage_id(5);
+                deal.setStage_id(OFFERED);
                 if (asFloat(deal.getValue()) > 0) {
                     status = "won";
                     String wonTime2 = phase.getOfferedDate();
@@ -1023,6 +1035,7 @@ public class Importer {
 
     @SuppressWarnings("all")
     public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
+        teamIdMap = new DefaultHashMap<>(1363410L);
         for (String v_email : v_emails) {
             Boolean mapped = false;
             for (PDUser pd_user : pd_users) {
@@ -1032,11 +1045,26 @@ public class Importer {
                 }
             }
             if (!mapped) {
-                this.teamIdMap.put(v_email, 1363410L); //TODO: replace id with appropriate id, wolfgangs or admin?
+                this.teamIdMap.put(v_email, 1424149L); //TODO: replace id with appropriate id, wolfgangs or admin?
             }
 
         }
+        teamIdMap.put("sabine.streuss@zuhlke.com", this.teamIdMap.get("sabine.strauss@zuhlke.com"));
     }
+
+    public Set<String> getVertecUserEmails() {
+        return vertec.getTeamDetails()
+                .getBody()
+                .getMembers()
+                .stream()
+                .map(TeamMember::getEmail)
+                .collect(toSet());
+    }
+
+    public List<PDUser> getPipedriveUsers() {
+        return pipedrive.getAllUsers().getBody().getData();
+    }
+
     private void constructActivityTypeMap() { //TODO: test construction of activity type map
         //if unable to find type link then set to misc type (custom type added to pipedrive dev instance)
         activityTypeMap = new DefaultHashMap<>("misc");
@@ -1096,5 +1124,6 @@ public class Importer {
             throw new RuntimeException(e);
         }
     }
+
 
 }
