@@ -576,15 +576,85 @@ public class PDService {
         System.out.println("Found " + activitiesToDel.size() + " Activities to delete");
 
 
-        System.out.println("Deleting organisations...");
-        if (!orgsToDel.isEmpty()) deleteOrganisationList(orgsToDel);
-        System.out.println("Deleting contacts...");
-        if (!contsToDel.isEmpty()) deleteContactList(contsToDel);
-        System.out.println("Deleting deals...");
-        if (!dealsToDel.isEmpty()) deleteDealList(dealsToDel);
-        System.out.println("Deleting Activities...");
-        if(!activitiesToDel.isEmpty()) deleteActivityList(activitiesToDel);
+        List<Long> currentDelList;
 
+        int i = orgsToDel.size();
+        System.out.println("Deleting organisations...");
+        while(i >= 100){
+            currentDelList  = new ArrayList<>();
+
+            for(int j = 0; j < 100; j++){
+                currentDelList.add(orgsToDel.get(i - j - 1));
+            }
+            deleteOrganisationList(currentDelList);
+            i = i - 100;
+        }
+        if(orgsToDel.size() > 0 ){
+            currentDelList = new ArrayList<>();
+            for(int j = 0; j < orgsToDel.size(); j++){
+                currentDelList.add(orgsToDel.get(j));
+            }
+            deleteOrganisationList(orgsToDel);
+        }
+
+        System.out.println("Deleting contacts...");
+
+        i = contsToDel.size();
+        while(i >= 100){
+            currentDelList  = new ArrayList<>();
+
+            for(int j = 0; j < 100; j++){
+                currentDelList.add(contsToDel.get(i - j - 1));
+            }
+            deleteContactList(currentDelList);
+            i = i - 100;
+        }
+        if(contsToDel.size() > 0 ){
+            currentDelList = new ArrayList<>();
+            for(int j = 0; j < contsToDel.size(); j++){
+                currentDelList.add(contsToDel.get(j));
+            }
+            deleteContactList(contsToDel);
+        }
+
+        System.out.println("Deleting deals...");
+        i = dealsToDel.size();
+        while(i >= 100){
+            currentDelList  = new ArrayList<>();
+
+            for(int j = 0; j < 100; j++){
+                currentDelList.add(dealsToDel.get(i - j - 1));
+            }
+            deleteDealList(currentDelList);
+            i = i - 100;
+        }
+        if(dealsToDel.size() > 0 ){
+            currentDelList = new ArrayList<>();
+            for(int j = 0; j < dealsToDel.size(); j++){
+                currentDelList.add(dealsToDel.get(j));
+            }
+            deleteDealList(dealsToDel);
+        }
+
+
+        System.out.println("Deleting Activities...");
+
+        i = activitiesToDel.size();
+        while(i >= 100){
+            currentDelList  = new ArrayList<>();
+
+            for(int j = 0; j < 100; j++){
+                currentDelList.add(activitiesToDel.get(i - j - 1));
+            }
+            deleteContactList(currentDelList);
+        }
+        if(activitiesToDel.size() > 0 ){
+            currentDelList = new ArrayList<>();
+            for(int j = 0; j < activitiesToDel.size(); j++){
+                currentDelList.add(activitiesToDel.get(j));
+            }
+            deleteActivityList(activitiesToDel);
+        }
     }
 
 }

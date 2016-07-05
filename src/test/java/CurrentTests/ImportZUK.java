@@ -75,28 +75,28 @@ public class ImportZUK {
 //
 //    }
 
-    @Test @Ignore
-    public void canImportOrganisationsContactsAndProjectsAndActivities() {
-
-        VertecSynchroniser VS = new VertecSynchroniser();
-        MyCredentials creds = new MyCredentials();
-        PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
-
-        List<Long> dealsToKeep = new ArrayList<>();
-
-        for (int i = 0; i < 75; i++) {
-            dealsToKeep.add((long) i);
-        }
-
-        PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
-        System.out.println("Importing orgs and contacts");
-        VS.importOrganisationsAndContactsToPipedrive();
-        System.out.println("Imported orgs n conts, importing deals");
-        VS.importProjectsAndPhasesToPipedrive();
-        System.out.println("Imported deals, importing activities");
-        VS.importActivitiesToPipedrive();
-
-    }
+//    @Test @Ignore
+//    public void canImportOrganisationsContactsAndProjectsAndActivities() {
+//
+//        VertecSynchroniser VS = new VertecSynchroniser();
+//        MyCredentials creds = new MyCredentials();
+//        PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+//
+//        List<Long> dealsToKeep = new ArrayList<>();
+//
+//        for (int i = 0; i < 75; i++) {
+//            dealsToKeep.add((long) i);
+//        }
+//
+//        PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
+//        System.out.println("Importing orgs and contacts");
+//        VS.importOrganisationsAndContactsToPipedrive();
+//        System.out.println("Imported orgs n conts, importing deals");
+//        VS.importProjectsAndPhasesToPipedrive();
+//        System.out.println("Imported deals, importing activities");
+//        VS.importActivitiesToPipedrive();
+//
+//    }
 
     @Test @Ignore("Just do")
     public void clearPD(){

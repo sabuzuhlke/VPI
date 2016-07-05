@@ -1,5 +1,6 @@
 package CurrentTests;
 
+import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
@@ -192,6 +193,20 @@ public class VertecServiceTests {
 
         assertEquals(p.getTitle(), "HSBC HSS off-line demo");
     }
+
+    @Test
+    public void cangetAddressEntryById(){
+        JSONContact contact  = VS.getContact(20027532L).getBody();
+
+        System.out.println(contact);
+        assertTrue("inactive contact", contact.getActive());
+
+        JSONOrganisation org = VS.getOrganisation(3059404L).getBody();
+
+        assertTrue("inactive contact in org ", org.getContacts().get(0).getActive()); //Douglas I. Lewis
+
+    }
+
 
 
 

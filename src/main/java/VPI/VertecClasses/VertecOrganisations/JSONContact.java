@@ -2,6 +2,7 @@ package VPI.VertecClasses.VertecOrganisations;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -168,5 +169,17 @@ public class JSONContact {
         } catch (Exception e) {
             return "2000-01-01 00:00:00";
         }
+    }
+
+    public String toPrettyJSON() {
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
+        }
+        return retStr;
     }
 }

@@ -1,4 +1,4 @@
-package CurrentTests;
+package OLDVertecSynchroniserTests;
 
 import VPI.Application;
 import VPI.PDClasses.*;
@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
 public class VertecSynchroniserTests {
 
     private VertecSynchroniser sync;

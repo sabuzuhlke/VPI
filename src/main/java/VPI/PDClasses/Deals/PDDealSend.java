@@ -99,6 +99,7 @@ public class PDDealSend {
         //Title
         if (project.getTitle() != null && !project.getTitle().equals("")) {
             String title = project.getTitle() + ": " + phase.getDescription();
+            if(phase.getDescription() == null) title += phase.getCode();
            this.title = title;
         } else {
             this.title = phase.getDescription();

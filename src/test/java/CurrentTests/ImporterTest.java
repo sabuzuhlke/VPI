@@ -1,6 +1,7 @@
 package CurrentTests;
 
 import VPI.Importer;
+import VPI.MyCredentials;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactListReceived;
@@ -16,6 +17,7 @@ import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
+import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
@@ -24,6 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
@@ -1143,7 +1146,7 @@ return false;
                         assertNotNull(activity.getDone_date());
                     }
                     assertNotNull(activity.getNote());
-                    assertNotNull(activity.getAdd_time());
+                    //assertNotNull(activity.getAdd_time()); //TODO: See whether add time should actually be tested
                     assertTrue(activity.getDeal_id() != null
                             || activity.getOrg_id() != null
                             || activity.getPerson_id() != null);
@@ -1434,6 +1437,112 @@ return false;
 
             return new ResponseEntity<>(org, HttpStatus.OK);
         };
+    }
+    @Test @Ignore("takes too long")
+    public void doesNotImportInactiveMissingContacts() throws IOException {
+
+
+        MyCredentials creds = new MyCredentials();
+        VertecService VS = new VertecService("localhost:9999");
+        VertecService kgb = spy(VS);
+
+        PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+        PDService cia = spy(PD);
+
+        Importer newImporter = new Importer(cia, kgb);
+
+        Mockito.doReturn(getDummyOrganisationsResponse()).when(kgb).getZUKOrganisations();
+        Mockito.doReturn(getDummyProjectsResponse()).when(kgb).getZUKProjects();
+        Mockito.doReturn(getDummyActivitiesResponse()).when(kgb).getZUKActivities();
+
+        Mockito.doAnswer(getDummyPipedriveOrganisationPostAnswer()).when(cia).postOrganisationList(anyList());
+        Mockito.doAnswer(getDummyPipedriveContactPostResponse()).when(cia).postContactList(anyList());
+        Mockito.doReturn(getDummyPipedriveContactResponse()).when(cia).getAllContacts();
+
+
+        newImporter.importOrganisationsAndContactsFromVertec();
+        newImporter.importDealsFromVertec();
+        newImporter.importActivitiesFromVertec();
+
+        newImporter.importContactsFromPipedrive();
+
+        newImporter.importMissingOrganistationsFromVertec();
+
+        newImporter.importMissingContactsFromVertec();
+
+        newImporter.getVertecContactList().stream()
+                .forEach(contact -> {
+//                    System.out.println(contact.getFirstName()+ " " + contact.getSurname() +  " active?: " + contact.getActive());
+                    if(contact.getActive() != null) {
+                        assertTrue("Found inactive contact in zuk list", contact.getActive());
+                    } else {
+                        System.out.println(contact.toPrettyJSON());
+                    }
+                });
+
+        newImporter.populateOrganisationPostList();
+
+        newImporter.populateContactPostAndPutLists();
+
+        newImporter.contactPostList.stream()
+                .forEach(contact ->{
+                    assertTrue("Found inactive contact in post list", contact.getActive_flag());
+                });
+
+        newImporter.contactPutList.stream()
+                .forEach(contact -> assertTrue("Found inactive contact in put list", contact.getActive_flag()));
+
+    }
+
+    @Test
+    public void doesNotTryToPostDealWithoutTitle() throws IOException {
+        when(vertec.getZUKOrganisations()).thenReturn(getDummyOrganisationsResponse());
+        when(vertec.getZUKProjects()).thenReturn(getDummyProjectsResponse());
+        when(vertec.getZUKActivities()).thenReturn(getDummyActivitiesResponse());
+
+        when(vertec.getOrganisation(anyLong())).thenAnswer(getOrgResponseEntityAnswer());
+        when(vertec.getContact(anyLong())).thenReturn(getDummyMissingContactResponse());
+
+        when(pipedrive.postOrganisationList(anyList()))
+                .thenAnswer(getDummyPipedriveOrganisationPostAnswer());
+
+        when(pipedrive.getAllContacts()).thenReturn(getDummyPipedriveContactResponse());
+        when(pipedrive.getAllDeals()).thenReturn(getDummyPipedriveDealResponse());
+
+        importer.importOrganisationsAndContactsFromVertec();
+        importer.importDealsFromVertec();
+
+        importer.importContactsFromPipedrive();
+        importer.importDealsFromPipedrive();
+
+        importer.populateOrganisationPostList();
+        importer.postOrganisationPostList();
+
+        importer.populateContactPostAndPutLists();
+        importer.postAndPutContactPostAndPutLists();
+
+        importer.populateDealPostAndPutList();
+
+        System.out.println("Phases without phase names");
+        importer.getVertecProjectList().stream()
+                .map(JSONProject::getPhases)
+                .flatMap(Collection::stream)
+                .forEach(phase -> {
+                    if(phase.getDescription().isEmpty()) System.out.println(phase.getV_id());
+                });
+        System.out.println("Thaats it");
+
+        importer.dealPutList.stream()
+                .forEach(deal -> {
+                    assertTrue("No title for deal with v_id : " + deal.getV_id(), ! deal.getTitle().isEmpty());
+                    assertTrue("No project title not set : " + deal.getV_id(), ! deal.getProject_number().isEmpty());
+                });
+
+        importer.dealPostList.stream()
+                .forEach(deal -> {
+                    assertTrue("No title for deal with v_id : " + deal.getV_id(), ! deal.getTitle().isEmpty());
+                    assertTrue("No project title not set : " + deal.getV_id(), ! deal.getProject_number().isEmpty());
+                });
     }
 
 }
