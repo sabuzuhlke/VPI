@@ -1140,13 +1140,14 @@ return false;
                     assertNotNull(activity.getSubject());
                     assertNotNull(activity.getDue_date());
                     assertNotNull(activity.getDone());
-                    if(/*isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) ||*/ isInThePast(activity.getDone_date())) {
+                    if(isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) || isInThePast(activity.getDone_date())) {
                         assertTrue(activity.getDone());
-                    }if (activity.getDone()) {
+                    }
+                    if (activity.getDone()) {
                         assertNotNull(activity.getDone_date());
                     }
                     assertNotNull(activity.getNote());
-                    //assertNotNull(activity.getAdd_time()); //TODO: See whether add time should actually be tested
+                    assertNotNull(activity.getAdd_time());
                     assertTrue(activity.getDeal_id() != null
                             || activity.getOrg_id() != null
                             || activity.getPerson_id() != null);
@@ -1189,7 +1190,7 @@ return false;
 
     @SuppressWarnings("all")
     private boolean isInThePast(String dateTime) {
-        if (dateTime.length() >= 10) {
+        if (dateTime != null &&  dateTime.length() >= 10) {
             String date = dateTime.substring(0, 10);
 
             LocalDate d = LocalDate.parse(date);
@@ -1261,10 +1262,10 @@ return false;
         map.put("habba@babba.ed", 990990L);
         map.put("hubba@bubba.hu", 990998L);
 
-        importer.saveMap("testmap.txt", map);
+        importer.saveMap(importer.MAP_PATH + "testmap.txt", map);
 
 
-            File file = new File("testmap.txt");
+            File file = new File(importer.MAP_PATH + "testmap.txt");
             String line;
 
 
@@ -1284,10 +1285,10 @@ return false;
         map.put(999L,888L);
         map.put(234L,2344L);
 
-        importer.saveMap("testmap.txt", map);
+        importer.saveMap(importer.MAP_PATH + "testmap.txt", map);
 
 
-        File file = new File("testmap.txt");
+        File file = new File(importer.MAP_PATH + "testmap.txt");
         String line;
 
 
