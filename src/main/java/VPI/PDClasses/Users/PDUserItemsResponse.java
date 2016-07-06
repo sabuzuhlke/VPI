@@ -5,10 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-/**
- * Created by gebo on 10/05/2016.
- */
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PDUserItemsResponse extends PDResponse {
 

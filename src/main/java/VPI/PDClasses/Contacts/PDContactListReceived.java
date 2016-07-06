@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-/**
- * Created by gebo on 14/04/2016.
- */
 public class PDContactListReceived extends PDResponse {
 
     private List<PDContactReceived> data;
@@ -33,8 +30,7 @@ public class PDContactListReceived extends PDResponse {
         this.additional_data = additional_data;
     }
 
-    @Override
-    public String toString(){
+    public String toPrettyJSON(){
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{

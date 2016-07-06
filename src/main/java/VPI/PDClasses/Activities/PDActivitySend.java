@@ -26,9 +26,22 @@ public class PDActivitySend {
     private String done_date;
     private String add_time;
 
+
     public PDActivitySend() {
+        /**
+         * Used by PipedriveServiceTests
+         */
     }
 
+    /**
+     * Constructor used in Importer
+     * @param a is activity recieved from vertec
+     * @param user_id is pipedrive user id of activity assignee (from external map)
+     * @param contact_id is pipedrive id of associated contact (from external map)
+     * @param org_id is pipedrive id of associated organisation (from external map)
+     * @param deal_id is pipedrive id of associated deal (from external map)
+     * @param type is pipedrive equivalent activity type to be used instead of vertec type name
+     */
     public PDActivitySend(JSONActivity a, Long user_id, Long contact_id, Long org_id, Long deal_id, String type) {
         this.done = a.getDone();
         this.type = type;
@@ -46,6 +59,12 @@ public class PDActivitySend {
         }
     }
 
+    /**
+     * Used to build title string when title field of activity not set
+     * @param a is activity whose title needs to be set
+     * @param pipedriveType is the type of the activity
+     * @return either title or type string aas appropriate
+     */
     private String createActivitySubject(JSONActivity a, String pipedriveType) {
         if (!a.getTitle().isEmpty()) {
             return a.getTitle();
@@ -180,8 +199,12 @@ public class PDActivitySend {
         this.add_time = add_time;
     }
 
+    /**
+     * Used to convert plain text note recieved from vertec into HTML format for Pipedrive
+     * @param s is the note attached to activity
+     * @return formatted note
+     */
     public static String reformat(String s) { //makes content of note field legible on pipedrive
-        int ptr = 0;
         String[] parts = s.split("\n");
 
         String formattedString = "";

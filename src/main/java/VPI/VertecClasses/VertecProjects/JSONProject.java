@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-/**
- * Created by sabu on 16/05/2016.
- */
 public class JSONProject {
 
     @JsonProperty("title")

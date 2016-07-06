@@ -14,7 +14,10 @@ public class PDAdditionalData {
     public void setPagination(PDPagination pagination) {
         this.pagination = pagination;
     }
-//-------------------------------------------------------------------------------------------PDPagination
+
+    /**
+     * Nested class pagination only used here
+     */
     public class PDPagination {
 
         private Integer start;

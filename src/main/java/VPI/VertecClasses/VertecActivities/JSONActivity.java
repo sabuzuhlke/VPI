@@ -1,8 +1,5 @@
 package VPI.VertecClasses.VertecActivities;
 
-/**
- * Created by sabu on 24/05/2016.
- */
 public class JSONActivity {
 
     private Long id;//

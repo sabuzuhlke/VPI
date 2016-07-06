@@ -9,7 +9,6 @@ import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
-import VPI.VertecSynchroniser;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -105,7 +104,7 @@ public class PDService {
         try {
             return postToPipedrive(server + "deals" + apiKey, deal, PDDealResponse.class);
         } catch (Exception e) {
-            System.out.println("Exception posting deal: " + deal.toString() + ", excpetion: " + e);
+            System.out.println("Exception posting deal: " + deal.toPrettyJSON() + ", excpetion: " + e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -496,7 +495,7 @@ public class PDService {
         try {
             return postToPipedrive(server + "persons/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
         } catch (Exception e) {
-            System.out.println("Caught Exception posting follower: " + f.toPrettyString());
+            System.out.println("Caught Exception posting follower: " + f.toPrettyJSON());
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
@@ -511,7 +510,7 @@ public class PDService {
         try {
             return postToPipedrive(server + "deals/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
         } catch (Exception e) {
-            System.out.println("Caught Exception posting follower: " + f.toPrettyString());
+            System.out.println("Caught Exception posting follower: " + f.toPrettyJSON());
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }

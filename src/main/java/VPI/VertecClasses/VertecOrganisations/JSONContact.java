@@ -7,50 +7,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sabu on 27/04/2016.
- */
 public class JSONContact {
 
     @JsonProperty("firstName")
     private String firstName;
-
     @JsonProperty("surname")
     private String surname;
-
     @JsonProperty("email")
     private String email;
-
     @JsonProperty("phone")
     private String phone;
-
     @JsonProperty("mobile")
     private String mobile;
-
     @JsonProperty("owner")
     private String owner;   // email of owner
-
     @JsonProperty("modified")
     private String modified;
-
     @JsonProperty("objid")
     private Long objid;
-
     @JsonProperty("creationTime")
     private String creationTime;
-
     @JsonProperty("organisation_ref")
     private Long organisation;
-
     @JsonProperty("followers")
     private List<String> followers;
-
     @JsonProperty("active")
     private Boolean active;
-
     @JsonIgnore
     private Boolean ownedByTeam;
-
     @JsonProperty("position")
     private String position = "";
 

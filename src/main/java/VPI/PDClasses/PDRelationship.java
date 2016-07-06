@@ -2,9 +2,6 @@ package VPI.PDClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Created by sabu on 12/05/2016.
- */
 public class PDRelationship {
 
     @JsonProperty("rel_owner_org_id")

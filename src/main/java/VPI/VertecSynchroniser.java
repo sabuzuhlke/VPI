@@ -2,16 +2,16 @@ package VPI;
 
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivitySend;
-import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.util.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
-import VPI.PDClasses.Contacts.PDFollower;
+import VPI.PDClasses.PDFollower;
 import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationResponse;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.Organisations.PDRelationship;
+import VPI.PDClasses.PDRelationship;
 import VPI.PDClasses.PDService;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecActivities.JSONActivity;
@@ -499,10 +499,6 @@ public class VertecSynchroniser {
                 //phase
                 String dealPhase = phase.getCode();
                 deal.setPhase(dealPhase);
-
-                //modified
-                deal.setModified(phase.getPDformatModifiedTime());
-
 
                 //person_id
                 dealwithCustomerRef(deal, project);

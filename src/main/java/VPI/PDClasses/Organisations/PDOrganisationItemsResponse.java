@@ -12,9 +12,6 @@ public class PDOrganisationItemsResponse extends PDResponse {
 
     public PDOrganisationItemsResponse() {
         //TODO: change to init list and remove null check elsewhere
-        /*
-        this.data = new ArrayList<>();
-         */
     }
 
     public List<PDOrganisationReceived> getData() {

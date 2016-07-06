@@ -68,7 +68,7 @@ public class VertecServiceTests {
         assertTrue(res.getDanglingContacts().get(1).getSurname().equals("Waga"));
         assertTrue(res.getDanglingContacts().get(1).getFirstName().equals("Mama"));
 
-        System.out.println(res.toPrettyString());
+        System.out.println(res.toPrettyJSON());
         assertTrue( ! res.getOrganisationList().isEmpty());
         assertTrue(res.getOrganisationList().size() == 2);
         assertTrue(res.getOrganisationList().get(1).getObjid() == 2L);
@@ -95,7 +95,7 @@ public class VertecServiceTests {
         ResponseEntity<ZUKProjects> res = VS.getZUKProjects();
 
         assertTrue(res.getBody().getProjects() != null);
-        System.out.println(res.getBody().toString());
+        System.out.println(res.getBody().toPrettyJSON());
 
     }
 

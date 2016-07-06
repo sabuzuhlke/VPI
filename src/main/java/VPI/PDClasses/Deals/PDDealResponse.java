@@ -10,7 +10,6 @@ public class PDDealResponse extends PDResponse{
 
     private PDDealReceived data;
 
-
     public PDDealResponse() {
     }
 

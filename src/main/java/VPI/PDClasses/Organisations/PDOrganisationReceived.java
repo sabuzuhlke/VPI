@@ -1,8 +1,6 @@
 package VPI.PDClasses.Organisations;
 
-import VPI.InsightClasses.VOrganisation;
 import VPI.PDClasses.PDOwner;
-import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
@@ -16,80 +14,29 @@ public class PDOrganisationReceived {
     private Long id;
     private Long company_id;
     private PDOwner owner_id;
-    //Last Update Fields
     private String update_time;
     private Integer people_count;
+    @JsonProperty("add_time")
+    private String creationTime;
+    //Custom fields
     @JsonProperty("1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
     private Long v_id;
     @JsonProperty("bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")
     private String ownedBy;
-    @JsonProperty("add_time")
-    private String creationTime;
 
-    public PDOrganisationReceived(String name, String address, Integer visible_to) {
-        this.name = name;
-        this.visible_to = visible_to;
-        this.address = address;
-        this.active_flag = true;
-    }
+    /**
+     * Used in old code
+     */
     public PDOrganisationReceived(String name, String address) {
         this.name = name;
         this.address = address;
         this.active_flag = true;
     }
-    public PDOrganisationReceived(String name, Integer visible_to) {
-        this.name = name;
-        this.visible_to = visible_to;
-        this.active_flag = true;
-    }
 
+    /**
+     * Used by RestTemplate and for testing
+     */
     public PDOrganisationReceived() {
-    }
-
-    public PDOrganisationReceived(VOrganisation c) {
-        this.name = c.getName();
-        this.visible_to = 3;
-        this.active_flag = true;
-        this.address = c.getFormattedAddress();
-        this.v_id = c.getId();
-    }
-
-    public PDOrganisationReceived(Long id, String name, Integer visible_to, String address, Boolean active_flag, Long company_id, PDOwner owner_id) {
-        this.name = name;
-        this.visible_to = visible_to;
-        this.address = address;
-        this.active_flag = active_flag;
-        this.id = id;
-        this.company_id = company_id;
-        this.owner_id = owner_id;
-    }
-
-    public PDOrganisationReceived(JSONOrganisation jo, PDOrganisationReceived po, Long ownerId){
-        this.name = jo.getName();
-        this.visible_to = 3;
-        this.v_id = jo.getObjid();
-        this.id = po.getId();
-        this.active_flag = true;
-        this.company_id = po.getCompany_id();
-        this.owner_id = new PDOwner();
-        this.owner_id.setId(ownerId);
-
-        this.address = jo.getFormattedAddress();
-        if(jo.getCreationTime() != null){
-            String[] dateFormatter = jo.getCreationTime().split("T");
-            String date = dateFormatter[0];
-            String time = dateFormatter[1];
-            this.creationTime = date + " " + time;
-        }
-    }
-
-    public PDOrganisationReceived(JSONOrganisation o){
-        this.name = o.getName();
-        if(name == null || name.isEmpty() || name.equals(" ")) name = "Anonymous co";
-        this.visible_to = 3;
-        this.v_id = o.getObjid();
-        this.active_flag = true;
-        this.address = o.getFormattedAddress();
     }
 
     //use this function when reading update time from object imported from pipedrive

@@ -7,11 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Map;
-
-/**
- * Created by sabu on 12/05/2016.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PDDealSend {
 
@@ -39,19 +34,14 @@ public class PDDealSend {
     private String add_time;
     @JsonProperty("visible_to")
     private Integer visible_to = 3;
-
     @JsonProperty("lost_time")
     private String lost_time;
-
     @JsonProperty("won_time")
     private String won_time;
-
     @JsonProperty("expected_close_date")
     private String exp_close_date;
 
-    @JsonIgnore
-    private String modified;
-
+    //Custom fields
     @JsonProperty("b68fd3995ae7d6b35b13a0dc6b523ddd6fa86f0a")//"7513bc1ddf030d16508c593c097537da6d2b5865")
     private String zuhlke_office;
     @JsonProperty("842fd4eefb962a23bd29244d92eafb158df839c7")//"3d133ca0d93126ed643d314ac98f0c8bdb485b1f")
@@ -62,40 +52,24 @@ public class PDDealSend {
     private String phase;
     @JsonProperty("f7dbfe350bd28318d6775a73988ee1ddcbeeb8f3")//"02d60bdc626550f2fa1aaf9d38fbfef20ce18a34")
     private Long cost;
-    //@JsonProperty("44105f961d387bc35323ecf4bc6325be3a732c8d_currency")
-    @JsonIgnore
-    private String cost_currency;
     @JsonProperty("09c5371529d476b7d3d6b22475238f447605ad47")//"d444c37006b2f7d3b8a0fc41af636f71a6633b42")
     private Long v_id;
 
+    /**
+     * Used by Importer to build deals for put
+     */
     public PDDealSend() {
     }
 
-    public PDDealSend(PDDealReceived d){
-        this.id = d.getId();
-        this.title = d.getTitle();
-        this.value = d.getValue();
-        this.currency = d.getCurrency();
-        this.user_id = d.getUser_id().getId();
-        this.person_id = d.getPerson_id().getValue();
-        this.org_id = d.getOrg_id().getValue();
-        this.stage_id = d.getStage_id();
-        this.lost_reason = d.getLost_reason();
-        this.status = d.getStatus();
-        this.visible_to = 3;
-        this.modified = d.getUpdate_time();
-        this.zuhlke_office = d.getZuhlke_office();
-        this.lead_type = d.getLead_type();
-        this.project_number = d.getProject_number();
-        this.phase = d.getPhase();
-        this.cost = d.getCost();
-        this.cost_currency = d.getCost_currency();
-        this.v_id = d.getV_id();
-
-    }
-
+    /**
+     * Used to create deals for posting to pipedrive
+     * @param project is project recieved from vertec
+     * @param phase is phase recieved from vertec
+     * @param user_id is pipedrive id of user that owns it (from external map)
+     * @param person_id is pipedrive id of associated contact (from external map)
+     * @param org_id is pipedrive id of associated organisations (from external map)
+     */
     public PDDealSend(JSONProject project, JSONPhase phase, Long user_id, Long person_id, Long org_id){
-
         //Title
         if (project.getTitle() != null && !project.getTitle().equals("")) {
             String title = project.getTitle() + ": " + phase.getDescription();
@@ -104,12 +78,10 @@ public class PDDealSend {
         } else {
             this.title = phase.getDescription();
         }
-
         //Value
         this.value = phase.getExternalValue();
         //currency
         this.currency = project.getCurrency();
-
         //User_id
         this.user_id = user_id;
         //Person_id
@@ -125,24 +97,14 @@ public class PDDealSend {
         } catch (Exception e) {
             this.add_time = "2000-01-01 00:00:00";
         }
-
         //visible_to (1 = owner and followers, 3 = everyone)
         this.visible_to = 3;
-
         //v_id
         this. v_id = phase.getV_id();
-
         //project number
        this.project_number = project.getCode();
-
         //phase
         this.phase = phase.getCode();
-
-        //modified
-       this.modified = phase.getPDformatModifiedTime();
-
-
-
         //stageId --- SET OUTSIDE
 
     }
@@ -284,28 +246,12 @@ public class PDDealSend {
         this.cost = cost;
     }
 
-    public String getCost_currency() {
-        return cost_currency;
-    }
-
-    public void setCost_currency(String cost_currency) {
-        this.cost_currency = cost_currency;
-    }
-
     public Long getV_id() {
         return v_id;
     }
 
     public void setV_id(Long v_id) {
         this.v_id = v_id;
-    }
-
-    public String getModified() {
-        return modified;
-    }
-
-    public void setModified(String modified) {
-        this.modified = modified;
     }
 
     public String getWon_time() {
@@ -332,9 +278,7 @@ public class PDDealSend {
         this.exp_close_date = exp_close_date;
     }
 
-
-    @Override
-    public String toString() {
+    public String toPrettyJSON() {
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{

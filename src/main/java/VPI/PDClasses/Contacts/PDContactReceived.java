@@ -1,5 +1,7 @@
 package VPI.PDClasses.Contacts;
 
+import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.PDClasses.Contacts.util.OrgId;
 import VPI.PDClasses.PDOwner;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

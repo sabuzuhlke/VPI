@@ -6,6 +6,8 @@ import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.*;
+import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.PDClasses.PDFollower;
 import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUserItemsResponse;
@@ -61,7 +63,6 @@ public class PipedriveServiceTests {
         deal.setAdd_time("2005-07-05 12:21:12");
         deal.setVisible_to(3);
         deal.setCost(1000L);
-        deal.setCost_currency("GBP");
         deal.setCurrency("GBP");
         deal.setLead_type("New Lead");
         deal.setLost_reason("No reason");
@@ -112,7 +113,6 @@ public class PipedriveServiceTests {
         deal.setAdd_time("2005-07-05 12:21:12");
         deal.setVisible_to(3);
         deal.setCost(1000L);
-        deal.setCost_currency("GBP");
         deal.setCurrency("GBP");
         deal.setLead_type("New Lead");
         deal.setLost_reason("No reason");
@@ -177,7 +177,6 @@ public class PipedriveServiceTests {
         deal.setAdd_time("2005-07-05 12:21:12");
         deal.setVisible_to(3);
         deal.setCost(1000L);
-        deal.setCost_currency("GBP");
         deal.setCurrency("GBP");
         deal.setLead_type("New Lead");
         deal.setLost_reason("No reason");
@@ -243,7 +242,6 @@ public class PipedriveServiceTests {
         deal.setAdd_time("2005-07-05 12:21:12");
         deal.setVisible_to(3);
         deal.setCost(1000L);
-        deal.setCost_currency("GBP");
         deal.setCurrency("GBP");
         deal.setLead_type("New Lead");
         deal.setLost_reason("No reason");
@@ -265,8 +263,6 @@ public class PipedriveServiceTests {
         deal = new PDDealSend();
         deal.setAdd_time("2005-07-05 12:21:12");
         deal.setVisible_to(3);
-        deal.setCost(1000L);
-        deal.setCost_currency("GBP");
         deal.setCurrency("GBP");
         deal.setLead_type("New Lead");
         deal.setLost_reason("No reason");
@@ -582,10 +578,10 @@ public class PipedriveServiceTests {
         assertTrue(contacts.getStatusCode() == HttpStatus.OK);
         assertTrue(contacts.getBody().getSuccess());
 
-        System.out.println(contacts.getBody().toString());
+        System.out.println(contacts.getBody().toPrettyJSON());
         try {
             FileWriter file = new FileWriter("contactsResponse.txt");
-            file.write(contacts.getBody().toString());
+            file.write(contacts.getBody().toPrettyJSON());
             file.close();
         } catch (Exception e) {
             System.out.println("Failed to output to file");
@@ -819,7 +815,6 @@ public class PipedriveServiceTests {
         d.setTitle("EU PAC Peace Talks");
         d.setVisible_to(3);
         d.setCost(0L);
-        d.setCost_currency("USD");
         d.setOrg_id(orgid);
         d.setPerson_id(contid);
         d.setPhase("00_EXTERNAL");
@@ -955,7 +950,6 @@ public class PipedriveServiceTests {
         d.setTitle("EU PAC Peace Talks");
         d.setVisible_to(3);
         d.setCost(0L);
-        d.setCost_currency("USD");
         d.setOrg_id(orgid);
         d.setPerson_id(contid);
         d.setPhase("00_EXTERNAL");
@@ -1057,7 +1051,6 @@ public class PipedriveServiceTests {
         d.setTitle("EU PAC Peace Talks");
         d.setVisible_to(3);
         d.setCost(0L);
-        d.setCost_currency("USD");
         d.setOrg_id(orgid);
         d.setPerson_id(contid);
         d.setPhase("00_EXTERNAL");

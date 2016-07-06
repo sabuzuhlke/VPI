@@ -1,15 +1,14 @@
 package OLDVertecSynchroniserTests;
 
-import VPI.Application;
 import VPI.PDClasses.*;
-import VPI.PDClasses.Contacts.ContactDetail;
-import VPI.PDClasses.Contacts.OrgId;
+import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.PDClasses.Contacts.util.OrgId;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealSend;
-import VPI.PDClasses.Deals.PDPersonId;
+import VPI.PDClasses.Deals.util.PDPersonId;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
-import VPI.PDClasses.Organisations.PDRelationship;
+import VPI.PDClasses.PDRelationship;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
@@ -19,7 +18,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDateTime;

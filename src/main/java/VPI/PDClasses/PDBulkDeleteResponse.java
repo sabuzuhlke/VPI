@@ -3,14 +3,11 @@ package VPI.PDClasses;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Created by sabu on 14/04/2016.
- */
-public class PDBulkDeleteResponse extends PDResponse {
+class PDBulkDeleteResponse extends PDResponse {
 
     private PDBulkDeletedIds data;
 
-    public PDBulkDeleteResponse() {
+    PDBulkDeleteResponse() {
     }
 
     public PDBulkDeletedIds getData() {
@@ -21,7 +18,7 @@ public class PDBulkDeleteResponse extends PDResponse {
         this.data = data;
     }
 
-    class PDBulkDeletedIds {
+    public class PDBulkDeletedIds {
 
         private List<String> id;
 
@@ -41,7 +38,7 @@ public class PDBulkDeleteResponse extends PDResponse {
 
         private Collection<Long> ids;
 
-        public PDBulkDeletedIdsReq() {
+        PDBulkDeletedIdsReq() {
         }
 
         public Collection<Long> getIds() {

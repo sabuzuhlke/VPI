@@ -17,9 +17,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 
-/**
- * Created by sabu on 29/04/2016.
- */
 public class VertecService {
     private RestTemplate restTemplate;
     private String server;

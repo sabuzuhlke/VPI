@@ -5,9 +5,6 @@ import VPI.PDClasses.PDResponse;
 
 import java.util.List;
 
-/**
- * Created by sabu on 17/05/2016.
- */
 public class PDActivityItemsResponse extends PDResponse {
 
     private List<PDActivityReceived> data;

@@ -1,15 +1,15 @@
 package VPI;
 
 import VPI.PDClasses.Activities.PDActivitySend;
-import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.util.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
-import VPI.PDClasses.Contacts.PDFollower;
+import VPI.PDClasses.PDFollower;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.Organisations.PDRelationship;
+import VPI.PDClasses.PDRelationship;
 import VPI.PDClasses.PDService;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecActivities.JSONActivity;
@@ -196,36 +196,6 @@ public class Importer {
         postActivityPostList();
         System.out.println("Import Successful!");
 
-    }
-
-
-    public void runOrgImport() {
-        System.out.println("Start");
-        importOrganisationsAndContactsFromVertec();
-        System.out.println("imported organisations and contacts");
-        importDealsFromVertec();
-        System.out.println("imported deals");
-        importActivitiesFromVertec();
-        System.out.println("imported activities");
-        //find missing organisations and contacts linked to deals and activities
-        importMissingOrganistationsFromVertec();
-        System.out.println("imported missing orgs");
-        importMissingContactsFromVertec();
-        System.out.println("imported missing contacts");
-        //import contacts and deals from pipedrive to compare to vertec contacts and deals
-        importContactsFromPipedrive();
-        System.out.println("imported pd contacts");
-        importDealsFromPipedrive();
-        System.out.println("imported pd deals");
-        //create and post organisatations from vertec to pipedrive, extract hierarchy and post
-        populateOrganisationPostList();
-        System.out.println("populated post list");
-        postOrganisationPostList();
-        System.out.println("posted orgs");
-        postOrganisationHierarchies(
-                builOrganisationHierarchies());
-        System.out.println("posted hierarchy");
-        System.out.println("End");
     }
 
     public void importOrganisationsAndContactsFromVertec() {
@@ -504,6 +474,7 @@ public class Importer {
                 } else {
                     this.contactPutList.add(createPDContactSend(jc, temp));
                     matchedMap.put(temp.getId(), true);
+                    //System.out.println("ID: " + jc.getObjid() + " " + temp.getId());
                 }
             } else {
                 this.contactPostList.add(createPDContactSend(jc));
@@ -557,8 +528,6 @@ public class Importer {
 
         return ps;
     }
-
-
 
     private PDContactSend getPdContactSendVertecMoreRecent(JSONContact jc, PDContactReceived pc) {
         PDContactSend ps = new PDContactSend();
@@ -681,6 +650,7 @@ public class Importer {
         contactFollowerPostList.stream()
                 .forEach(pipedrive::postFollowerToContact);
     }
+
     public void postDealFollowers() {
         dealFollowerPostList.stream()
                 .forEach(pipedrive::postFollowerToDeal);
@@ -821,7 +791,6 @@ public class Importer {
         if(ds.getValue() == null) ds.setValue(dr.getValue());
         //currency
         ds.setCurrency(project.getCurrency());
-        if(ds.getCost_currency() == null) ds.setCurrency(dr.getCurrency());
         //user_id
         Long userId = teamIdMap.get(phase.getPersonResponsible());
         userId = userId == null ? teamIdMap.get(project.getLeaderRef()) : userId;

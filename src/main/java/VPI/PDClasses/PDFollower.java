@@ -3,9 +3,6 @@ package VPI.PDClasses;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * Created by gebo on 11/05/2016.
- */
 public class PDFollower {
 
     @JsonProperty("id")

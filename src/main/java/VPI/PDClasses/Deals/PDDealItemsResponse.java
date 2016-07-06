@@ -35,8 +35,7 @@ public class PDDealItemsResponse extends PDResponse {
         this.additional_data = additional_data;
     }
 
-    @Override
-    public String toString(){
+    public String toPrettyJSON(){
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{

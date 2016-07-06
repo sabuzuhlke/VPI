@@ -3,23 +3,21 @@ package CurrentTests;
 import VPI.Importer;
 import VPI.MyCredentials;
 import VPI.PDClasses.Activities.PDActivitySend;
-import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.util.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.Organisations.PDRelationship;
+import VPI.PDClasses.PDRelationship;
 import VPI.PDClasses.PDService;
-import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import VPI.VertecClasses.VertecActivities.JSONActivity;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
-import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
@@ -787,7 +785,7 @@ return false;
 
         assertTrue(! importer.contactIdMap.containsValue(-1L));
         //Pipedrive id of contact added to putlist
-        assertTrue(importer.contactIdMap.containsValue(438L));
+        assertTrue(importer.contactIdMap.containsValue(17704L));
 
     }
 

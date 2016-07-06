@@ -1,11 +1,7 @@
 package VPI.VertecClasses.VertecProjects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Created by sabu on 16/05/2016.
- */
 public class JSONPhase {
 
     @JsonProperty("v_id")
@@ -45,13 +41,7 @@ public class JSONPhase {
     @JsonProperty("rejection_date")
     private String rejection_date;
 
-//    @JsonProperty("lost_time")
-//    private String lost_time;
-//    @JsonProperty("won_time")
-//    private String won_time;
-
     public JSONPhase() {
-
     }
 
     public Long getV_id() {
@@ -193,22 +183,6 @@ public class JSONPhase {
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
     }
-
-//    public String getLost_time() {
-//        return lost_time;
-//    }
-//
-//    public void setLost_time(String lost_time) {
-//        this.lost_time = lost_time;
-//    }
-//
-//    public String getWon_time() {
-//        return won_time;
-//    }
-//
-//    public void setWon_time(String won_time) {
-//        this.won_time = won_time;
-//    }
 
     public String getCompletion_date() {
         return completion_date;

@@ -7,55 +7,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sabu on 27/04/2016.
- */
 public class  JSONOrganisation {
 
     @JsonProperty("name")
     private String name;
-
     @JsonProperty("streetAddress")
     private String streetAddress; //possibly change to separate address fields
-
     @JsonProperty("additonalAdress")
     private String additionalAdress;
-
     @JsonProperty("zip")
     private String zip;
-
     @JsonProperty("city")
     private String city;
-
     @JsonProperty("country")
     private String country;
-
     @JsonProperty("owner")
     private String owner;
-
     @JsonProperty("objid")
     private Long objid; //unsure if needed
-
     @JsonProperty("modified")
     private String modified;
-
     @JsonProperty("contacts")
     private List<JSONContact> contacts;
-
     @JsonProperty("creationTime")
     private String creationTime;
-
     @JsonProperty("parentOrganisationId")
     private Long parentOrganisationId;
-
     @JsonProperty("childOrganisationList")
     private List<Long> childOrganisationList;
-
-    @JsonIgnore
-    private Boolean ownedByTeam;
-
     @JsonProperty("website")
     private String website = "";
+
+    @JsonIgnore //automatically set to true when recieved bulk of organisations, set outside constructor to false when org retrieved from nonZUK
+    private Boolean ownedByTeam;
+
+    public JSONOrganisation() {
+        this.contacts = new ArrayList<>();
+        this.ownedByTeam = true;
+    }
 
     public Long getParentOrganisationId() {
         return parentOrganisationId;
@@ -79,11 +68,6 @@ public class  JSONOrganisation {
 
     public void setCreationTime(String creationTime) {
         this.creationTime = creationTime;
-    }
-
-    public JSONOrganisation() {
-        this.contacts = new ArrayList<>();
-        this.ownedByTeam = true;
     }
 
     public String getName() {
@@ -174,6 +158,14 @@ public class  JSONOrganisation {
         this.website = website;
     }
 
+    public Boolean getOwnedByTeam() {
+        return ownedByTeam;
+    }
+
+    public void setOwnedByTeam(Boolean ownedByTeam) {
+        this.ownedByTeam = ownedByTeam;
+    }
+
     public String getFormattedAddress(){
         String address = "";
         if(this.getAdditionalAdress() != null && !this.getAdditionalAdress().isEmpty()){
@@ -206,11 +198,4 @@ public class  JSONOrganisation {
         return retStr;
     }
 
-    public Boolean getOwnedByTeam() {
-        return ownedByTeam;
-    }
-
-    public void setOwnedByTeam(Boolean ownedByTeam) {
-        this.ownedByTeam = ownedByTeam;
-    }
 }

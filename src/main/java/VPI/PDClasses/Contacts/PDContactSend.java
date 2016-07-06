@@ -1,11 +1,10 @@
 package VPI.PDClasses.Contacts;
 
 import VPI.InsightClasses.VContact;
+import VPI.PDClasses.Contacts.util.ContactDetail;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.sym.Name;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,49 +22,34 @@ public class PDContactSend {
     private List<ContactDetail> phone;
     private Integer visible_to;
     private Boolean active_flag;
+    private Long owner_id;
+    @JsonProperty("add_time")
+    private String creationTime;
+    @JsonProperty("update_time")
+    private String modifiedTime;
+
+    //Custom Fields
     @JsonProperty("097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
     @JsonProperty("c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
     private String ownedBy;
-
-    @JsonProperty("add_time")
-    private String creationTime;
-
-    @JsonProperty("update_time")
-    private String modifiedTime;
-
-    private Long owner_id;
-
     @JsonProperty("")//TODO: fill in
     private String position;
 
+    /**
+     * Used in importer to create Contacts for putlist, and in tests
+     */
     public PDContactSend() {
         this.email = new ArrayList<>();
         this.phone = new ArrayList<>();
         this.active_flag = true;
     }
 
-    public PDContactSend(Long org_id, String name, String email, String phone) {
-        this.org_id = org_id;
-        this.name = name;
-        ContactDetail emailDetail = new ContactDetail(email, true);
-        ContactDetail phoneDetail = new ContactDetail(phone, true);
-        this.email = new ArrayList<>();
-        this.email.add(emailDetail);
-        this.phone = new ArrayList<>();
-        this.phone.add(phoneDetail);
-        this.active_flag = true;
-    }
-
-    //insight
-    public PDContactSend(VContact vc) {
-        this.name = vc.getName();
-        this.email = vc.getEmailDetail();
-        this.phone = vc.getPhoneDetail();
-        this.visible_to = 3;
-        this.active_flag = true;
-    }
-
+    /**
+     * Used to create contacts for postlist, org_id set in calling function
+     * @param c is contact revieved from vertec
+     * @param owner is pipedrive id of owner of contact
+     */
     public PDContactSend(JSONContact c, Long owner) {
         this.name = c.getFirstName() + " " + c.getSurname();
         if(name.equals(" ")) name = "Anonymous";
@@ -80,7 +64,6 @@ public class PDContactSend {
         this.phone.add(phoned);
         this.phone.add(mobiled);
         this.v_id = c.getObjid();
-
         try {
             if(c.getCreationTime() != null){
                 String[] dateFormatter = c.getCreationTime().split("T");
@@ -92,38 +75,14 @@ public class PDContactSend {
             System.out.println("Could not set creation time for "  + this.name);
             this.creationTime = "1999-01-01 00:00:00";
         }
-
-
         this.owner_id = owner;
         this.modifiedTime = c.getModified();
-
         this.position = c.getPosition();
-
         if(c.getOwnedByTeam()) this.ownedBy = "ZUK";
         else this.ownedBy = "Not ZUK";
 
     }
 
-    //for Contact put
-    public PDContactSend(PDContactReceived pc) {
-        this.name = pc.getName();
-        this.id = pc.getId();
-        if(pc.getOrg_id() != null) {
-            this.org_id = pc.getOrg_id().getValue();
-        }
-        this.email = pc.getEmail();
-        this.phone = pc.getPhone();
-        this.visible_to = pc.getVisible_to();
-        this.active_flag = pc.getActive_flag();
-        this.v_id = pc.getV_id();
-        this.creationTime = pc.getCreationTime();
-        if(pc.getOwner_id() != null){
-            this.owner_id = pc.getOwner_id().getId();
-        }
-        this.modifiedTime = pc.getModifiedTime();
-
-
-    }
 
     public void changePrimaryEmail(String newEmail){
         for(ContactDetail e : email){
@@ -249,6 +208,53 @@ public class PDContactSend {
     public String toString(){
         return "Number " + id + ":" + name;
     }
-    //------------------------------------------------------------------ContactDetail
 
+    /**
+     * Only used for testing
+     */
+    public PDContactSend(Long org_id, String name, String email, String phone) {
+        this.org_id = org_id;
+        this.name = name;
+        ContactDetail emailDetail = new ContactDetail(email, true);
+        ContactDetail phoneDetail = new ContactDetail(phone, true);
+        this.email = new ArrayList<>();
+        this.email.add(emailDetail);
+        this.phone = new ArrayList<>();
+        this.phone.add(phoneDetail);
+        this.active_flag = true;
+    }
+
+    /**
+     * Only used in old 'Insight' code
+     */
+    public PDContactSend(VContact vc) {
+        this.name = vc.getName();
+        this.email = vc.getEmailDetail();
+        this.phone = vc.getPhoneDetail();
+        this.visible_to = 3;
+        this.active_flag = true;
+    }
+
+    /**
+     * Only used in old code for adding to putlist
+     */
+    public PDContactSend(PDContactReceived pc) {
+        this.name = pc.getName();
+        this.id = pc.getId();
+        if(pc.getOrg_id() != null) {
+            this.org_id = pc.getOrg_id().getValue();
+        }
+        this.email = pc.getEmail();
+        this.phone = pc.getPhone();
+        this.visible_to = pc.getVisible_to();
+        this.active_flag = pc.getActive_flag();
+        this.v_id = pc.getV_id();
+        this.creationTime = pc.getCreationTime();
+        if(pc.getOwner_id() != null){
+            this.owner_id = pc.getOwner_id().getId();
+        }
+        this.modifiedTime = pc.getModifiedTime();
+
+
+    }
 }

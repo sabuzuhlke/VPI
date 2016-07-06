@@ -1,8 +1,8 @@
 package VPI.PDClasses.Deals;
 
-import VPI.PDClasses.Contacts.OrgId;
+import VPI.PDClasses.Contacts.util.OrgId;
+import VPI.PDClasses.Deals.util.PDPersonId;
 import VPI.PDClasses.PDOwner;
-import VPI.PDClasses.Users.PDUser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

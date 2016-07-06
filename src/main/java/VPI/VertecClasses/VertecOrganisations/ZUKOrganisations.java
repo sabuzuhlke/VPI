@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sabu on 27/04/2016.
- */
 public class ZUKOrganisations {
 
     @JsonProperty("organisations")
@@ -38,21 +35,7 @@ public class ZUKOrganisations {
         this.danglingContacts = danglingContacts;
     }
 
-    @Override
-    public String toString() {
-        String retStr = null;
-        ObjectMapper m = new ObjectMapper();
-        try{
-
-            retStr = m.writeValueAsString(this);
-        }
-        catch(Exception e){
-            System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
-        }
-        return retStr;
-    }
-
-    public String toPrettyString() {
+    public String toPrettyJSON() {
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{

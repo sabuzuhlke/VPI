@@ -1,6 +1,5 @@
 package VPI.VertecClasses.VertecTeam;
 
-
 public class TeamMember {
 
     private String email;

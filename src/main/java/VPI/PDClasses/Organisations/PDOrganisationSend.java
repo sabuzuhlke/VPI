@@ -21,38 +21,21 @@ public class PDOrganisationSend {
     @JsonProperty("")//TODO:fill in
     private String website;
 
-    public PDOrganisationSend(String name, Integer visible_to) {
-        this.name = name;
-        this.visible_to = visible_to;
-        this.active_flag = true;
-    }
-
+    /**
+     * RestTemplate, and testing
+     */
     public PDOrganisationSend() {
         this.visible_to = 3;
         this.active_flag = true;
     }
 
-    //insight
-    public PDOrganisationSend(PDOrganisationReceived o) {
-        this.name = o.getName();
-        this.visible_to = o.getVisible_to();
-        this.address = o.getAddress();
-        this.active_flag = true;
-        this.id = o.getId();
-        this.owner_id = o.getOwner_id().getId();
-        this.v_id = o.getV_id();
-        this.creationTime = o.getCreationTime();
-    }
 
-    //insight
-    public PDOrganisationSend(VOrganisation c) {
-        this.name = c.getName();
-        this.visible_to = 3;
-        this.active_flag = true;
-        this.address = c.getFormattedAddress();
-        this.v_id = c.getId();
-    }
-
+    /**
+     * Used to build organisations for putlist
+     * @param jo is org recieved from vertec
+     * @param po id org received from pipedrive
+     * @param ownerId is pipedrive owner id as from external map
+     */
     public PDOrganisationSend(JSONOrganisation jo, PDOrganisationReceived po, Long ownerId){
         this.name = jo.getName();
         this.visible_to = 3;
@@ -87,6 +70,11 @@ public class PDOrganisationSend {
         else this.ownedBy = "Not ZUK";
     }
 
+    /**
+     * Used to build organistations for postList
+     * @param o is org recieved from vertec
+     * @param owner_id is pipedrive owner id as from external map
+     */
     public PDOrganisationSend(JSONOrganisation o, Long owner_id){
         this.name = o.getName();
         if (name == null || name.isEmpty() || name.equals(" ")) {
@@ -200,4 +188,40 @@ public class PDOrganisationSend {
     public String toString() {
         return "Company: ID: " + id + " Name: " + name  + " visible to: " + visible_to + ", Address: " + address + " Active: " + active_flag;
     }
+
+    /**
+     * Only used in testing, should remove and replace with different constructor
+     */
+    public PDOrganisationSend(String name, Integer visible_to) {
+        this.name = name;
+        this.visible_to = visible_to;
+        this.active_flag = true;
+    }
+
+
+    /**
+     * Only used in old code
+     */
+    public PDOrganisationSend(PDOrganisationReceived o) {
+        this.name = o.getName();
+        this.visible_to = o.getVisible_to();
+        this.address = o.getAddress();
+        this.active_flag = true;
+        this.id = o.getId();
+        this.owner_id = o.getOwner_id().getId();
+        this.v_id = o.getV_id();
+        this.creationTime = o.getCreationTime();
+    }
+
+    /**
+     * Only used in old code
+     */
+    public PDOrganisationSend(VOrganisation c) {
+        this.name = c.getName();
+        this.visible_to = 3;
+        this.active_flag = true;
+        this.address = c.getFormattedAddress();
+        this.v_id = c.getId();
+    }
+
 }
