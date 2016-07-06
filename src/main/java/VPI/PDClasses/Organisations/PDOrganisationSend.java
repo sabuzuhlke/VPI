@@ -18,6 +18,8 @@ public class PDOrganisationSend {
     private String creationTime;
     @JsonProperty("276ed9c14c8766ac63ab668678b779a9b813658b")
     private String ownedBy;
+    @JsonProperty("")//TODO:fill in
+    private String website;
 
     public PDOrganisationSend(String name, Integer visible_to) {
         this.name = name;
@@ -59,6 +61,8 @@ public class PDOrganisationSend {
         this.active_flag = true;
         this.owner_id = ownerId;
 
+        this.website = jo.getWebsite();
+
 
         this.address = jo.getFormattedAddress();
 
@@ -92,6 +96,7 @@ public class PDOrganisationSend {
         this.v_id = o.getObjid();
         this.active_flag = true;
         this.address = o.getFormattedAddress();
+        this.website = o.getWebsite();
         if(o.getCreationTime() != null){
             if (o.getCreationTime().contains("1900-01-01")) {
                 this.creationTime = "1900-01-01 00:00:00";
@@ -181,6 +186,14 @@ public class PDOrganisationSend {
 
     public void setOwnedBy(String ownedBy) {
         this.ownedBy = ownedBy;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     @Override

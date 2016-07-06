@@ -434,6 +434,21 @@ public class ImporterTest {
                     assertTrue(id != -1L);
                 });
 
+        long numContsWithWebsites = importer.getVertecOrganisationList().stream()
+                .filter(org -> !org.getWebsite().isEmpty())
+                .collect(toList())
+                .size();
+        System.out.println(numContsWithWebsites);
+
+        long numContsInPostListWithWebsite = importer.organisationPostList.stream()
+                .filter(org -> !org.getWebsite().isEmpty())
+                .collect(toList())
+                .size();
+
+        System.out.println(numContsInPostListWithWebsite);
+
+        assertEquals("not all orgs with websites have made it into postlist", numContsWithWebsites, numContsInPostListWithWebsite);
+
         assertTrue(! importer.organisationIdMap.containsValue(-1L));
 
         importer.organisationPostList.stream()
@@ -682,6 +697,26 @@ return false;
 
         System.out.println("Before: " + before.size());
         System.out.println("After: " + after.size());
+
+        int numContactsWithPosition = importer.getVertecContactList().stream()
+                .filter(cont -> !cont.getPosition().isEmpty())
+                .collect(toList())
+                .size();
+
+        System.out.println(numContactsWithPosition);
+
+        int numContactsWithPositionInPostOrPut = importer.contactPostList.stream()
+                .filter(cont -> !cont.getPosition().isEmpty())
+                .collect(toList())
+                .size();
+
+        numContactsWithPositionInPostOrPut += importer.contactPutList.stream()
+                .filter(cont -> !cont.getPosition().isEmpty())
+                .collect(toList())
+                .size();
+        System.out.println(numContactsWithPositionInPostOrPut);
+
+        assertEquals("positions not correctly set", numContactsWithPosition, numContactsWithPositionInPostOrPut);
     }
 
     @Test

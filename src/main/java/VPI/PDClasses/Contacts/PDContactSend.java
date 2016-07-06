@@ -34,6 +34,9 @@ public class PDContactSend {
     @JsonProperty("2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
     private String ownedBy;
 
+    @JsonProperty("")//TODO: fill in
+    private String position;
+
     public PDContactSend() {
         this.email = new ArrayList<>();
         this.phone = new ArrayList<>();
@@ -91,6 +94,8 @@ public class PDContactSend {
 
         this.owner_id = owner;
         this.modifiedTime = c.getModified();
+
+        this.position = c.getPosition();
 
         if(c.getOwnedByTeam()) this.ownedBy = "ZUK";
         else this.ownedBy = "Not ZUK";
@@ -228,6 +233,14 @@ public class PDContactSend {
 
     public void setOwnedBy(String ownedBy) {
         this.ownedBy = ownedBy;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     @Override

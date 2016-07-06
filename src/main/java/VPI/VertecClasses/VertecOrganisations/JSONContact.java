@@ -51,6 +51,9 @@ public class JSONContact {
     @JsonIgnore
     private Boolean ownedByTeam;
 
+    @JsonProperty("position")
+    private String position = "";
+
     public JSONContact() {
         this.followers = new ArrayList<>();
         this.ownedByTeam = true;
@@ -158,6 +161,14 @@ public class JSONContact {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public String getPipedriveCreationTime() {

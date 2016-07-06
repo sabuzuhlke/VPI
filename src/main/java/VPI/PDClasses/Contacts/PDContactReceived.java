@@ -25,6 +25,9 @@ public class PDContactReceived {
     @JsonProperty("174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
 
+    @JsonProperty("")//TODO:fill in
+    private String position;
+
     @JsonProperty("add_time")
     private String creationTime;
 
@@ -122,5 +125,13 @@ public class PDContactReceived {
 
     public void setModifiedTime(String modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 }

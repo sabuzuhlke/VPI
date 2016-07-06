@@ -54,6 +54,9 @@ public class  JSONOrganisation {
     @JsonIgnore
     private Boolean ownedByTeam;
 
+    @JsonProperty("website")
+    private String website = "";
+
     public Long getParentOrganisationId() {
         return parentOrganisationId;
     }
@@ -161,6 +164,14 @@ public class  JSONOrganisation {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     public String getFormattedAddress(){

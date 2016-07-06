@@ -34,20 +34,6 @@ public class Application implements CommandLineRunner {
 
         try {
 
-            //Code here will run just once
-//            PD.clearPD(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-//            VS.importOrganisationsAndContactsToPipedriveAndPrint();
-//            VS.importProjectsAndPhasesToPipedrive();
-//
-//            Importer i = new Importer(
-//                    new PDService("https://api.pipedrive.com/v1/", creds.getApiKey()),
-//                    new VertecService("localhost:9999")
-//            );
-//
-//            //i.runOrgImport();
-//            //PD.clearPD();
-//            i.importToPipedrive();
-
             Timer timer = new Timer();
             TimerTask t = new TimerTask() {
                 @Override
