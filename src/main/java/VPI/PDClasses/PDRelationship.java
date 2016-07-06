@@ -1,4 +1,4 @@
-package VPI.PDClasses.Organisations;
+package VPI.PDClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

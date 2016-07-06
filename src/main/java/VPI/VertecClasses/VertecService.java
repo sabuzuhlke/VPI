@@ -7,6 +7,7 @@ import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
+import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -107,5 +108,9 @@ public class VertecService {
 
     public ResponseEntity<String> getAddressEntry(Long v_id) {
         return getFromVertec("https://" + server + "/addressEntry/" + v_id, String.class);
+    }
+
+    public ResponseEntity<ZUKTeam> getTeamDetails() {
+        return getFromVertec("https://" + server + "/ZUKTeam", ZUKTeam.class);
     }
 }

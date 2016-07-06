@@ -19,8 +19,10 @@ public class PDOrganisationReceived {
     //Last Update Fields
     private String update_time;
     private Integer people_count;
-    @JsonProperty("2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
+    @JsonProperty("1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
     private Long v_id;
+    @JsonProperty("bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")
+    private String ownedBy;
     @JsonProperty("add_time")
     private String creationTime;
 
@@ -182,6 +184,14 @@ public class PDOrganisationReceived {
 
     public void setCreationTime(String creationTime) {
         this.creationTime = creationTime;
+    }
+
+    public String getOwnedBy() {
+        return ownedBy;
+    }
+
+    public void setOwnedBy(String ownedBy) {
+        this.ownedBy = ownedBy;
     }
 
     @Override

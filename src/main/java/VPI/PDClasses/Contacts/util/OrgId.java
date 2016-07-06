@@ -1,6 +1,7 @@
-package VPI.PDClasses.Contacts;
+package VPI.PDClasses.Contacts.util;
 
 public class OrgId{
+
     private String name;
     private Integer people_count;
     private Long owner_id;

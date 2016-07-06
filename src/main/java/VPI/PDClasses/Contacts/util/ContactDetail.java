@@ -1,12 +1,21 @@
-package VPI.PDClasses.Contacts;
+package VPI.PDClasses.Contacts.util;
 
 public class ContactDetail {
+
     private String value;
     private Boolean primary;
 
+    /**
+     * Used by RestTemplate and in tests
+     */
     public ContactDetail() {
     }
 
+    /**
+     * Used to hold email or phone information for a contact in pipedrive
+     * @param value is email/phone string representation
+     * @param primary is boolean denoting if value is main contact deatil for person
+     */
     public ContactDetail(String value, Boolean primary) {
         this.value = value;
         this.primary = primary;

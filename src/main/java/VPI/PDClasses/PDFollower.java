@@ -1,4 +1,4 @@
-package VPI.PDClasses.Contacts;
+package VPI.PDClasses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Created by gebo on 11/05/2016.
  */
 public class PDFollower {
+
     @JsonProperty("id")
     private Long objectID;
-
     @JsonProperty("user_id")
     private Long userID;
 
@@ -37,7 +37,7 @@ public class PDFollower {
         this.objectID = objectID;
     }
 
-    public String toPrettyString() {
+    public String toPrettyJSON() {
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{

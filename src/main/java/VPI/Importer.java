@@ -21,16 +21,14 @@ import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
+import VPI.VertecClasses.VertecTeam.TeamMember;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -49,7 +47,7 @@ public class Importer {
 
     private Map<String, String> activityTypeMap;
 
-    private ZUKOrganisations vertecOrganisations;
+    public ZUKOrganisations vertecOrganisations;
     private ZUKProjects vertecProjects;
     private ZUKActivities vertecActivities;
 
@@ -73,6 +71,16 @@ public class Importer {
     public Map<Long, List<Long>> projectPhasesMap;
     private String s;
 
+    private final int EXPLORATORY = 1;
+    private final int NEW_LEAD_EXTENTSION = 2;
+    private final int QUALIFIED_LEAD = 3;
+    private final int RFP_RECIEVED = 4;
+    private final int OFFERED = 5;
+    private final int UNDER_NEGOTIATION = 6;
+    private final int VERBALLY_SOLD = 7;
+
+    public final String MAP_PATH = "productionMaps/";
+
     public Importer(PDService pipedrive, VertecService vertec) {
         this.pipedrive = pipedrive;
         this.vertec    = vertec;
@@ -81,7 +89,7 @@ public class Importer {
         this.contactIdMap      = new HashMap<>();
         this.dealIdMap         = new HashMap<>();
 
-        constructTestTeamMap();
+        constructTeamIdMap(getVertecUserEmails(),getPipedriveUsers());
 
         constructActivityTypeMap();
 
@@ -112,7 +120,7 @@ public class Importer {
      */
     public void importToPipedrive() {
         //import relevant information from vertec
-        saveMap("teamIdMap.txt", teamIdMap);
+        saveMap(MAP_PATH + "teamIdMap.txt", teamIdMap);
         System.out.println("Getting Contacts and Organisations from Vertec...");
         //1
         importOrganisationsAndContactsFromVertec();
@@ -130,12 +138,12 @@ public class Importer {
 
         //4
         importMissingOrganistationsFromVertec();
-        saveSet("missingOrganisations.txt",missingOrganisationIds);
+        saveSet(MAP_PATH + "missingOrganisations.txt",missingOrganisationIds);
 
         System.out.println("Getting missing Contacts from Vertec...");
         //5
         importMissingContactsFromVertec();
-        saveSet("missingContacts.txt", missingContactIds);
+        saveSet(MAP_PATH + "missingContacts.txt", missingContactIds);
 
         //import contacts and deals from pipedrive to compare to vertec contacts and deals
         System.out.println("Getting  Contacts from Pipedrive...");
@@ -151,7 +159,7 @@ public class Importer {
         //9
         postOrganisationPostList();
 
-        saveMap("organisationIdMap.txt", organisationIdMap);
+        saveMap(MAP_PATH + "organisationIdMap.txt", organisationIdMap);
         System.out.println("Posting Organisation Hierarchies to Pipedrive...");
         //10
         postOrganisationHierarchies(
@@ -163,7 +171,7 @@ public class Importer {
         //12
         postAndPutContactPostAndPutLists();
 
-        saveMap("contactIdMap.txt", contactIdMap);
+        saveMap(MAP_PATH + "contactIdMap.txt", contactIdMap);
         //compare deals by phase number and project code and populate post and put lists, send to pipedrive
         //13
         populateDealPostAndPutList();
@@ -171,7 +179,7 @@ public class Importer {
         //14
         postAndPutDealPostAndPutList();
 
-        saveMap("dealIdMap.txt", dealIdMap);
+        saveMap(MAP_PATH + "dealIdMap.txt", dealIdMap);
         System.out.println("Posting Followers to Pipedrive...");
         //15
         populateFollowerPostList();
@@ -656,10 +664,13 @@ public class Importer {
                 .forEach(project
                         -> project.getPhases().stream()
                         .forEach(phase -> {
+
                             if (teamIdMap.get(project.getLeaderRef()) != null && dealIdMap.get(phase.getV_id()) != null) {
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getLeaderRef())));
                             }
-                            if( project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null && dealIdMap.get(phase.getV_id()) != null){
+                            if( project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null
+                                    && dealIdMap.get(phase.getV_id()) != null
+                                    && ! project.getAccountManager().equals(project.getLeaderRef())){
                                 //System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getCode());
                                 dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getAccountManager())));
                             }
@@ -715,6 +726,8 @@ public class Importer {
         //create our deal object
         PDDealSend deal = new PDDealSend(project, phase, userId, personId, orgId);
 
+        setDealTitle(project,phase,deal);
+
         setStageId(deal, phase);
 
         return deal;
@@ -734,18 +747,9 @@ public class Importer {
         //ID
         ds.setId(dr.getId());
         //Title
-        if(dr.getTitle().contains(":")) ds.setTitle(dr.getTitle());
-        else {
-            if (project.getTitle() != null && !project.getTitle().equals("")) {
-                String title = project.getTitle() + ": " + phase.getDescription();
-                ds.setTitle(title);
-            } else {
-                ds.setTitle(phase.getDescription());
-            }
-        }
-        if(phase.getDescription().isEmpty()){
-            ds.setTitle(ds.getTitle() + " : " + phase.getCode());
-        }
+
+        setDealTitle(project, phase, ds); // if not
+
         //Value
         ds.setValue(dr.getValue());
         if(ds.getValue() == null) ds.setValue(phase.getExternalValue());
@@ -802,21 +806,16 @@ public class Importer {
         return ds;
     }
 
+
+
     private PDDealSend getPdDealSendVertecMoreRecent(JSONProject project, JSONPhase phase, PDDealReceived dr) {
         PDDealSend ds = new PDDealSend();
 
         ds.setId(dr.getId());
 
         //Title
-        if (project.getTitle() != null && !project.getTitle().equals("")) {
-            String title = project.getTitle() + ": " + phase.getDescription();
-            ds.setTitle(title);
-        } else {
-            ds.setTitle(phase.getDescription());
-        }
-        if(phase.getDescription().isEmpty()){
-            ds.setTitle(ds.getTitle() + " : " + phase.getCode());
-        }
+       setDealTitle(project,phase,ds);
+
         //Value
         ds.setValue(phase.getExternalValue());
         if(ds.getValue() == null) ds.setValue(dr.getValue());
@@ -863,6 +862,17 @@ public class Importer {
         return ds;
     }
 
+    private void setDealTitle(JSONProject project, JSONPhase phase, PDDealSend ds) {
+
+        if (project.getTitle() != null && !project.getTitle().equals("")) {
+            String title = project.getTitle() + ": " + ((phase.getDescription() == null || phase.getDescription().isEmpty()) ? phase.getCode() : phase.getDescription());
+            ds.setTitle(title);
+        } else {
+            ds.setTitle(project.getCode() + ": " + ((phase.getDescription() == null || phase.getDescription().isEmpty()) ? phase.getCode() : phase.getDescription()));
+        }
+
+    }
+
     @SuppressWarnings("all")
     private void setStageId(PDDealSend deal, JSONPhase phase){
 
@@ -876,23 +886,23 @@ public class Importer {
 
         switch (num) {
             //Exploratory = 1, NewLead/Extension = 2, QualifiedLead = 3
-            case 5: deal.setStage_id(2);
+            case 5: deal.setStage_id(NEW_LEAD_EXTENTSION);
                 break;
             //Rfp Recieved = 3
-            case 10: deal.setStage_id(4);
+            case 10: deal.setStage_id(RFP_RECIEVED);
                 break;
             //Offered = 6
-            case 11: deal.setStage_id(5);
+            case 11: deal.setStage_id(OFFERED);
                 break;
             //UnderNegotiation = 5
-            case 12: deal.setStage_id(7);
+            case 12: deal.setStage_id(UNDER_NEGOTIATION);
                 break;
             //VerballySold = 7
-            case 20: deal.setStage_id(6);
+            case 20: deal.setStage_id(VERBALLY_SOLD);
                 break;
             //SOLD = WON
             case 21: status = "won";
-                deal.setStage_id(5);
+                deal.setStage_id(OFFERED);
                 String wonTime = phase.getOfferedDate();
                 wonTime = wonTime == null ? phase.getCompletion_date() : wonTime;
                 deal.setWon_time(wonTime == null ? phase.getPDformatModifiedTime() : wonTime + " 00:00:00");
@@ -900,14 +910,14 @@ public class Importer {
                 break;
             //LOST = LOST
             case 30: status = "lost";
-                deal.setStage_id(5);
+                deal.setStage_id(OFFERED);
                 deal.setLost_reason(phase.getLostReason()); //TODO: add lost reason map/ get lost reason descriptions from vertec
                 String lostTime = phase.getRejection_date();
                 deal.setLost_time(lostTime == null ? phase.getPDformatModifiedTime() : lostTime + " 00:00:00");
                 break;
             //FINISHED = WON OR LOST (Check value)
             case 40:
-                deal.setStage_id(5);
+                deal.setStage_id(OFFERED);
                 if (asFloat(deal.getValue()) > 0) {
                     status = "won";
                     String wonTime2 = phase.getOfferedDate();
@@ -1047,6 +1057,7 @@ public class Importer {
 
     @SuppressWarnings("all")
     public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
+        teamIdMap = new DefaultHashMap<>(1363410L);
         for (String v_email : v_emails) {
             Boolean mapped = false;
             for (PDUser pd_user : pd_users) {
@@ -1056,11 +1067,26 @@ public class Importer {
                 }
             }
             if (!mapped) {
-                this.teamIdMap.put(v_email, 1363410L); //TODO: replace id with appropriate id, wolfgangs or admin?
+                this.teamIdMap.put(v_email, 1424149L); //TODO: replace id with appropriate id, wolfgangs or admin?
             }
 
         }
+        teamIdMap.put("sabine.streuss@zuhlke.com", this.teamIdMap.get("sabine.strauss@zuhlke.com"));
     }
+
+    public Set<String> getVertecUserEmails() {
+        return vertec.getTeamDetails()
+                .getBody()
+                .getMembers()
+                .stream()
+                .map(TeamMember::getEmail)
+                .collect(toSet());
+    }
+
+    public List<PDUser> getPipedriveUsers() {
+        return pipedrive.getAllUsers().getBody().getData();
+    }
+
     private void constructActivityTypeMap() { //TODO: test construction of activity type map
         //if unable to find type link then set to misc type (custom type added to pipedrive dev instance)
         activityTypeMap = new DefaultHashMap<>("misc");
@@ -1120,5 +1146,6 @@ public class Importer {
             throw new RuntimeException(e);
         }
     }
+
 
 }

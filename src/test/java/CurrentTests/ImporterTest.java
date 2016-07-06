@@ -12,6 +12,8 @@ import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDRelationship;
 import VPI.PDClasses.PDService;
+import VPI.PDClasses.Users.PDUser;
+import VPI.PDClasses.Users.PDUserItemsResponse;
 import VPI.VertecClasses.VertecActivities.JSONActivity;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
@@ -21,6 +23,7 @@ import VPI.VertecClasses.VertecProjects.JSONPhase;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
+import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -55,10 +58,17 @@ public class ImporterTest {
     private VertecService vertec;
 
     @Before
-    public void prepareDependancies() {
+    public void prepareDependancies() throws IOException {
+
         MockitoAnnotations.initMocks(this);
         pipedrive = mock(PDService.class);
         vertec = mock(VertecService.class);
+
+
+        when(pipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
+        when(vertec.getTeamDetails()).thenReturn(getDummyVertecTeamResponse());
+
+
         importer = new Importer(pipedrive, vertec);
     }
 
@@ -776,7 +786,8 @@ return false;
                 .forEach(id -> assertTrue(id != -1L));
 
         assertTrue(! importer.contactIdMap.containsValue(-1L));
-        assertTrue(importer.contactIdMap.containsValue(18194L));
+        //Pipedrive id of contact added to putlist
+        assertTrue(importer.contactIdMap.containsValue(438L));
 
     }
 
@@ -920,8 +931,17 @@ return false;
                 .collect(toList())
                 .size();
 
+        int nrOfBothAccountManagerAndProjectLeader = importer.getVertecProjectList().stream()
+                .filter(proj -> proj.getAccountManager() != null)
+                .filter(proj -> proj.getLeaderRef() != null)
+                .filter((proj -> proj.getLeaderRef().equals(proj.getAccountManager())))
+                .map(JSONProject::getPhases)
+                .flatMap(Collection::stream)
+                .collect(toList())
+                .size();
+
         //nrPhases+ nrAccountmanagers is how many dealfollowers we post as for each deal the owner gets posted as a follower and the account manager as well, where its specified
-        assertEquals("Not all followers added to post list", nrPhases + nrAccountManagers,importer.dealFollowerPostList.size());
+        assertEquals("Not all followers added to post list", nrPhases + nrAccountManagers - nrOfBothAccountManagerAndProjectLeader,importer.dealFollowerPostList.size());
 
 
         importer.dealFollowerPostList.stream()
@@ -1044,6 +1064,10 @@ return false;
                     assertNotNull(deal.getProject_number());
                     assertNotNull(deal.getTitle());
                     assertNotEquals(deal.getTitle(), "");
+                    String[] bothNameParts = deal.getTitle().split(": ");
+                    assertTrue(bothNameParts.length >= 2);
+                    assertTrue(!bothNameParts[0].isEmpty());
+                    assertTrue(!bothNameParts[1].isEmpty());
                     assertNotNull(deal.getStage_id());
                     assertNotNull(deal.getValue());
                     assertNotNull(deal.getAdd_time());
@@ -1175,13 +1199,14 @@ return false;
                     assertNotNull(activity.getSubject());
                     assertNotNull(activity.getDue_date());
                     assertNotNull(activity.getDone());
-                    if(/*isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) ||*/ isInThePast(activity.getDone_date())) {
+                    if(isInThePast(activity.getAdd_time()) || isInThePast(activity.getDue_date()) || isInThePast(activity.getDone_date())) {
                         assertTrue(activity.getDone());
-                    }if (activity.getDone()) {
+                    }
+                    if (activity.getDone()) {
                         assertNotNull(activity.getDone_date());
                     }
                     assertNotNull(activity.getNote());
-                    //assertNotNull(activity.getAdd_time()); //TODO: See whether add time should actually be tested
+                    assertNotNull(activity.getAdd_time());
                     assertTrue(activity.getDeal_id() != null
                             || activity.getOrg_id() != null
                             || activity.getPerson_id() != null);
@@ -1224,7 +1249,7 @@ return false;
 
     @SuppressWarnings("all")
     private boolean isInThePast(String dateTime) {
-        if (dateTime.length() >= 10) {
+        if (dateTime != null &&  dateTime.length() >= 10) {
             String date = dateTime.substring(0, 10);
 
             LocalDate d = LocalDate.parse(date);
@@ -1296,10 +1321,10 @@ return false;
         map.put("habba@babba.ed", 990990L);
         map.put("hubba@bubba.hu", 990998L);
 
-        importer.saveMap("testmap.txt", map);
+        importer.saveMap(importer.MAP_PATH + "testmap.txt", map);
 
 
-            File file = new File("testmap.txt");
+            File file = new File(importer.MAP_PATH + "testmap.txt");
             String line;
 
 
@@ -1319,10 +1344,10 @@ return false;
         map.put(999L,888L);
         map.put(234L,2344L);
 
-        importer.saveMap("testmap.txt", map);
+        importer.saveMap(importer.MAP_PATH + "testmap.txt", map);
 
 
-        File file = new File("testmap.txt");
+        File file = new File(importer.MAP_PATH + "testmap.txt");
         String line;
 
 
@@ -1580,4 +1605,39 @@ return false;
                 });
     }
 
+
+    @Test
+    public void constructTeamMapDoesSo() throws IOException {
+
+        when(pipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
+        when(vertec.getTeamDetails()).thenReturn(getDummyVertecTeamResponse());
+
+        importer.constructTeamIdMap(importer.getVertecUserEmails(), importer.getPipedriveUsers());
+        System.out.println(importer.teamIdMap);
+
+        importer.getPipedriveUsers().stream()
+                .forEach(user -> {
+                    assertEquals(importer.teamIdMap.get(user.getEmail()), user.getId());
+                });
+
+        assertEquals("Sabines duplicate emails not handled",
+                importer.teamIdMap.get("sabine.streuss@zuhlke.com"),
+                importer.teamIdMap.get("sabine.strauss@zuhlke.com"));
+        assertTrue("Bryan Than ok", importer.teamIdMap.get("bryan.thal@zuhlke.com") != null);
+
+    }
+
+    private ResponseEntity<PDUserItemsResponse> getDummyUsersResponse() throws IOException {
+        ObjectMapper m =  new ObjectMapper();
+        PDUserItemsResponse u =  m.readValue(new File("src/test/resources/Pipedrive users.json"), PDUserItemsResponse.class);
+        return new ResponseEntity<>(u, HttpStatus.OK);
+
+    }
+
+    private ResponseEntity<ZUKTeam> getDummyVertecTeamResponse() throws IOException {
+        ObjectMapper m =  new ObjectMapper();
+        ZUKTeam u =  m.readValue(new File("src/test/resources/VRAPI Team.json"), ZUKTeam.class);
+        return new ResponseEntity<>(u, HttpStatus.OK);
+
+    }
 }

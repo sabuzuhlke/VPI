@@ -1,6 +1,6 @@
-package VPI.PDClasses.Deals;
+package VPI.PDClasses.Deals.util;
 
-import VPI.PDClasses.Contacts.ContactDetail;
+import VPI.PDClasses.Contacts.util.ContactDetail;
 
 import java.util.List;
 

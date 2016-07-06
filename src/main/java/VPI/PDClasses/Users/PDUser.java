@@ -1,8 +1,11 @@
 package VPI.PDClasses.Users;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Created by gebo on 10/05/2016.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDUser {
 
     private String email;
