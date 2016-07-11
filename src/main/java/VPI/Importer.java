@@ -71,12 +71,12 @@ public class Importer {
     public Map<Long, List<Long>> projectPhasesMap;
     private String s;
 
-    private final int EXPLORATORY = 1;
-    private final int NEW_LEAD_EXTENTSION = 2;
-    private final int QUALIFIED_LEAD = 3;
-    private final int RFP_RECIEVED = 4;
-    private final int OFFERED = 5;
-    private final int UNDER_NEGOTIATION = 6;
+    private final int EXPLORATORY = 6;
+    private final int NEW_LEAD_EXTENTSION = 1;
+    private final int QUALIFIED_LEAD = 2;
+    private final int RFP_RECIEVED = 3;
+    private final int OFFERED = 4;
+    private final int UNDER_NEGOTIATION = 5;
     private final int VERBALLY_SOLD = 7;
 
     public final String MAP_PATH = "productionMaps/";
@@ -124,38 +124,45 @@ public class Importer {
         System.out.println("Getting Contacts and Organisations from Vertec...");
         //1
         importOrganisationsAndContactsFromVertec();
-        System.out.println("Got 'em");
+        int orgsBeforeMissing = getVertecOrganisationList().size();
+        System.out.println("Got " + orgsBeforeMissing + " Organisations");
+        int contsBeforeMissing = getVertecContactList().size();
+        System.out.println("Got " + contsBeforeMissing + " Contacts");
         System.out.println("Getting projects and their phases from vertec...");
         //2
         importDealsFromVertec();
-        System.out.println("Got 'em");
+        System.out.println("Got " + getVertecProjectList().size() + " Projects");
         System.out.println("Getting Activities from Vertec ...");
         //3
         importActivitiesFromVertec();
-        System.out.println("Got 'em");
+        System.out.println("Got " + getVertecActivityList().size() + " Activities");
         //find missing organisations and contacts linked to deals and activities
         System.out.println("Getting missing organisations from Vertec...");
 
         //4
         importMissingOrganistationsFromVertec();
+        System.out.println("Got " + (getVertecOrganisationList().size() - orgsBeforeMissing) + " Missing Organisations");
         saveSet(MAP_PATH + "missingOrganisations.txt",missingOrganisationIds);
 
         System.out.println("Getting missing Contacts from Vertec...");
         //5
         importMissingContactsFromVertec();
+        System.out.println("Got " + (getVertecContactList().size() - contsBeforeMissing) + " Missing Contacts");
         saveSet(MAP_PATH + "missingContacts.txt", missingContactIds);
 
         //import contacts and deals from pipedrive to compare to vertec contacts and deals
         System.out.println("Getting  Contacts from Pipedrive...");
         //6
         importContactsFromPipedrive();
+        System.out.println("Got " + getPipedriveContactList().size() + " Contacts from pd");
         System.out.println("Getting  Deals from Pipedrive...");
         //7
         importDealsFromPipedrive();
+        System.out.println("Got " + getPipedriveDealList().size() + " Deals");
         //create and post organisatations from vertec to pipedrive, extract hierarchy and post
         //8
         populateOrganisationPostList();
-        System.out.println("Posting Organisations to Pipedrive...");
+        System.out.println("Posting " + organisationPostList.size() +" Organisations to Pipedrive...");
         //9
         postOrganisationPostList();
 
@@ -167,7 +174,8 @@ public class Importer {
         //compare contacts by email and populate post and put lists, send to pipedrive and post followers
         //11
         populateContactPostAndPutLists();
-        System.out.println("Posting Contacts to Pipedrive...");
+        System.out.println("Posting " + contactPostList.size() + " Contacts to Pipedrive...");
+        System.out.println("Putting " + contactPutList.size() + " Contacts to Pipedrive...");
         //12
         postAndPutContactPostAndPutLists();
 
@@ -175,7 +183,8 @@ public class Importer {
         //compare deals by phase number and project code and populate post and put lists, send to pipedrive
         //13
         populateDealPostAndPutList();
-        System.out.println("Posting Deals to Pipedrive...");
+        System.out.println("Posting " + dealPostList.size() + " Deals to Pipedrive...");
+        System.out.println("Putting " + dealPutList.size() + " Deals to Pipedrive...");
         //14
         postAndPutDealPostAndPutList();
 
@@ -186,12 +195,12 @@ public class Importer {
         //16
         postContactFollowers();
         //17
-        postDealFollowers(); //TODO add tests fro this
+        postDealFollowers();
 
         //craete and post activites once we have all vertec to pipedrive id maps populated from posting
-        System.out.println("Posting Activities to Pipedrive...");
         //18
         populateActivityPostList();
+        System.out.println("Posting " + activityPostList.size() +" Activities to Pipedrive...");
         //19
         postActivityPostList();
         System.out.println("Import Successful!");
@@ -1026,21 +1035,22 @@ public class Importer {
 
     @SuppressWarnings("all")
     public void constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
-        teamIdMap = new DefaultHashMap<>(1363410L);
+        teamIdMap = new DefaultHashMap<>(1533390L);
         for (String v_email : v_emails) {
             Boolean mapped = false;
             for (PDUser pd_user : pd_users) {
-                if (v_email.toLowerCase().equals(pd_user.getEmail().toLowerCase())) {
+                if (pd_user.getActive_flag() && v_email.toLowerCase().equals(pd_user.getEmail().toLowerCase())) {
                     this.teamIdMap.put(v_email, pd_user.getId());
                     mapped = true;
                 }
             }
             if (!mapped) {
-                this.teamIdMap.put(v_email, 1424149L); //TODO: replace id with appropriate id, wolfgangs or admin?
+                this.teamIdMap.put(v_email, 1533390L); //TODO: replace id with appropriate id, wolfgangs or admin?
             }
 
         }
         teamIdMap.put("sabine.streuss@zuhlke.com", this.teamIdMap.get("sabine.strauss@zuhlke.com"));
+        teamIdMap.put("adam.cole@zuhlke.com", 1272849L);
     }
 
     public Set<String> getVertecUserEmails() {

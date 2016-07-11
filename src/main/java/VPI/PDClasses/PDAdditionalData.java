@@ -1,5 +1,8 @@
 package VPI.PDClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDAdditionalData {
 
     private PDPagination pagination;
@@ -18,6 +21,7 @@ public class PDAdditionalData {
     /**
      * Nested class pagination only used here
      */
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public class PDPagination {
 
         private Integer start;

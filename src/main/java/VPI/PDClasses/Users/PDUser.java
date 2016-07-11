@@ -7,6 +7,7 @@ public class PDUser {
 
     private String email;
     private Long id;
+    private Boolean active_flag;
 
     public PDUser() {
     }
@@ -26,5 +27,13 @@ public class PDUser {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getActive_flag() {
+        return active_flag;
+    }
+
+    public void setActive_flag(Boolean active_flag) {
+        this.active_flag = active_flag;
     }
 }

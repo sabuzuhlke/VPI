@@ -1,5 +1,8 @@
 package VPI.PDClasses.Contacts.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrgId{
 
     private String name;

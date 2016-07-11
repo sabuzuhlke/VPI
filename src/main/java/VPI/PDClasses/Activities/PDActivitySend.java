@@ -53,7 +53,7 @@ public class PDActivitySend {
         this.user_id = user_id;
         this.done_date = a.getDone_date();
         this.due_date = a.getDate();
-        this.add_time = a.getCreation_date_time();
+        this.add_time = a.getCreation_date_time(); //TODO: reformat
         if(isInThePast(a.getCreation_date_time()) || isInThePast(a.getDate()) || isInThePast(a.getDone_date())) {
             this.done = true;
         }

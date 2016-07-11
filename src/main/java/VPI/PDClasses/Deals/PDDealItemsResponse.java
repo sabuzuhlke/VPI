@@ -2,14 +2,12 @@ package VPI.PDClasses.Deals;
 
 import VPI.PDClasses.PDAdditionalData;
 import VPI.PDClasses.PDResponse;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sabu on 12/05/2016.
- */
 public class PDDealItemsResponse extends PDResponse {
 
     private List<PDDealReceived> data;

@@ -1,5 +1,8 @@
 package VPI.PDClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDResponse {
 
     private Boolean success;

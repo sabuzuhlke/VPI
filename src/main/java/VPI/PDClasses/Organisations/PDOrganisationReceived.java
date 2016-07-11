@@ -19,10 +19,12 @@ public class PDOrganisationReceived {
     @JsonProperty("add_time")
     private String creationTime;
     //Custom fields
-    @JsonProperty("1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
+    @JsonProperty("8bbe384141fa3df043ae029d8a15fdad1dbf3ea0")//"1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
     private Long v_id;
-    @JsonProperty("bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")
+    @JsonProperty("0fac9a781075943b61cf730f5434a835d0c68a2a")//"bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
     private String ownedBy;
+    @JsonProperty("4d320823bca5075a18070cfce737c0d96cc2191b")
+    private String website;
 
     /**
      * Used in old code

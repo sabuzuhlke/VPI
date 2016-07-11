@@ -33,20 +33,17 @@ public class PDDealReceived {
     private String lost_time;
     //won_time
     //lost_time
-    @JsonProperty("b68fd3995ae7d6b35b13a0dc6b523ddd6fa86f0a")//"7513bc1ddf030d16508c593c097537da6d2b5865")
+    @JsonProperty("475b8fbb629c9c8926cbb51f18408853f492bf88")//"b68fd3995ae7d6b35b13a0dc6b523ddd6fa86f0a")//"7513bc1ddf030d16508c593c097537da6d2b5865")
     private String zuhlke_office;
-    @JsonProperty("842fd4eefb962a23bd29244d92eafb158df839c7")//"3d133ca0d93126ed643d314ac98f0c8bdb485b1f")
+    @JsonProperty("1e03a967f5ebcae35addc0eecdb8303f545d3b58")//"842fd4eefb962a23bd29244d92eafb158df839c7")//"3d133ca0d93126ed643d314ac98f0c8bdb485b1f")
     private String lead_type;
-    @JsonProperty("063365c54334ba785c7890ceabee21363a7aee20")//"cdb9d7237459a4912b101871d758dcebfdace08f")
+    @JsonProperty("b8edc6487d51a48677bb88122d30dd3aed392f8b")//"063365c54334ba785c7890ceabee21363a7aee20")//"cdb9d7237459a4912b101871d758dcebfdace08f")
     private String project_number;
-    @JsonProperty("f400d14ff791db170a08f163a33445681ecc3c0a")//"c340a82a1529b131894bcf743b0b30de963139fb")
+    @JsonProperty("4b712fa58b02227b485c4a158d6bfde2ec91a82d")//"f400d14ff791db170a08f163a33445681ecc3c0a")//"c340a82a1529b131894bcf743b0b30de963139fb")
     private String phase;
-    @JsonProperty("f7dbfe350bd28318d6775a73988ee1ddcbeeb8f3")//"02d60bdc626550f2fa1aaf9d38fbfef20ce18a34")
+    @JsonProperty("b714523f271d2f358287619f8a51822ba706c2d6")//"f7dbfe350bd28318d6775a73988ee1ddcbeeb8f3")//"02d60bdc626550f2fa1aaf9d38fbfef20ce18a34")
     private Long cost;
-    //@JsonProperty("44105f961d387bc35323ecf4bc6325be3a732c8d_currency")
-    @JsonIgnore
-    private String cost_currency;
-    @JsonProperty("09c5371529d476b7d3d6b22475238f447605ad47")//"d444c37006b2f7d3b8a0fc41af636f71a6633b42")
+    @JsonProperty("5ddb4252140b1eed30d76b03b4c99af200b1356d")//"09c5371529d476b7d3d6b22475238f447605ad47")//"d444c37006b2f7d3b8a0fc41af636f71a6633b42")
     private Long v_id;
 
     public PDDealReceived() {
@@ -203,14 +200,6 @@ public class PDDealReceived {
 
     public void setCost(Long cost) {
         this.cost = cost;
-    }
-
-    public String getCost_currency() {
-        return cost_currency;
-    }
-
-    public void setCost_currency(String cost_currency) {
-        this.cost_currency = cost_currency;
     }
 
     public String getLost_reason() {

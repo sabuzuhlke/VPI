@@ -29,11 +29,11 @@ public class PDContactSend {
     private String modifiedTime;
 
     //Custom Fields
-    @JsonProperty("097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
+    @JsonProperty("6170527cc258b1dcc706bc1ae7c55dcf689b66ab")//"097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
-    @JsonProperty("c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
+    @JsonProperty("522ab90176c8ee61ad2033a2ed62d99ea2281ed5")//"c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
     private String ownedBy;
-    @JsonProperty("")//TODO: fill in
+    @JsonProperty("be845efac6bf57cc7c1d2bcfaae17c9a2082f6af")
     private String position;
 
     /**
@@ -73,7 +73,7 @@ public class PDContactSend {
             }
         } catch (Exception e){
             System.out.println("Could not set creation time for "  + this.name);
-            this.creationTime = "1999-01-01 00:00:00";
+            this.creationTime = "2000-01-01 00:00:00";
         }
         this.owner_id = owner;
         this.modifiedTime = c.getModified();
