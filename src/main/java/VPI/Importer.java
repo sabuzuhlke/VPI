@@ -69,7 +69,6 @@ public class Importer {
 
     public List<PDActivitySend> activityPostList;
     public Map<Long, List<Long>> projectPhasesMap;
-    private String s;
 
     private final int EXPLORATORY = 6;
     private final int NEW_LEAD_EXTENTSION = 1;
@@ -243,38 +242,37 @@ public class Importer {
     }
 
     public void importMissingOrganistationsFromVertec() {
-        extractListOfMissingOrganisationIds().stream()
-                .forEach(id -> {
-                    try {
-                        JSONOrganisation org = vertec.getOrganisation(id).getBody();
+        extractListOfMissingOrganisationIds().forEach(id -> {
+            try {
+                JSONOrganisation org = vertec.getOrganisation(id).getBody();
 
-                        org.setOwnedByTeam(false);
-                        // if(org.getObjid() != 7700L) {//Filter out zuhlke engineering AG
-                        dealWithContactsofMissingOrg(org);
+                org.setOwnedByTeam(false);
+                // if(org.getObjid() != 7700L) {//Filter out zuhlke engineering AG
+                dealWithContactsofMissingOrg(org);
 
-                        vertecOrganisations.getOrganisationList().add(org);
-                        organisationIdMap.put(org.getObjid(), -1L);
-                        missingOrganisationIds.add(org.getObjid());
-                        //checks for missing parent organisation and retrieves from vertec, then checck parent of newly imported org
-                        Long parentID = org.getParentOrganisationId();
-                        Boolean parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
-                        while (parentOrgNeeded) {
-                            JSONOrganisation orgParent = vertec.getOrganisation(parentID).getBody();
-                            orgParent.setOwnedByTeam(false);
-                            dealWithContactsofMissingOrg(orgParent);
-                            vertecOrganisations.getOrganisationList().add(orgParent);
-                            organisationIdMap.put(orgParent.getObjid(), -1L);
-                            missingOrganisationIds.add(orgParent.getObjid());
-                            parentID = orgParent.getParentOrganisationId();
-                            parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
-                        }
+                vertecOrganisations.getOrganisationList().add(org);
+                organisationIdMap.put(org.getObjid(), -1L);
+                missingOrganisationIds.add(org.getObjid());
+                //checks for missing parent organisation and retrieves from vertec, then checck parent of newly imported org
+                Long parentID = org.getParentOrganisationId();
+                Boolean parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
+                while (parentOrgNeeded) {
+                    JSONOrganisation orgParent = vertec.getOrganisation(parentID).getBody();
+                    orgParent.setOwnedByTeam(false);
+                    dealWithContactsofMissingOrg(orgParent);
+                    vertecOrganisations.getOrganisationList().add(orgParent);
+                    organisationIdMap.put(orgParent.getObjid(), -1L);
+                    missingOrganisationIds.add(orgParent.getObjid());
+                    parentID = orgParent.getParentOrganisationId();
+                    parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
+                }
 
-                    } catch (HttpClientErrorException e) { //TODO: work out how to test this properly
-                        if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
-                            throw e;
-                        }
-                    }
-                });
+            } catch (HttpClientErrorException e) { //TODO: work out how to test this properly
+                if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
+                    throw e;
+                }
+            }
+        });
     }
 
     public void dealWithContactsofMissingOrg(JSONOrganisation org){
@@ -337,24 +335,23 @@ public class Importer {
     }
 
     public void importMissingContactsFromVertec() {
-        extractListOfMissingContactIds().stream()
-                .forEach(id -> {
-                    try {
-                        JSONContact contact = vertec.getContact(id).getBody();
-                        if (contact.getActive()) {
-                            contact.setOwnedByTeam(false);
-                            vertecOrganisations.getDanglingContacts().add(contact);
-                            contactIdMap.put(contact.getObjid(), -1L);
-                            missingContactIds.add(contact.getObjid());
-                        }
-                        //TODO: check if we should import organisation containing this missing contact (can be done calling importMissingOrganisations again)
-                    } catch (HttpClientErrorException e) {
-                        System.out.println("Caught Exception getting contact from Vertec"); //TODO: work out how to test this properly
-                        if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
-                            throw e;
-                        }
-                    }
-                });
+        extractListOfMissingContactIds().forEach(id -> {
+            try {
+                JSONContact contact = vertec.getContact(id).getBody();
+                if (contact.getActive()) {
+                    contact.setOwnedByTeam(false);
+                    vertecOrganisations.getDanglingContacts().add(contact);
+                    contactIdMap.put(contact.getObjid(), -1L);
+                    missingContactIds.add(contact.getObjid());
+                }
+                //TODO: check if we should import organisation containing this missing contact (can be done calling importMissingOrganisations again)
+            } catch (HttpClientErrorException e) {
+                System.out.println("Caught Exception getting contact from Vertec"); //TODO: work out how to test this properly
+                if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
+                    throw e;
+                }
+            }
+        });
     }
 
     public Set<Long> extractListOfMissingContactIds() {
@@ -428,8 +425,7 @@ public class Importer {
     }
 
     public void postOrganisationHierarchies(List<PDRelationship> relationships) {
-        relationships.stream()
-                .forEach(pipedrive::postOrganisationRelationship);
+        relationships.forEach(pipedrive::postOrganisationRelationship);
     }
 
     public void populateContactPostAndPutLists() {
@@ -638,31 +634,27 @@ public class Importer {
                 .collect(toList());
 
         //dealFollowerPostlist
-        getVertecProjectList().stream()
-                .forEach(project
-                        -> project.getPhases().stream()
-                        .forEach(phase -> {
+        getVertecProjectList().forEach(project
+                -> project.getPhases().forEach(phase -> {
 
-                            if (teamIdMap.get(project.getLeaderRef()) != null && dealIdMap.get(phase.getV_id()) != null) {
-                                dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getLeaderRef())));
-                            }
-                            if( project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null
-                                    && dealIdMap.get(phase.getV_id()) != null
-                                    && ! project.getAccountManager().equals(project.getLeaderRef())){
-                                //System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getCode());
-                                dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getAccountManager())));
-                            }
-                        }));
+            if (teamIdMap.get(project.getLeaderRef()) != null && dealIdMap.get(phase.getV_id()) != null) {
+                dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getLeaderRef())));
+            }
+            if (project.getAccountManager() != null && teamIdMap.get(project.getAccountManager()) != null
+                    && dealIdMap.get(phase.getV_id()) != null
+                    && !project.getAccountManager().equals(project.getLeaderRef())) {
+                //System.out.println("Project Manager " + project.getAccountManager() + "added as follower to " + phase.getCode());
+                dealFollowerPostList.add(new PDFollower(dealIdMap.get(phase.getV_id()), teamIdMap.get(project.getAccountManager())));
+            }
+        }));
     }
 
     public void postContactFollowers() {
-        contactFollowerPostList.stream()
-                .forEach(pipedrive::postFollowerToContact);
+        contactFollowerPostList.forEach(pipedrive::postFollowerToContact);
     }
 
     public void postDealFollowers() {
-        dealFollowerPostList.stream()
-                .forEach(pipedrive::postFollowerToDeal);
+        dealFollowerPostList.forEach(pipedrive::postFollowerToDeal);
     }
 
     public void populateDealPostAndPutList() {
@@ -932,29 +924,28 @@ public class Importer {
     }
 
     public void populateActivityPostList() {
-        getVertecActivityList().stream()
-                .forEach(activity -> {
-                    Long contact_id = contactIdMap.get(activity.getCustomer_link());
-                    Long org_id = organisationIdMap.get(activity.getCustomer_link());
-                    Long phase_id = dealIdMap.get(activity.getProject_phase_link());
-                    if (activity.getProject_link() != null && projectPhasesMap.get(activity.getProject_link()) != null) {
-                        List<Long> phases = projectPhasesMap.get(activity.getProject_link());
-                        phase_id = phase_id == null ? dealIdMap.get(phases.get(phases.size() - 1)) : phase_id;
-                    }
-                    String type = activityTypeMap.get(activity.getType());
-                    if(phase_id != null
-                            || org_id != null
-                            || contact_id != null) {
-                        activityPostList.add(
-                                new PDActivitySend(
-                                        activity,
-                                        teamIdMap.get(activity.getAssignee()),
-                                        contact_id,
-                                        org_id,
-                                        phase_id,
-                                        type));
-                    } // else dont add to post list as this will be a floating activity not related to anything else in pipedrive
-                });
+        getVertecActivityList().forEach(activity -> {
+            Long contact_id = contactIdMap.get(activity.getCustomer_link());
+            Long org_id = organisationIdMap.get(activity.getCustomer_link());
+            Long phase_id = dealIdMap.get(activity.getProject_phase_link());
+            if (activity.getProject_link() != null && projectPhasesMap.get(activity.getProject_link()) != null) {
+                List<Long> phases = projectPhasesMap.get(activity.getProject_link());
+                phase_id = phase_id == null ? dealIdMap.get(phases.get(phases.size() - 1)) : phase_id;
+            }
+            String type = activityTypeMap.get(activity.getType());
+            if (phase_id != null
+                    || org_id != null
+                    || contact_id != null) {
+                activityPostList.add(
+                        new PDActivitySend(
+                                activity,
+                                teamIdMap.get(activity.getAssignee()),
+                                contact_id,
+                                org_id,
+                                phase_id,
+                                type));
+            } // else dont add to post list as this will be a floating activity not related to anything else in pipedrive
+        });
     }
 
     public List<Long> postActivityPostList() {
@@ -1098,8 +1089,7 @@ public class Importer {
         try{
 
             PrintWriter writer = new PrintWriter(filename, "UTF-8");
-            keys.stream()
-                .forEach(key -> writer.println(key + "," + map.get(key)));
+            keys.forEach(key -> writer.println(key + "," + map.get(key)));
 
             writer.close();
         } catch (Exception e) {
@@ -1116,8 +1106,7 @@ public class Importer {
 
         try{
             PrintWriter writer = new PrintWriter(filename, "UTF-8");
-            set.stream()
-                    .forEach(writer::println);
+            set.forEach(writer::println);
             writer.close();
 
         } catch (Exception e){
