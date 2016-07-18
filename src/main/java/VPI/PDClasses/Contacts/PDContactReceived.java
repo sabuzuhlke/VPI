@@ -26,12 +26,12 @@ public class PDContactReceived {
     @JsonProperty("update_time")
     private String modifiedTime;
     //Custom fields
-    @JsonProperty("6170527cc258b1dcc706bc1ae7c55dcf689b66ab")//"097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
+    @JsonProperty("097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
-    @JsonProperty("522ab90176c8ee61ad2033a2ed62d99ea2281ed5")//"c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
+    @JsonProperty("c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
     private String ownedBy;
-    @JsonProperty("be845efac6bf57cc7c1d2bcfaae17c9a2082f6af")
-    private String position;
+//    @JsonProperty("be845efac6bf57cc7c1d2bcfaae17c9a2082f6af")
+//    private String position;
 
     /**
      * Used by RestTemplate and for testing
@@ -128,14 +128,14 @@ public class PDContactReceived {
     public void setModifiedTime(String modifiedTime) {
         this.modifiedTime = modifiedTime;
     }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
+//
+//    public String getPosition() {
+//        return position;
+//    }
+//
+//    public void setPosition(String position) {
+//        this.position = position;
+//    }
 
     public String getOwnedBy() {
         return ownedBy;

@@ -458,7 +458,7 @@ public class ImporterTest {
         System.out.println(numContsWithWebsites);
 
         long numContsInPostListWithWebsite = importer.organisationPostList.stream()
-                .filter(org -> !org.getWebsite().isEmpty())
+               // .filter(org -> !org.getWebsite().isEmpty())
                 .collect(toList())
                 .size();
 

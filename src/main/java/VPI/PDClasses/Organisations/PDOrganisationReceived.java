@@ -10,6 +10,16 @@ public class PDOrganisationReceived {
     private String name;
     private Integer visible_to;
     private String address;
+
+    private String address_subpremise;
+    private String address_street_number;
+    private String address_route;
+    private String address_locality;
+    @JsonProperty("address_country")
+    private String address_country;
+    private String address_postal_code;
+
+
     private Boolean active_flag;
     private Long id;
     private Long company_id;
@@ -19,12 +29,12 @@ public class PDOrganisationReceived {
     @JsonProperty("add_time")
     private String creationTime;
     //Custom fields
-    @JsonProperty("8bbe384141fa3df043ae029d8a15fdad1dbf3ea0")//"1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
+    @JsonProperty("1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
     private Long v_id;
-    @JsonProperty("0fac9a781075943b61cf730f5434a835d0c68a2a")//"bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
+    @JsonProperty("bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
     private String ownedBy;
-    @JsonProperty("4d320823bca5075a18070cfce737c0d96cc2191b")
-    private String website;
+//    @JsonProperty("4d320823bca5075a18070cfce737c0d96cc2191b")
+//    private String website;
 
     /**
      * Used in old code
@@ -141,6 +151,54 @@ public class PDOrganisationReceived {
 
     public void setOwnedBy(String ownedBy) {
         this.ownedBy = ownedBy;
+    }
+
+    public String getAddress_subpremise() {
+        return address_subpremise;
+    }
+
+    public void setAddress_subpremise(String address_subpremise) {
+        this.address_subpremise = address_subpremise;
+    }
+
+    public String getAddress_street_number() {
+        return address_street_number;
+    }
+
+    public void setAddress_street_number(String address_street_number) {
+        this.address_street_number = address_street_number;
+    }
+
+    public String getAddress_route() {
+        return address_route;
+    }
+
+    public void setAddress_route(String address_route) {
+        this.address_route = address_route;
+    }
+
+    public String getAddress_locality() {
+        return address_locality;
+    }
+
+    public void setAddress_locality(String address_locality) {
+        this.address_locality = address_locality;
+    }
+
+    public String getAddress_country() {
+        return address_country;
+    }
+
+    public void setAddress_country(String address_country) {
+        this.address_country = address_country;
+    }
+
+    public String getAddress_postal_code() {
+        return address_postal_code;
+    }
+
+    public void setAddress_postal_code(String address_postal_code) {
+        this.address_postal_code = address_postal_code;
     }
 
     @Override

@@ -529,7 +529,7 @@ public class Importer {
         if(jc.getOwnedByTeam()) ps.setOwnedBy("ZUK");
         else ps.setOwnedBy("Not ZUK");
 
-        ps.setPosition(pc.getPosition() == null || pc.getPosition().isEmpty() ? jc.getPosition() : pc.getPosition());
+       // ps.setPosition(pc.getPosition() == null || pc.getPosition().isEmpty() ? jc.getPosition() : pc.getPosition());
 
         return ps;
     }
@@ -568,7 +568,7 @@ public class Importer {
         if(jc.getOwnedByTeam()) ps.setOwnedBy("ZUK");
         else ps.setOwnedBy("Not ZUK");
 
-        ps.setPosition(jc.getPosition().isEmpty() ? (pc.getPosition() == null ? "" : pc.getPosition()) : jc.getPosition());
+        //ps.setPosition(jc.getPosition().isEmpty() ? (pc.getPosition() == null ? "" : pc.getPosition()) : jc.getPosition());
 
         return ps;
     }

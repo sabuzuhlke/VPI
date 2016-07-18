@@ -9,7 +9,10 @@ import VPI.PDClasses.Contacts.*;
 import VPI.PDClasses.Contacts.util.ContactDetail;
 import VPI.PDClasses.PDFollower;
 import VPI.PDClasses.Deals.*;
-import VPI.PDClasses.Organisations.*;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
+import VPI.PDClasses.Organisations.PDOrganisationSend;
+import VPI.PDClasses.Organisations.PDOrganisationItemsResponse;
+import VPI.PDClasses.Organisations.PDOrganisationResponse;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -1149,5 +1152,35 @@ public class PipedriveServiceTests {
         activity.setAdd_time("2014-01-01 09:30:00");
 
         System.out.println(PS.postActivity(activity).getBody().getData().getId());
+    }
+
+    @Test
+    public void fullVsSplitAddress(){
+        PDOrganisationSend pds = new PDOrganisationSend();
+        pds.setName("batco");
+        Long id = PS.postOrganisation(pds).getBody().getData().getId();
+
+        PDOrganisationSend newPds = new PDOrganisationSend();
+        newPds.setId(id);
+//        newPds.setAddress_country("Bat country");
+//        newPds.setAddress_locality("cave avenue");
+//        newPds.setAddress_postal_code("899");
+//        newPds.setAddress_route("up n down");
+//        newPds.setAddress_street_number("6");
+//        newPds.setAddress_subpremise("hole 2");
+
+        newPds.setAddress("145 Fleet St, London EC4A 2BU");
+
+        PS.updateOrganisation(newPds);
+
+        PDOrganisationReceived pdr = PS.getOrganisation(id).getBody().getData();
+
+        System.out.println(pdr.getName());
+        System.out.println(pdr.getAddress_country());
+        System.out.println(pdr.getAddress());
+
+        System.out.println(pdr.getId());
+
+        PS.deleteOrganisation(id);
     }
 }
