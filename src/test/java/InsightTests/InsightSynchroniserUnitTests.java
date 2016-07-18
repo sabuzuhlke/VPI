@@ -1,7 +1,7 @@
 package InsightTests;
 
 import VPI.*;
-import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.Entities.util.ContactDetail;
 import VPI.PDClasses.Contacts.util.OrgId;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;

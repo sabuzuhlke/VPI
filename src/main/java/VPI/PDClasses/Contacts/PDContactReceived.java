@@ -1,8 +1,9 @@
 package VPI.PDClasses.Contacts;
 
-import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.Entities.util.ContactDetail;
 import VPI.PDClasses.Contacts.util.OrgId;
 import VPI.PDClasses.PDOwner;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -16,7 +17,11 @@ public class PDContactReceived {
     private Long id;
     private OrgId org_id;
     private PDOwner owner_id;
+
     private String name;
+    private String first_name;
+    private String last_name;
+
     private Boolean active_flag;
     private List<ContactDetail> phone;
     private List<ContactDetail> email;
@@ -30,8 +35,8 @@ public class PDContactReceived {
     private Long v_id;
     @JsonProperty("c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
     private String ownedBy;
-//    @JsonProperty("be845efac6bf57cc7c1d2bcfaae17c9a2082f6af")
-//    private String position;
+    @JsonProperty("2045a0bc69aa638567d8b75bbcb5bb5063246456")
+    private String position;
 
     /**
      * Used by RestTemplate and for testing
@@ -143,5 +148,29 @@ public class PDContactReceived {
 
     public void setOwnedBy(String ownedBy) {
         this.ownedBy = ownedBy;
+    }
+
+    public String getFirst_name() {
+        return first_name;
+    }
+
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 }

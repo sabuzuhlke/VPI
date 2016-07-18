@@ -1,7 +1,7 @@
 package VPI;
 
 import VPI.PDClasses.Activities.PDActivitySend;
-import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.Entities.util.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.PDFollower;

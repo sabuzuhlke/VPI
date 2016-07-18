@@ -1,10 +1,11 @@
-package VPI.PDClasses.Contacts.util;
+package VPI.Entities.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContactDetail {
 
+    private String label;
     private String value;
     private Boolean primary;
 
@@ -38,6 +39,14 @@ public class ContactDetail {
 
     public void setPrimary(Boolean primary) {
         this.primary = primary;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     @Override

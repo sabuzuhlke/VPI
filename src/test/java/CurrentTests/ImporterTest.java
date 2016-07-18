@@ -3,7 +3,7 @@ package CurrentTests;
 import VPI.Importer;
 import VPI.MyCredentials;
 import VPI.PDClasses.Activities.PDActivitySend;
-import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.Entities.util.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;

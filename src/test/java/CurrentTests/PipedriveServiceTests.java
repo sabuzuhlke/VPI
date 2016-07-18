@@ -6,7 +6,7 @@ import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.*;
-import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.Entities.util.ContactDetail;
 import VPI.PDClasses.PDFollower;
 import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
@@ -411,12 +411,18 @@ public class PipedriveServiceTests {
         assertTrue(contactResponse.getBody().getSuccess());
 
         String name = contactResponse.getBody().getData().get(0).getName();
+        String first_name = contactResponse.getBody().getData().get(0).getFirst_name();
+        String surname = contactResponse.getBody().getData().get(0).getLast_name();
+
         String email = contactResponse.getBody().getData().get(0).getEmail().get(0).getValue();
         String phone = contactResponse.getBody().getData().get(0).getPhone().get(0).getValue();
 
         Long recievedOrgId = contactResponse.getBody().getData().get(0).getOrg_id().getValue();
         //check equal
         assertTrue(name.equals("Test Name"));
+        assertTrue(first_name.equals("Test"));
+        assertTrue(surname.equals("Name"));
+
         assertTrue(email.equals("Test@Test.test"));
         assertTrue(phone.equals("0987654321"));
         assertEquals(recievedOrgId, org_id);
@@ -941,6 +947,7 @@ public class PipedriveServiceTests {
         c.setActive_flag(true);
         c.setName("Vladimir Butin");
         c.changePrimaryEmail("power@me.ru");
+        c.setPosition("eagsd");
 
         ResponseEntity<PDContactResponse> resC = PS.postContact(c);
 
@@ -1154,33 +1161,35 @@ public class PipedriveServiceTests {
         System.out.println(PS.postActivity(activity).getBody().getData().getId());
     }
 
-    @Test
-    public void fullVsSplitAddress(){
-        PDOrganisationSend pds = new PDOrganisationSend();
-        pds.setName("batco");
-        Long id = PS.postOrganisation(pds).getBody().getData().getId();
+//    @Test
+//    public void fullVsSplitAddress(){
+//        PDOrganisationSend pds = new PDOrganisationSend();
+//        pds.setName("batco");
+//        Long id = PS.postOrganisation(pds).getBody().getData().getId();
+//
+//        PDOrganisationSend newPds = new PDOrganisationSend();
+//        newPds.setId(id);
+////        newPds.setAddress_country("Bat country");
+////        newPds.setAddress_locality("cave avenue");
+////        newPds.setAddress_postal_code("899");
+////        newPds.setAddress_route("up n down");
+////        newPds.setAddress_street_number("6");
+////        newPds.setAddress_subpremise("hole 2");
+//
+//        newPds.setAddress("145 Fleet St, London EC4A 2BU");
+//
+//        PS.updateOrganisation(newPds);
+//
+//        PDOrganisationReceived pdr = PS.getOrganisation(id).getBody().getData();
+//
+//        System.out.println(pdr.getName());
+//        System.out.println(pdr.ge);
+//        System.out.println(pdr.getAddress());
+//
+//        System.out.println(pdr.getId());
+//
+//        PS.deleteOrganisation(id);
+//    }
 
-        PDOrganisationSend newPds = new PDOrganisationSend();
-        newPds.setId(id);
-//        newPds.setAddress_country("Bat country");
-//        newPds.setAddress_locality("cave avenue");
-//        newPds.setAddress_postal_code("899");
-//        newPds.setAddress_route("up n down");
-//        newPds.setAddress_street_number("6");
-//        newPds.setAddress_subpremise("hole 2");
-
-        newPds.setAddress("145 Fleet St, London EC4A 2BU");
-
-        PS.updateOrganisation(newPds);
-
-        PDOrganisationReceived pdr = PS.getOrganisation(id).getBody().getData();
-
-        System.out.println(pdr.getName());
-        System.out.println(pdr.getAddress_country());
-        System.out.println(pdr.getAddress());
-
-        System.out.println(pdr.getId());
-
-        PS.deleteOrganisation(id);
-    }
+    //TODO: TEST wether first_name and last_name actually get propagated
 }

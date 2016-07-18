@@ -71,7 +71,7 @@ public class Organisation {
         return ownedOnVertecBy;
     }
 
-   public PDOrganisationSend to_PDSend(Long ownerId){
+   public PDOrganisationSend toPDSend(Long ownerId){
        PDOrganisationSend pds = new PDOrganisationSend();
 
        pds.setAddress(this.full_address);

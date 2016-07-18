@@ -2,7 +2,7 @@ package VPI.InsightClasses;
 
 import VPI.MyCredentials;
 import VPI.PDClasses.*;
-import VPI.PDClasses.Contacts.util.ContactDetail;
+import VPI.Entities.util.ContactDetail;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
