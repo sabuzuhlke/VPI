@@ -12,24 +12,14 @@ public class JSONPhase {
     private String description;
     @JsonProperty("code")
     private String code;
-    @JsonProperty("status")
-    private int status;
     @JsonProperty("sales_status")
     private String salesStatus;
     @JsonProperty("external_value")
     private String externalValue;
-    @JsonProperty("internal_value")
-    private String internalValue;
     @JsonProperty("person_responsible")
     private String personResponsible;
-    @JsonProperty("start_date")
-    private String startDate;
-    @JsonProperty("end_date")
-    private String endDate;
     @JsonProperty("offered_date")
     private String offeredDate;
-    @JsonProperty("granted_date")
-    private String grantedDate;
     @JsonProperty("lost_reason")
     private String lostReason;
     @JsonProperty("last_modified")
@@ -76,21 +66,6 @@ public class JSONPhase {
         this.code = code;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getInternalValue() {
-        return internalValue;
-    }
-
-    public void setInternalValue(String internalValue) {
-        this.internalValue = internalValue;
-    }
 
     public String getExternalValue() {
 
@@ -109,22 +84,6 @@ public class JSONPhase {
         this.personResponsible = personResponsible;
     }
 
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
-    }
-
     public String getOfferedDate() {
         return offeredDate;
     }
@@ -139,14 +98,6 @@ public class JSONPhase {
 
     public void setSalesStatus(String salesStatus) {
         this.salesStatus = salesStatus;
-    }
-
-    public String getGrantedDate() {
-        return grantedDate;
-    }
-
-    public void setGrantedDate(String grantedDate) {
-        this.grantedDate = grantedDate;
     }
 
     public String getLostReason() {

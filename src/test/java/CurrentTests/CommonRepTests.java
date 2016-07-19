@@ -3,18 +3,22 @@ package CurrentTests;
 import VPI.Entities.Contact;
 import VPI.Entities.util.ContactDetail;
 import VPI.Entities.Organisation;
+import VPI.Entities.util.Formatter;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Contacts.util.OrgId;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDOwner;
+import VPI.PDClasses.PDRelationship;
 import org.junit.Test;
 
 
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
 
+import static VPI.Entities.util.Formatter.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -78,8 +82,10 @@ public class CommonRepTests {
 
         pdr.setV_id(2L);
 
-        Organisation org = new Organisation(pdr);
+        Long parentId = 5L;
+        PDRelationship rel = new PDRelationship(parentId,1L);
 
+        Organisation org = new Organisation(pdr, rel);
 
         assertEquals(pdr.getId(), org.getPipedriveId());
         assertEquals(pdr.getV_id(), org.getVertecId());
@@ -90,8 +96,117 @@ public class CommonRepTests {
         assertTrue(pdr.getName().equals(org.getName()));
         assertTrue(pdr.getAddress().equals(org.getFull_address()));
         assertTrue(pdr.getCreationTime().equals(org.getCreated()));
+        assertEquals(parentId, org.getvParentOrganisation());
 
         //TODO: category and business
+    }
+
+    @Test
+    public void canConvertVOrgToCommon(){
+        VPI.VertecClasses.VertecOrganisations.Organisation org = new VPI.VertecClasses.VertecOrganisations.Organisation();
+
+        org.setVertecId(1L);
+        org.setOwnedOnVertecBy("hahah");
+        org.setActive(true);
+        org.setOwner_id(666L);
+        org.setName("GMO Alliance");
+        org.setWebsite("gmo@health.com");
+        org.setCategory("agricultural");
+        org.setBusinessDomain("Organised Crime");
+        org.setBuildingName("buildiing1");
+        org.setStreet_no("2");
+        org.setStreet("Cornfield");
+        org.setCity("Paradise City");
+        org.setCountry("USA");
+        org.setZip("TDL 454");
+        org.setParentOrganisation(3L); //Add representation into common
+        org.setModified("1998-12-12T00:00:00");
+        org.setCreated("1999-12-12T00:00:00");
+
+        String ownerEmailFromMap = "fed@us.com";
+
+        Organisation organisation = new Organisation(org, ownerEmailFromMap);
+
+        assertEquals(org.getVertecId(), organisation.getVertecId());
+
+        assertTrue(org.getOwnedOnVertecBy().equals(organisation.getOwnedOnVertecBy()));
+        assertTrue((org.getActive().equals(organisation.getActive())));
+        assertTrue(org.getWebsite().equals(organisation.getWebsite()));
+        assertTrue(org.getCategory().equals(organisation.getCategory()));
+        assertTrue(org.getBusinessDomain().equals(organisation.getBusinessDomain()));
+        assertTrue(org.getBuildingName().equals(organisation.getBuildingName()));
+        assertTrue(org.getStreet_no().equals(organisation.getStreet_no()));
+        assertTrue(org.getStreet().equals(organisation.getStreet()));
+        assertTrue(org.getCity().equals(organisation.getCity()));
+        assertTrue(org.getCountry().equals(organisation.getCountry()));
+        assertTrue(org.getZip().equals(organisation.getZip()));
+        assertTrue(org.getParentOrganisation().equals(organisation.getvParentOrganisation()));
+        assertTrue(formatVertecDate(org.getModified()).equals(organisation.getModified()));
+        assertTrue(formatVertecDate(org.getCreated()).equals(organisation.getCreated()));
+
+        assertTrue(formatVertecAddress(org).equals(organisation.getFull_address()));
+
+        assertTrue(ownerEmailFromMap.equals(organisation.getSupervisingEmail()));
+
+    }
+
+    @Test //TODO complete
+    public void canConvertOrganisationtoVorg(){
+        Organisation cOrg = new Organisation();
+        cOrg.setName("GMO Alliance");
+        cOrg.setPipedriveId(1L);
+        cOrg.setVertecId(2L);
+        cOrg.setActive(true);
+        cOrg.setBuildingName("buil");
+        cOrg.setBusinessDomain("Organised Crime");
+        cOrg.setCategory("Agricurtural");
+        cOrg.setSupervisingEmail("fed@us.com");
+        cOrg.setCity("city");
+        cOrg.setCountry("THE USA!");
+        cOrg.setWebsite("gmoforsale@mygarden.com");
+        cOrg.setCreated("1889-11-32 00:00:00");
+
+        cOrg.setStreet("Street");
+        cOrg.setStreet_no("2");
+        cOrg.setModified("1999-12-12 00:00:00");
+        cOrg.setOwnedOnVertecBy("zuk");
+        cOrg.setZip("7878");
+
+        cOrg.setvParentOrganisation(3L);
+    //fullAddress does not need to be set here
+
+        Long ownerIdFromMap = 4L;
+
+        VPI.VertecClasses.VertecOrganisations.Organisation org = cOrg.toVertecRep(ownerIdFromMap);
+
+        assertTrue(cOrg.getName().equals(org.getName()));
+        assertTrue(cOrg.getBuildingName().equals(org.getBuildingName()));
+        assertTrue(cOrg.getBusinessDomain().equals(org.getBusinessDomain()));
+        assertTrue(cOrg.getCategory().equals(org.getCategory()));
+        assertTrue(cOrg.getCity().equals(org.getCity()));
+        assertTrue(cOrg.getCountry().equals(org.getCountry()));
+        assertTrue(cOrg.getWebsite().equals(org.getWebsite()));
+        assertTrue(cOrg.getCreated().equals(org.getCreated()));
+        assertTrue(cOrg.getStreet_no().equals(org.getStreet_no()));
+        assertTrue(cOrg.getStreet().equals(org.getStreet()));
+        assertTrue(cOrg.getStreet().equals(org.getStreet()));
+        assertTrue(cOrg.getOwnedOnVertecBy().equals(org.getOwnedOnVertecBy()));
+        assertTrue(cOrg.getZip().equals(org.getZip()));
+        assertTrue(cOrg.getZip().equals(org.getZip()));
+
+        assertTrue(formatToVertecDate(cOrg.getModified()).equals(org.getModified()));
+        assertTrue(formatToVertecDate(cOrg.getCreated()).equals(org.getCreated()));
+
+
+        assertEquals(cOrg.getVertecId(), org.getVertecId());
+        assertEquals(cOrg.getActive(), org.getActive());
+        assertEquals(ownerIdFromMap, org.getOwner_id());
+        assertEquals(cOrg.getvParentOrganisation(), org.getParentOrganisation());
+
+
+
+
+
     }
 
     @Test
@@ -240,8 +355,6 @@ public class CommonRepTests {
         assertEquals(pds.getOrg_id(), contact.getPipedriveOrgLink());
 
         assertTrue(pds.getPosition().equals(contact.getPosition()));
-        
-        
         
     }
 

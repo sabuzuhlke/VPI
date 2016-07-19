@@ -1,7 +1,9 @@
 package VPI.Entities;
 
+import VPI.Entities.util.Formatter;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
+import VPI.PDClasses.PDRelationship;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Organisation {
@@ -29,10 +31,12 @@ public class Organisation {
     private String modified;
     private String created;
 
+    private Long vParentOrganisation;
+
     public Organisation() {
     }
 
-    public Organisation(PDOrganisationReceived pdr){
+    public Organisation(PDOrganisationReceived pdr, PDRelationship relationship){
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
         this.active = true;
@@ -42,8 +46,59 @@ public class Organisation {
         this.name = pdr.getName();
         this.full_address = pdr.getAddress();
         this.created = pdr.getCreationTime();
+
+        this.vParentOrganisation = relationship.getRel_owner_org_id();
         //TODO modified Date,
 
+    }
+
+    public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, String ownerEmail){
+        this.vertecId = organisation.getVertecId();
+        this.active = organisation.getActive();
+        this.website = organisation.getWebsite();
+        this.category = organisation.getCategory();
+        this.businessDomain = organisation.getBusinessDomain();
+
+        this.buildingName = organisation.getBuildingName();
+        this.street_no = organisation.getStreet_no();
+        this.street = organisation.getStreet();
+        this.city = organisation.getCity();
+        this.country = organisation.getCountry();
+        this.zip = organisation.getZip();
+        this.full_address = Formatter.formatVertecAddress(organisation);
+
+        this.vParentOrganisation = organisation.getParentOrganisation();
+
+        this.modified = Formatter.formatVertecDate(organisation.getModified());
+        this.created = Formatter.formatVertecDate(organisation.getCreated());
+
+        this.supervisingEmail = ownerEmail;
+        this.ownedOnVertecBy = organisation.getOwnedOnVertecBy();
+    }
+
+    public VPI.VertecClasses.VertecOrganisations.Organisation toVertecRep(Long ownerId){
+        VPI.VertecClasses.VertecOrganisations.Organisation org = new VPI.VertecClasses.VertecOrganisations.Organisation();
+
+        org.setVertecId(vertecId);
+        org.setOwnedOnVertecBy(ownedOnVertecBy);
+        org.setActive(active);
+        org.setOwner_id(ownerId);
+        org.setName(name);
+        org.setWebsite(website);
+        org.setCategory(category);
+        org.setBusinessDomain(businessDomain);
+        org.setBuildingName(buildingName);
+        org.setStreet(street);
+        org.setStreet_no(street_no);
+        org.setCity(city);
+        org.setCountry(country);
+        org.setZip(zip);
+
+        org.setParentOrganisation(vParentOrganisation);
+        org.setCreated(Formatter.formatToVertecDate(created));
+        org.setModified(Formatter.formatToVertecDate(modified));
+
+        return org;
     }
 
     public String toJSONString(){
@@ -85,6 +140,7 @@ public class Organisation {
 
        return pds;
    }
+
 
     public void setOwnedOnVertecBy(String ownedOnVertecBy) {
         this.ownedOnVertecBy = ownedOnVertecBy;
@@ -218,5 +274,11 @@ public class Organisation {
         this.full_address = full_address;
     }
 
+    public Long getvParentOrganisation() {
+        return vParentOrganisation;
+    }
 
+    public void setvParentOrganisation(Long vParentOrganisation) {
+        this.vParentOrganisation = vParentOrganisation;
+    }
 }
