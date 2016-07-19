@@ -150,7 +150,7 @@ public class CommonRepTests {
 
     }
 
-    @Test //TODO complete
+    @Test
     public void canConvertOrganisationtoVorg(){
         Organisation cOrg = new Organisation();
         cOrg.setName("GMO Alliance");

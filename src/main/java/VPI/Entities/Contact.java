@@ -10,6 +10,8 @@ import java.util.List;
 /**
  * Created by gebo on 18/07/2016.
  */
+
+//TODO Once VRAPI Supports handling contacts add conversion functions to/from vertec
 public class Contact {
 
     private Long vertecId;

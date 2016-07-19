@@ -1,5 +1,7 @@
 package VPI.Entities;
 
+//TODO Once needed add conversion functions to/from vertec and pipedrive
+
 /**
  * there are predifined conversion functions used to convert vertec object into pd objects
  * Fields to watch out for:

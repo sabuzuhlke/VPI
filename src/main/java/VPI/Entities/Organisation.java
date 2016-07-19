@@ -36,6 +36,10 @@ public class Organisation {
     public Organisation() {
     }
 
+    /**
+     *
+     * @param relationship has to be got seperately from pipedrive
+     */
     public Organisation(PDOrganisationReceived pdr, PDRelationship relationship){
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
@@ -52,6 +56,29 @@ public class Organisation {
 
     }
 
+    /**
+     *
+     * @param ownerId has to be gotten from Map using supervisingEmail
+     */
+    public PDOrganisationSend toPDSend(Long ownerId){
+        PDOrganisationSend pds = new PDOrganisationSend();
+
+        pds.setAddress(this.full_address);
+        pds.setCreationTime(this.created);
+        pds.setName(this.name);
+        pds.setOwnedBy(this.ownedOnVertecBy);
+
+        pds.setActive_flag(this.active);
+        pds.setId(this.pipedriveId);
+        pds.setOwner_id(ownerId);
+
+        return pds;
+    }
+
+    /**
+     *
+     * @param ownerEmail has to be got from a map using the ownerId of the vertec organisation
+     */
     public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, String ownerEmail){
         this.vertecId = organisation.getVertecId();
         this.active = organisation.getActive();
@@ -74,8 +101,14 @@ public class Organisation {
 
         this.supervisingEmail = ownerEmail;
         this.ownedOnVertecBy = organisation.getOwnedOnVertecBy();
+
+        //TODO modifiedDate
     }
 
+    /**
+     *
+     * @param ownerId has to be got from map using supervisingEmail
+     */
     public VPI.VertecClasses.VertecOrganisations.Organisation toVertecRep(Long ownerId){
         VPI.VertecClasses.VertecOrganisations.Organisation org = new VPI.VertecClasses.VertecOrganisations.Organisation();
 
@@ -125,22 +158,6 @@ public class Organisation {
     public String getOwnedOnVertecBy() {
         return ownedOnVertecBy;
     }
-
-   public PDOrganisationSend toPDSend(Long ownerId){
-       PDOrganisationSend pds = new PDOrganisationSend();
-
-       pds.setAddress(this.full_address);
-       pds.setCreationTime(this.created);
-       pds.setName(this.name);
-       pds.setOwnedBy(this.ownedOnVertecBy);
-
-       pds.setActive_flag(this.active);
-       pds.setId(this.pipedriveId);
-       pds.setOwner_id(ownerId);
-
-       return pds;
-   }
-
 
     public void setOwnedOnVertecBy(String ownedOnVertecBy) {
         this.ownedOnVertecBy = ownedOnVertecBy;
