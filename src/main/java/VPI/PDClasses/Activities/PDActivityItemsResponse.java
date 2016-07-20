@@ -3,6 +3,7 @@ package VPI.PDClasses.Activities;
 import VPI.PDClasses.PDAdditionalData;
 import VPI.PDClasses.PDResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PDActivityItemsResponse extends PDResponse {
@@ -11,6 +12,7 @@ public class PDActivityItemsResponse extends PDResponse {
     private PDAdditionalData additional_data;
 
     public PDActivityItemsResponse() {
+        data = new ArrayList<>();
     }
 
     public List<PDActivityReceived> getData() {
@@ -27,5 +29,10 @@ public class PDActivityItemsResponse extends PDResponse {
 
     public void setAdditional_data(PDAdditionalData additional_data) {
         this.additional_data = additional_data;
+    }
+
+    @Override
+    public String toString(){
+        return data.toString() + additional_data.toString();
     }
 }

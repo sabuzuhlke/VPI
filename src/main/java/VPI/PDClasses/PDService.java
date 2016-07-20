@@ -270,6 +270,30 @@ public class PDService {
                 .collect(toList());
     }
 
+    public List<PDDealReceived> getAllDealsForOrganisation(Long orgId){
+        int start = 0;
+        int limit = 500;
+        boolean moreInfo = true;
+
+        List<PDDealReceived> deals = new ArrayList<>();
+
+        while(moreInfo){
+            ResponseEntity<PDDealItemsResponse> res = getFromPipedrive(server +  "organizations/" + orgId + "/deals" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDDealItemsResponse.class);
+            if(res.getStatusCode() == HttpStatus.OK){
+                moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+                deals.addAll(res.
+                        getBody().
+                        getData());
+                start = res.getBody().getAdditional_data().getPagination().getLimit();
+                limit += 500;
+            }
+        }
+        return deals;
+
+    }
+
+
 
     /**
      * CONTACTS
@@ -370,8 +394,26 @@ public class PDService {
         return getFromPipedrive(server + "activities/" + id + apiKey, PDActivityResponse.class);
     }
 
-    public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForUser(Long id) {
-        return getFromPipedrive(server + "activities?user_id=" + id + "&start=0&" + apiKey.substring(1), PDActivityItemsResponse.class);
+    public List<PDActivityReceived> getAllActivitiesForUser(Long id) {
+        int start = 0;
+        int limit = 500;
+        boolean moreInfo = true;
+
+        List<PDActivityReceived> activities = new ArrayList<>();
+
+        while(moreInfo){
+           ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server + "activities?user_id=" + id + "&start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
+            if(res.getStatusCode() == HttpStatus.OK){
+                moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+                if(res.getBody().getData() == null) break;
+
+                activities.addAll(res.getBody().getData());
+                start = res.getBody().getAdditional_data().getPagination().getLimit();
+                limit += 500;
+            }
+        }
+        return activities;
     }
 
     @SuppressWarnings("unused")
@@ -379,9 +421,29 @@ public class PDService {
         return getFromPipedrive(server + "deals/" + dealId + "/activities" + apiKey, PDActivityItemsResponse.class);
     }
 
-    @SuppressWarnings("unused")
-    public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForOrganisation(Long orgId) {
-        return getFromPipedrive(server + "organizations/" + orgId + "/activities" + apiKey, PDActivityItemsResponse.class);
+
+    public List<PDActivityReceived> getAllActivitiesForOrganisation(Long orgId) {
+        int start = 0;
+        int limit = 500;
+        boolean moreInfo = true;
+
+        List<PDActivityReceived> activities = new ArrayList<>();
+
+        while(moreInfo){
+            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server +  "organizations/" + orgId + "/activities" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
+            if(res.getStatusCode() == HttpStatus.OK){
+                moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+
+
+                activities.addAll(res.
+                        getBody().
+                        getData());
+                start = res.getBody().getAdditional_data().getPagination().getLimit();
+                limit += 500;
+            }
+        }
+        return activities;
     }
 
     @SuppressWarnings("unused")

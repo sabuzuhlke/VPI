@@ -1,6 +1,7 @@
 package CurrentTests;
 
 import VPI.*;
+import VPI.Entities.Organisation;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
@@ -29,7 +30,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.FileWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -916,7 +919,7 @@ public class PipedriveServiceTests {
 
         return activities;
     }
-    
+
     @Test
     public void canGetActivity(){
         PDActivitySend activity = new PDActivitySend();
@@ -982,9 +985,9 @@ public class PipedriveServiceTests {
         ResponseEntity<PDActivityResponse> resA = PS.postActivity(activity);
 
         Long actid = resA.getBody().getData().getId();
-        
+
         resA = PS.getActivity(actid);
-        
+
         PDActivityReceived a = resA.getBody().getData();
 
         assertTrue(resA.getStatusCode() == HttpStatus.OK);
@@ -1015,7 +1018,7 @@ public class PipedriveServiceTests {
 
         delres = PS.deleteActivity(actid);
         assertTrue(delres.getBody().getSuccess());
-        
+
     }
 
     @Test
@@ -1190,6 +1193,55 @@ public class PipedriveServiceTests {
 //
 //        PS.deleteOrganisation(id);
 //    }
+
+    @Test
+    public void canGetAllActivitiesForOrganisation(){
+        PDOrganisationSend org = new PDOrganisationSend();
+        org.setName("TestName");
+        org.setActive_flag(true);
+        org.setVisible_to(3);
+
+        List<Long> controlActivityIds = new ArrayList<>();
+        Long orgId = PS.postOrganisation(org).getBody().getData().getId();
+
+        for(int i = 0; i < 20; i++){
+            PDActivitySend act = new PDActivitySend();
+            act.setSubject(i + "th Org test activity");
+            act.setType("call");
+            act.setOrg_id(orgId);
+
+            controlActivityIds.add(PS.postActivity(act).getBody().getData().getId());
+        }
+        
+       
+    }
+    @Test
+    public void canGetAllDealsForOrg(){
+        PDOrganisationSend org = new PDOrganisationSend();
+        org.setName("TestName");
+        org.setActive_flag(true);
+        org.setVisible_to(3);
+
+        List<Long> controlDealIds = new ArrayList<>();
+        Long orgId = PS.postOrganisation(org).getBody().getData().getId();
+
+        for(int i = 0; i < 20; i++){
+            PDDealSend deal = new PDDealSend();
+            deal.setTitle(i + "th Org test Deal");
+            deal.setOrg_id(orgId);
+
+            controlDealIds.add(PS.postDeal(deal).getBody().getData().getId());
+        }
+
+        List<Long> dealIds = PS.getAllDealsForOrganisation(orgId).stream()
+                .map(PDDealReceived::getId)
+                .collect(toList());
+
+        controlDealIds.forEach(id -> assertTrue(dealIds.contains(id)));
+
+        PS.deleteDealList(controlDealIds);
+        PS.deleteOrganisation(orgId);
+    }
 
     //TODO: TEST wether first_name and last_name actually get propagated
 }

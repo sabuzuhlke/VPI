@@ -1,5 +1,7 @@
 package VPI.PDClasses.Activities;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class PDActivityReceived {
 
     private Long id;
@@ -175,6 +177,20 @@ public class PDActivityReceived {
 
     public void setDone_date(String done_date) {
         this.done_date = done_date;
+    }
+
+    @Override
+    public String toString(){
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
+        }
+        return retStr;
     }
 
 }
