@@ -3,18 +3,18 @@ package VPI.Entities;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivitySend;
 
-import static VPI.Entities.util.Formatter.extractNoteFromNoteWithVID;
-import static VPI.Entities.util.Formatter.extractVID;
-import static VPI.Entities.util.Formatter.reformatToHtml;
+import static VPI.Entities.util.Utilities.*;
 
 /**
- * Created by gebo on 19/07/2016.
+ * Done field shows weird behaviour due to it being false on vertec even though the activity is done.
+ * As a consequence ensure that toPDSend is only called on Activities created from Vertec entries.
+ * This does not result in loss of functionality.
  */
 public class Activity {
     private Long pipedriveId;
     private Long vertecId;
 
-    private Boolean done;
+    private Boolean Done;
     private Boolean active;
 
     private String pType;
@@ -44,15 +44,13 @@ public class Activity {
     private Long pipedriveAssignee;
     private Long vertecAssignee;
 
-    private Long pipedriveCreator;
-    private Long vertecCreator;
-
     public Activity(PDActivityReceived act, Long vertecOrganisationLink, Long vertecDealLink, Long vertecProjectLink, Long vertecContactLink, Long vertecAssignee, Long vertecCreator, String vType){
 
         this.pipedriveId = act.getId();
         this.vertecId = extractVID(act.getNote());
 
-        this.done = act.getDone();
+        this.Done = act.getDone();
+
         this.active = act.getActive_flag();
 
         this.pType = act.getType();
@@ -80,9 +78,6 @@ public class Activity {
         this.pipedriveAssignee = act.getAssigned_to_user_id();
         this.vertecAssignee = vertecAssignee;
 
-        this.pipedriveCreator = act.getCreated_by_user_id();
-        this.vertecCreator = vertecCreator;
-
     }
 
 
@@ -91,7 +86,7 @@ public class Activity {
 
         pActivity.setId(pipedriveId);
         pActivity.setUser_id(pipedriveAssignee);
-        pActivity.setDone(done);
+
         pActivity.setType(pType);
 
         //Set due_date and time
@@ -116,7 +111,13 @@ public class Activity {
         pActivity.setNote("V_ID:" + vertecId + "#<br>" + reformatToHtml(text));
 
         pActivity.setAdd_time(created);
+
+
         pActivity.setDone_date(doneDate);
+        pActivity.setDone(Done
+                || isInThePast(dueDate)
+                || isInThePast(doneDate)
+                || isInThePast(created));
 
         return pActivity;
     }
@@ -142,11 +143,11 @@ public class Activity {
     }
 
     public Boolean getDone() {
-        return done;
+        return Done;
     }
 
     public void setDone(Boolean done) {
-        this.done = done;
+        this.Done = done;
     }
 
     public Boolean getActive() {
@@ -291,22 +292,6 @@ public class Activity {
 
     public void setVertecAssignee(Long vertecAssignee) {
         this.vertecAssignee = vertecAssignee;
-    }
-
-    public Long getPipedriveCreator() {
-        return pipedriveCreator;
-    }
-
-    public void setPipedriveCreator(Long pipedriveCreator) {
-        this.pipedriveCreator = pipedriveCreator;
-    }
-
-    public Long getVertecCreator() {
-        return vertecCreator;
-    }
-
-    public void setVertecCreator(Long vertecCreator) {
-        this.vertecCreator = vertecCreator;
     }
 
     public Long getVertecProjectLink() {

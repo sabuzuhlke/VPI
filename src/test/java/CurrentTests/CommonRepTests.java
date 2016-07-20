@@ -4,7 +4,6 @@ import VPI.Entities.Activity;
 import VPI.Entities.Contact;
 import VPI.Entities.util.ContactDetail;
 import VPI.Entities.Organisation;
-import VPI.Entities.util.Formatter;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.PDContactReceived;
@@ -20,7 +19,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static VPI.Entities.util.Formatter.*;
+import static VPI.Entities.util.Utilities.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -429,7 +428,6 @@ public class CommonRepTests {
         assertEquals(pActivity.getOrg_id(), activity.getPipedriveOrganisationLink());
         assertEquals(vOrgFromMap, activity.getVertecOrganisationLink());
 
-        assertEquals(vCreatorFromMap, activity.getVertecCreator());
         }
 
     @Test
@@ -441,6 +439,7 @@ public class CommonRepTests {
 
         activity.setDoneDate("1222-12-12 00:00:00");
         activity.setActive(true);
+        activity.setDone(true);
         activity.setpType("call");
         activity.setpDuration("7min");
         activity.setSubject("World Domination");
@@ -454,7 +453,6 @@ public class CommonRepTests {
         activity.setPipedriveDealLink(4L);
         activity.setPipedriveContactLink(5L);
         activity.setPipedriveAssignee(6L);
-        activity.setPipedriveCreator(7L);
 
         PDActivitySend pdActivity = activity.toPDSend();
 

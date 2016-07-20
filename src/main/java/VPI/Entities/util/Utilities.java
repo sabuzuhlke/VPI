@@ -1,6 +1,8 @@
 package VPI.Entities.util;
 
- public class Formatter {
+import java.time.LocalDate;
+
+public class Utilities {
 
      static  public String formatVertecDate(String vDate){
          try{
@@ -129,4 +131,19 @@ package VPI.Entities.util;
          }
          return formattedString;
      }
+
+    static public boolean isInThePast(String dateTime) {
+        if(dateTime == null) return false;
+        if (dateTime.length() >= 10) {
+            String date = dateTime.substring(0, 10);
+            LocalDate d = LocalDate.parse(date);
+            LocalDate now = LocalDate.now();
+            return d.isBefore(now);
+        } else {
+            return false;
+        }
+
+    }
 }
+
+

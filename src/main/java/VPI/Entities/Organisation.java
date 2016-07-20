@@ -1,6 +1,6 @@
 package VPI.Entities;
 
-import VPI.Entities.util.Formatter;
+import VPI.Entities.util.Utilities;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDRelationship;
@@ -93,12 +93,12 @@ public class Organisation {
         this.city = organisation.getCity();
         this.country = organisation.getCountry();
         this.zip = organisation.getZip();
-        this.full_address = Formatter.formatVertecAddress(organisation);
+        this.full_address = Utilities.formatVertecAddress(organisation);
 
         this.vParentOrganisation = organisation.getParentOrganisation();
 
-        this.modified = Formatter.formatVertecDate(organisation.getModified());
-        this.created = Formatter.formatVertecDate(organisation.getCreated());
+        this.modified = Utilities.formatVertecDate(organisation.getModified());
+        this.created = Utilities.formatVertecDate(organisation.getCreated());
 
         this.supervisingEmail = ownerEmail;
         this.ownedOnVertecBy = organisation.getOwnedOnVertecBy();
@@ -129,8 +129,8 @@ public class Organisation {
         org.setZip(zip);
 
         org.setParentOrganisation(vParentOrganisation);
-        org.setCreated(Formatter.formatToVertecDate(created));
-        org.setModified(Formatter.formatToVertecDate(modified));
+        org.setCreated(Utilities.formatToVertecDate(created));
+        org.setModified(Utilities.formatToVertecDate(modified));
 
         return org;
     }
