@@ -88,4 +88,45 @@ package VPI.Entities.util;
          }
          return address;
      }
+
+     static public String extractNoteFromNoteWithVID(String note) {
+         if (extractVID(note) == -1) {
+             return note;
+         } else {
+             String[] vIdAndRest = note.split("#");
+             return vIdAndRest[1];
+         }
+     }
+
+     static public  Long extractVID(String note) {
+         if (note.contains("V_ID:")) {
+             String[] vIdAndRest = note.split("#");
+             String vIdString = vIdAndRest[0];
+             String[] keyValue = vIdString.split(":");
+             if (keyValue.length == 2) {
+                 return Long.parseLong(keyValue[1]);
+             }
+         }
+         return -1L;
+     }
+
+     //TODO add the reverse of this function
+     public static String reformatToHtml(String s) { //makes content of note field legible on pipedrive
+         String[] parts = s.split("\n");
+
+         String formattedString = "";
+
+         for (String part : parts) {
+             formattedString += part + "<br>";
+         }
+
+         String[] parts2 = formattedString.split("\t");
+
+
+         formattedString = "";
+         for(String part2 : parts2){
+             formattedString+= part2 + "    ";//four spaces to replace tabs
+         }
+         return formattedString;
+     }
 }

@@ -3,7 +3,7 @@ package VPI.PDClasses.Activities;
 public class PDActivityReceived {
 
     private Long id;
-    private Long user_id;
+    private Long user_id; // not actually used anymore
     private Boolean done;
     private String type;
     private String due_date;

@@ -1,9 +1,12 @@
 package CurrentTests;
 
+import VPI.Entities.Activity;
 import VPI.Entities.Contact;
 import VPI.Entities.util.ContactDetail;
 import VPI.Entities.Organisation;
 import VPI.Entities.util.Formatter;
+import VPI.PDClasses.Activities.PDActivityReceived;
+import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Contacts.util.OrgId;
@@ -14,7 +17,6 @@ import VPI.PDClasses.PDRelationship;
 import org.junit.Test;
 
 
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,9 +125,10 @@ public class CommonRepTests {
         org.setModified("1998-12-12T00:00:00");
         org.setCreated("1999-12-12T00:00:00");
 
+        Long pipedriveOrgIdfromMap = 4L;
         String ownerEmailFromMap = "fed@us.com";
 
-        Organisation organisation = new Organisation(org, ownerEmailFromMap);
+        Organisation organisation = new Organisation(org, pipedriveOrgIdfromMap, ownerEmailFromMap);
 
         assertEquals(org.getVertecId(), organisation.getVertecId());
 
@@ -147,6 +150,8 @@ public class CommonRepTests {
         assertTrue(formatVertecAddress(org).equals(organisation.getFull_address()));
 
         assertTrue(ownerEmailFromMap.equals(organisation.getSupervisingEmail()));
+
+        assertEquals(pipedriveOrgIdfromMap, organisation.getPipedriveId());
 
     }
 
@@ -355,10 +360,135 @@ public class CommonRepTests {
         assertEquals(pds.getOrg_id(), contact.getPipedriveOrgLink());
 
         assertTrue(pds.getPosition().equals(contact.getPosition()));
-        
     }
 
+    @Test
+    public void canConvertPdReceivedtoActivity() {
+
+        PDActivityReceived pActivity = new PDActivityReceived();
+
+        pActivity.setId(1L);
+        pActivity.setDone(true);
+        pActivity.setType("b");
+        pActivity.setDue_date("2222-22-22");
+        pActivity.setDue_time("11:11:11");
+        pActivity.setDuration("3min");
+        pActivity.setAdd_time("1512-04-04 00:00:00");
+        pActivity.setMarked_as_done_time("");
+        pActivity.setSubject("World Peace");
+        pActivity.setDeal_id(3L);
+        pActivity.setOrg_id(4L);
+        pActivity.setPerson_id(5L);
+        pActivity.setActive_flag(true);
+        pActivity.setUpdate_time("1999-99-99 00:00:00");
+        pActivity.setNote("V_ID:123#<br> remember the following:");
+        pActivity.setAssigned_to_user_id(6L);
+        pActivity.setCreated_by_user_id(7L);
+        pActivity.setDone_date("1777-23-23");
+
+        Long vOrgFromMap = 12L;
+        Long vertecDealLinkfromMap = 8L;
+        Long vContactFromMap = 9L;
+        Long vAssigneeFromMap = 10L;
+        Long vCreatorFromMap = 11L;
+
+        String vTypeFromMap = "hab";
+
+
+        Activity activity = new Activity(pActivity, vOrgFromMap, vertecDealLinkfromMap, vContactFromMap, vAssigneeFromMap, vCreatorFromMap, vTypeFromMap);
+
+        assertTrue(pActivity.getType().equals(activity.getpType()));
+        assertTrue(vTypeFromMap.equals(activity.getvType()));
+
+
+        assertTrue(pActivity.getDuration().equals(activity.getpDuration()));
+        assertTrue(pActivity.getSubject().equals(activity.getSubject()));
+        assertTrue(extractNoteFromNoteWithVID(pActivity.getNote()).equals(activity.getText()));
+
+        assertTrue((pActivity.getDue_date() + " " + pActivity.getDue_time()).equals(activity.getDueDate()));
+
+        assertTrue(pActivity.getAdd_time().equals(activity.getCreated()));
+
+        assertTrue(pActivity.getMarked_as_done_time().equals(activity.getDoneDate()));
+
+        assertEquals(pActivity.getId(), activity.getPipedriveId());
+        assertEquals(extractVID(pActivity.getNote()), activity.getVertecId());
+
+
+        assertEquals(pActivity.getDeal_id(), activity.getPipedriveDealLink());
+        assertEquals(vertecDealLinkfromMap, activity.getVertecDealLink());
+
+        assertEquals(pActivity.getPerson_id(), activity.getPipedriveContactLink());
+        assertEquals(vContactFromMap, activity.getVertecContactLink());
+
+        assertEquals(pActivity.getAssigned_to_user_id(), activity.getPipedriveAssignee());
+        assertEquals(vAssigneeFromMap, activity.getVertecAssignee());
+
+        assertEquals(pActivity.getOrg_id(), activity.getPipedriveOrganisationLink());
+        assertEquals(vOrgFromMap, activity.getVertecOrganisationLink());
+
+        assertEquals(vCreatorFromMap, activity.getVertecCreator());
+        }
+
+    @Test
+    public void canCreatePdSendFromActivity(){
+        Activity activity = new Activity();
+
+        activity.setPipedriveId(1L);
+        activity.setVertecId(2L);
+
+        activity.setDoneDate("1222-12-12 00:00:00");
+        activity.setActive(true);
+        activity.setpType("call");
+        activity.setpDuration("7min");
+        activity.setSubject("World Domination");
+        activity.setText("notext");
+        activity.setDueDate("1222-12-10 00:00:02");
+        activity.setDoneDate("1222-12-19 00:00:03");
+        activity.setCreated("1222-12-12 00:00:04");
+        activity.setModified("1222-12-12 00:00:05");
+
+        activity.setPipedriveOrganisationLink(3L);
+        activity.setPipedriveDealLink(4L);
+        activity.setPipedriveContactLink(5L);
+        activity.setPipedriveAssignee(6L);
+        activity.setPipedriveCreator(7L);
+
+        PDActivitySend pdActivity = activity.toPDSend();
+
+        assertTrue(activity.getDoneDate().equals(pdActivity.getDone_date()));
+        assertTrue(activity.getCreated().equals(pdActivity.getAdd_time()));
+
+        assertTrue(activity.getDueDate().equals(pdActivity.getDue_date() + " " + pdActivity.getDue_time()));
+
+        assertTrue(activity.getpType().equals(pdActivity.getType()));
+        assertTrue(activity.getpDuration().equals(pdActivity.getDuration()));
+        assertTrue(activity.getSubject().equals(pdActivity.getSubject()));
+
+        assertTrue(pdActivity.getNote().equals("V_ID:" + activity.getVertecId() + "#<br>" + reformatToHtml(activity.getText())));
+
+        assertEquals(activity.getPipedriveId(), pdActivity.getId());
+        assertEquals(activity.getPipedriveOrganisationLink(), pdActivity.getOrg_id());
+        assertEquals(activity.getPipedriveDealLink(), pdActivity.getDeal_id());
+        assertEquals(activity.getPipedriveContactLink(), pdActivity.getPerson_id());
+        assertEquals(activity.getPipedriveAssignee(), pdActivity.getUser_id());
+        assertEquals(activity.getDone(), pdActivity.getDone());
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
