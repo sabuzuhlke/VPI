@@ -388,6 +388,7 @@ public class CommonRepTests {
 
         Long vOrgFromMap = 12L;
         Long vertecDealLinkfromMap = 8L;
+        Long vertecProjectFromMap = 13L;
         Long vContactFromMap = 9L;
         Long vAssigneeFromMap = 10L;
         Long vCreatorFromMap = 11L;
@@ -395,7 +396,7 @@ public class CommonRepTests {
         String vTypeFromMap = "hab";
 
 
-        Activity activity = new Activity(pActivity, vOrgFromMap, vertecDealLinkfromMap, vContactFromMap, vAssigneeFromMap, vCreatorFromMap, vTypeFromMap);
+        Activity activity = new Activity(pActivity, vOrgFromMap, vertecDealLinkfromMap, vertecProjectFromMap, vContactFromMap, vAssigneeFromMap, vCreatorFromMap, vTypeFromMap);
 
         assertTrue(pActivity.getType().equals(activity.getpType()));
         assertTrue(vTypeFromMap.equals(activity.getvType()));
@@ -417,6 +418,7 @@ public class CommonRepTests {
 
         assertEquals(pActivity.getDeal_id(), activity.getPipedriveDealLink());
         assertEquals(vertecDealLinkfromMap, activity.getVertecDealLink());
+        assertEquals(vertecProjectFromMap, activity.getVertecProjectLink());
 
         assertEquals(pActivity.getPerson_id(), activity.getPipedriveContactLink());
         assertEquals(vContactFromMap, activity.getVertecContactLink());

@@ -33,6 +33,7 @@ public class Activity {
 
     private Long pipedriveDealLink;
     private Long vertecDealLink;
+    private Long vertecProjectLink;
 
     private Long pipedriveOrganisationLink;
     private Long vertecOrganisationLink;
@@ -46,7 +47,7 @@ public class Activity {
     private Long pipedriveCreator;
     private Long vertecCreator;
 
-    public Activity(PDActivityReceived act, Long vertecOrganisationLink, Long vertecDealLink, Long vertecContactLink, Long vertecAssignee, Long vertecCreator, String vType){
+    public Activity(PDActivityReceived act, Long vertecOrganisationLink, Long vertecDealLink, Long vertecProjectLink, Long vertecContactLink, Long vertecAssignee, Long vertecCreator, String vType){
 
         this.pipedriveId = act.getId();
         this.vertecId = extractVID(act.getNote());
@@ -71,6 +72,7 @@ public class Activity {
 
         this.pipedriveDealLink = act.getDeal_id();
         this.vertecDealLink = vertecDealLink;
+        this.vertecProjectLink = vertecProjectLink;
 
         this.pipedriveContactLink = act.getPerson_id();
         this.vertecContactLink = vertecContactLink;
@@ -305,5 +307,13 @@ public class Activity {
 
     public void setVertecCreator(Long vertecCreator) {
         this.vertecCreator = vertecCreator;
+    }
+
+    public Long getVertecProjectLink() {
+        return vertecProjectLink;
+    }
+
+    public void setVertecProjectLink(Long vertecProjectLink) {
+        this.vertecProjectLink = vertecProjectLink;
     }
 }
