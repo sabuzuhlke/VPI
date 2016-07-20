@@ -98,7 +98,7 @@ public class ImportZUK {
 //
 //    }
 
-    @Test @Ignore("Just do")
+    @Test //@Ignore("Just do")
     public void clearPD(){
         VertecSynchroniser VS = new VertecSynchroniser();
         MyCredentials creds = new MyCredentials();
@@ -107,7 +107,7 @@ public class ImportZUK {
         PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
     }
 
-    @Test //@Ignore("takes too long, way too long")
+    @Test @Ignore("takes too long, way too long")
     public void ImporterCanImport(){
         this.importer.importToPipedrive();
         assertTrue(true);

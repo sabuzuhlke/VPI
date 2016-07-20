@@ -238,8 +238,8 @@ public class InsightSynchroniser {
     }
 
 //    private List<Long> pushContacts() {
-//        //List<Long> idsPosted = PDS.postContactList(contacts.postList);
-//        List<Long> idsPutted = PDS.putContactList(contacts.putList);
+//        //List<Long> idsPosted = PS.postContactList(contacts.postList);
+//        List<Long> idsPutted = PS.putContactList(contacts.putList);
 //
 //        List<Long> idsPushed = new ArrayList<>(idsPosted);
 //        idsPushed.addAll(idsPutted);

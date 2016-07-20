@@ -152,7 +152,7 @@ public class VertecSynchroniser {
 //
 //        //get all Pipedrive organisations
 //        System.out.println("Getting all organisations from pipedrive");
-//        List<PDOrganisationReceived> pipedriveOrgs = PDS.getAllOrganisations().getBody().getData();
+//        List<PDOrganisationReceived> pipedriveOrgs = PS.getAllOrganisations().getBody().getData();
 //        long pdorgTime = System.nanoTime();
 //        System.out.println("Took " + ((pdorgTime - teamEnd)/1000000) + " milliseconds");
 //
@@ -164,7 +164,7 @@ public class VertecSynchroniser {
 //
 //        //get all pipedrive contacts, filter to only use those without organisations
 //        System.out.println("Getting all contacts from pipedrive");
-//        List<PDContactReceived> pipedriveContacts = PDS.getAllContacts().getBody().getData();
+//        List<PDContactReceived> pipedriveContacts = PS.getAllContacts().getBody().getData();
 //        long pdcontTime = System.nanoTime();
 //        System.out.println("Took " + ((pdcontTime - resolveOrgTime)/1000000) + " milliseconds");
 //        System.out.println("Getting all contacts (not attached to organisations) from vertec from ZUK info");

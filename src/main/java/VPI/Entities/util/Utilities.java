@@ -1,6 +1,11 @@
 package VPI.Entities.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Utilities {
 
@@ -143,6 +148,31 @@ public class Utilities {
             return false;
         }
 
+    }
+
+    static public Map<Long, Long> loadIdMap(String filename){
+        String line;
+
+        Map<Long, Long> idMap = new HashMap<>();
+
+        try{
+            File file = new File(filename);
+
+            FileReader reader = new FileReader(file.getAbsolutePath());
+            BufferedReader breader = new BufferedReader(reader);
+
+            while((line = breader.readLine()) != null){
+                String[] ids = line.split(",");
+                String key = ids[0];
+                String value = ids[1];
+
+                idMap.put(Long.parseLong(key),Long.parseLong(value));
+
+            }
+        } catch (Exception e){
+            System.out.println("Could not open file: " +e.toString());
+        }
+        return idMap;
     }
 }
 

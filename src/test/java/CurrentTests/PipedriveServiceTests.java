@@ -1240,7 +1240,8 @@ public class PipedriveServiceTests {
         controlDealIds.forEach(id -> assertTrue(dealIds.contains(id)));
 
         PS.deleteDealList(controlDealIds);
-        PS.deleteOrganisation(orgId);
+        System.out.println(orgId);
+        //PS.deleteOrganisation(orgId);
     }
 
     //TODO: TEST wether first_name and last_name actually get propagated
