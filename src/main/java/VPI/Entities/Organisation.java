@@ -4,6 +4,7 @@ import VPI.Entities.util.Utilities;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDRelationship;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Organisation {
@@ -116,7 +117,7 @@ public class Organisation {
         org.setVertecId(vertecId);
         org.setOwnedOnVertecBy(ownedOnVertecBy);
         org.setActive(active);
-        org.setOwner_id(ownerId);
+        org.setOwnerId(ownerId);
         org.setName(name);
         org.setWebsite(website);
         org.setCategory(category);
@@ -299,4 +300,5 @@ public class Organisation {
     public void setvParentOrganisation(Long vParentOrganisation) {
         this.vParentOrganisation = vParentOrganisation;
     }
+
 }

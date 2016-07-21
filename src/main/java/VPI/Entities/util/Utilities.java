@@ -1,11 +1,13 @@
 package VPI.Entities.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
+import java.text.Bidi;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.*;
 
 public class Utilities {
 
@@ -150,12 +152,11 @@ public class Utilities {
 
     }
 
-    static public Map<Long, Long> loadIdMap(String filename){
+    static public DualHashBidiMap<Long, Long> loadIdMap(String filename) throws IOException {
         String line;
 
-        Map<Long, Long> idMap = new HashMap<>();
+        DualHashBidiMap<Long, Long> idMap = new DualHashBidiMap<>();
 
-        try{
             File file = new File(filename);
 
             FileReader reader = new FileReader(file.getAbsolutePath());
@@ -169,9 +170,7 @@ public class Utilities {
                 idMap.put(Long.parseLong(key),Long.parseLong(value));
 
             }
-        } catch (Exception e){
-            System.out.println("Could not open file: " +e.toString());
-        }
+        reader.close();
         return idMap;
     }
 }

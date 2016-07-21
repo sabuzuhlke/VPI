@@ -1,5 +1,6 @@
 package CurrentTests;
 
+import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecProjects.JSONProject;
@@ -14,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -204,6 +207,57 @@ public class VertecServiceTests {
         JSONOrganisation org = VS.getOrganisation(3059404L).getBody();
 
         assertTrue("inactive contact in org ", org.getContacts().get(0).getActive()); //Douglas I. Lewis
+
+    }
+
+    @Test
+    public void canGetOrganisationsById(){//TODO make pass
+        List<Long> orgids = new ArrayList<>();
+        orgids.add(28055040L);
+        orgids.add(28055047L);
+        orgids.add(709814L);
+
+        List<VPI.VertecClasses.VertecOrganisations.Organisation> orgs = VS.getOrganisationList(orgids).getBody().getOrganisations();
+
+        assertEquals(orgs.size(), 3);
+
+        VPI.VertecClasses.VertecOrganisations.Organisation org = orgs.get(0);
+        System.out.println(org.toString());
+
+        //Following assertions only hold for this specific organisation
+        assertTrue(org.getOwnedOnVertecBy().equals("Sales Team"));
+        assertTrue(org.getName().equals("Deutsche Telekom"));
+        assertTrue(org.getStreet().equals("Hatfield Business Park"));
+        assertTrue(org.getCity().equals("Hatfield"));
+        assertTrue(org.getCountry().equals("United Kingdom"));
+        assertTrue(org.getZip().equals("AL10 9BW"));
+
+        assertEquals(5295L, org.getOwnerId().longValue());
+    }
+
+    @Test
+    public void canGetActivitiesForOrganisation(){
+        Long id = 711840L;//an org with adressAktivitaeten
+
+        ActivitiesForOrganisation aFO = VS.getActivitiesForOrganisation(id).getBody();
+        List<VPI.VertecClasses.VertecActivities.Activity> activities = aFO.getActivitiesForOrganisation();
+
+        //Following tests only work for given organisation
+        assertTrue(6 <= activities.size());
+
+        VPI.VertecClasses.VertecActivities.Activity activity = activities.get(5);
+
+        assertEquals(711840L, aFO.getOrganisationId().longValue());
+
+        assertEquals(1106982L, activity.getVertecId().longValue());
+        assertEquals(711840L, activity.getVertecOrganisationLink().longValue());
+        assertEquals(5726, activity.getVertecAssignee().longValue());
+
+        assertTrue(activity.getvType().equals("Aufgabe / Task"));
+        assertTrue(activity.getSubject().equals("Info/Memo"));
+        assertTrue(activity.getText().equals("Call to Claudia, Valerio's PA.  She has received PR from the UK and processing.  WIll let Amanda know when ready so liase with Amanda."));
+        assertTrue(activity.getDueDate().equals("2003-11-18"));
+        assertTrue(activity.getDoneDate().equals("2003-11-18"));
 
     }
 

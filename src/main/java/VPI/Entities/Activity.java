@@ -2,6 +2,7 @@ package VPI.Entities;
 
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivitySend;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static VPI.Entities.util.Utilities.*;
 
@@ -44,7 +45,7 @@ public class Activity {
     private Long pipedriveAssignee;
     private Long vertecAssignee;
 
-    public Activity(PDActivityReceived act, Long vertecOrganisationLink, Long vertecDealLink, Long vertecProjectLink, Long vertecContactLink, Long vertecAssignee, Long vertecCreator, String vType){
+    public Activity(PDActivityReceived act, Long vertecOrganisationLink, Long vertecDealLink, Long vertecProjectLink, Long vertecContactLink, Long vertecAssignee, String vType){
 
         this.pipedriveId = act.getId();
         this.vertecId = extractVID(act.getNote());
@@ -300,5 +301,19 @@ public class Activity {
 
     public void setVertecProjectLink(Long vertecProjectLink) {
         this.vertecProjectLink = vertecProjectLink;
+    }
+
+    @Override
+    public String toString(){
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert to JSON: " + e.toString());
+        }
+        return retStr;
     }
 }

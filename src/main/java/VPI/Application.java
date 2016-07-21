@@ -17,8 +17,6 @@ import java.util.TimerTask;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Application implements CommandLineRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(Application.class);
-
     public static void main(String args[]) {
         SpringApplication.run(Application.class);
     }
@@ -45,7 +43,7 @@ public class Application implements CommandLineRunner {
             timer.schedule(t, 0L, 1000*60*60);
 
         } catch (Exception e) {
-            log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());
+            GlobalClass.log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());
         }
     }
 

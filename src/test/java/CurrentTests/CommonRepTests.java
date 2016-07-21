@@ -109,7 +109,7 @@ public class CommonRepTests {
         org.setVertecId(1L);
         org.setOwnedOnVertecBy("hahah");
         org.setActive(true);
-        org.setOwner_id(666L);
+        org.setOwnerId(666L);
         org.setName("GMO Alliance");
         org.setWebsite("gmo@health.com");
         org.setCategory("agricultural");
@@ -204,7 +204,7 @@ public class CommonRepTests {
 
         assertEquals(cOrg.getVertecId(), org.getVertecId());
         assertEquals(cOrg.getActive(), org.getActive());
-        assertEquals(ownerIdFromMap, org.getOwner_id());
+        assertEquals(ownerIdFromMap, org.getOwnerId());
         assertEquals(cOrg.getvParentOrganisation(), org.getParentOrganisation());
 
 
@@ -395,7 +395,7 @@ public class CommonRepTests {
         String vTypeFromMap = "hab";
 
 
-        Activity activity = new Activity(pActivity, vOrgFromMap, vertecDealLinkfromMap, vertecProjectFromMap, vContactFromMap, vAssigneeFromMap, vCreatorFromMap, vTypeFromMap);
+        Activity activity = new Activity(pActivity, vOrgFromMap, vertecDealLinkfromMap, vertecProjectFromMap, vContactFromMap, vAssigneeFromMap, vTypeFromMap);
 
         assertTrue(pActivity.getType().equals(activity.getpType()));
         assertTrue(vTypeFromMap.equals(activity.getvType()));

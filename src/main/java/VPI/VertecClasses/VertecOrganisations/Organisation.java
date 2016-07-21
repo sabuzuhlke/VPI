@@ -1,5 +1,7 @@
 package VPI.VertecClasses.VertecOrganisations;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * THIS CLASS IS RECEIVED FROM VERTEC
  * Dates are represented in the vertec format /Date separated by a 'T' from day-time
@@ -10,7 +12,7 @@ public class Organisation {
     private String ownedOnVertecBy;
     private Boolean active;
 
-    private Long owner_id;
+    private Long ownerId;
 
     private String name;
     private String website;
@@ -57,12 +59,12 @@ public class Organisation {
         this.active = active;
     }
 
-    public Long getOwner_id() {
-        return owner_id;
+    public Long getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner_id(Long owner_id) {
-        this.owner_id = owner_id;
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 
     public String getName() {
@@ -167,5 +169,18 @@ public class Organisation {
 
     public void setCreated(String created) {
         this.created = created;
+    }
+    @Override
+    public String toString(){
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert to JSON: " + e.toString());
+        }
+        return retStr;
     }
 }
