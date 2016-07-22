@@ -33,8 +33,12 @@ public class PDOrganisationReceived {
     private Long v_id;
     @JsonProperty("bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
     private String ownedBy;
-//    @JsonProperty("4d320823bca5075a18070cfce737c0d96cc2191b")
-//    private String website;
+    @JsonProperty("87a1835b5151d1bbbe00591f64b7c623f8c4fc30")//"4d320823bca5075a18070cfce737c0d96cc2191b")
+    private String website;
+    @JsonProperty("e8d01005d38edc750c79d07adc5694090854a34d")
+    private String category;
+    @JsonProperty("08dcf8f5324898efbf5f886f1dfc3a220bdddf83")
+    private String businessDomain;
 
     /**
      * Used in old code
@@ -199,6 +203,30 @@ public class PDOrganisationReceived {
 
     public void setAddress_postal_code(String address_postal_code) {
         this.address_postal_code = address_postal_code;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getBusinessDomain() {
+        return businessDomain;
+    }
+
+    public void setBusinessDomain(String businessDomain) {
+        this.businessDomain = businessDomain;
     }
 
     @Override

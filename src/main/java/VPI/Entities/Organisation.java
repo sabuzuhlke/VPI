@@ -53,6 +53,9 @@ public class Organisation {
         this.created = pdr.getCreationTime();
 
         this.vParentOrganisation = relationship.getRel_owner_org_id();
+        this.website = pdr.getWebsite();
+        this.category = pdr.getCategory();
+        this.businessDomain = pdr.getBusinessDomain();
         //TODO modified Date,
 
     }
@@ -72,6 +75,9 @@ public class Organisation {
         pds.setActive_flag(this.active);
         pds.setId(this.pipedriveId);
         pds.setOwner_id(ownerId);
+        pds.setWebsite(this.website);
+        pds.setCategory(this.category);
+        pds.setBusinessDomain(this.businessDomain);
 
         return pds;
     }

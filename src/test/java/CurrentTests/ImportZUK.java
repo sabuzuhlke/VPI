@@ -98,7 +98,7 @@ public class ImportZUK {
 //
 //    }
 
-    @Test @Ignore("Just do")
+    @Test //@Ignore("Just do")
     public void clearPD(){
         VertecSynchroniser VS = new VertecSynchroniser();
         MyCredentials creds = new MyCredentials();

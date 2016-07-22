@@ -603,7 +603,6 @@ public class PDService {
          * ORganisations do not need to be cleared atm as they work correctly
          */
 
-        System.out.println("yuuuhuuu");
         List<Long> orgsToDel = getAllOrganisations().getBody().getData()
                 .stream()
                 //.filter(res -> res.getV_id() != null)
@@ -708,7 +707,6 @@ public class PDService {
             for(int j = 0; j < 100; j++){
                 currentDelList.add(activitiesToDel.get(i - j - 1));
             }
-            System.out.println("deleting activities: " + currentDelList);
             deleteActivityList(currentDelList);
             i = i - 100;
         }
