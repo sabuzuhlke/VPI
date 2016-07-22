@@ -50,8 +50,6 @@ public class Merger {
                 .getBody()
                 .getData();
 
-
-
         List<Long> pdIds = pOrganisations.stream()
                 .filter(org -> org.getV_id() != null)
                 .map(PDOrganisationReceived::getV_id)
@@ -59,7 +57,6 @@ public class Merger {
         //find ids that are present in map but not present on pd
         Set<Long> missingIds = orgIdMap.keySet().stream()
                 .filter(id -> ! pdIds.contains(id))
-                .map(orgIdMap::getKey)
                 .collect(toSet());
 
         System.out.println("Pdorganisations.size(): " + pdIds.size());
