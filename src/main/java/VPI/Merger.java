@@ -40,12 +40,13 @@ public class Merger {
 
         DualHashBidiMap<Long, Long> mergedOrganisations = new DualHashBidiMap<>();
         //Load in idmaps v to pd
+        //TODO run on production instance
         DualHashBidiMap<Long,Long> orgIdMap = Utilities.loadIdMap("productionMaps/productionOrganisationMap");
 
         System.out.println("OrgidMap.size(): " + orgIdMap.size());
 
 
-        //ger all organisations from pd
+        //get all organisations from pd
         List<PDOrganisationReceived> pOrganisations = PS.getAllOrganisations()
                 .getBody()
                 .getData();
@@ -76,7 +77,10 @@ public class Merger {
         List<PDActivityReceived> pdActivityReceiveds = PS.getAllActivities();
 
         List<Activity> pActivities = pdActivityReceiveds.stream()
-                .map(activity -> new Activity(activity,null,null,null,null,null,null))
+                .map(activity -> {
+                    System.out.println(activity.getOrg_id() + " pOrg mapped to vOrg: " + orgIdMap.getKey(activity.getOrg_id()));
+                   return new Activity(activity,orgIdMap.getKey(activity.getOrg_id()),null,null,null,null,null);
+                })
                 .collect(toList());
 
         for(ActivitiesForOrganisation org : missingOrgsWithActivities){
@@ -104,17 +108,20 @@ public class Merger {
     }
 
     public List<Long> findMergedOrganisationPair(ActivitiesForOrganisation afo, List<Activity> pdActivities){
+        System.out.println("------NEW PAIR TO MATCH----------");
         HashMap<Long,Long> matches = new HashMap<>();
 
         for(VPI.VertecClasses.VertecActivities.Activity act : afo.getActivitiesForOrganisation()){
             for(Activity pAct : pdActivities) {
-                Long vOrgid = pAct.getVertecOrganisationLink();
+
+                Long vOrgid = act.getVertecOrganisationLink();
+                Long pOrgid = pAct.getVertecOrganisationLink();
                 if(act.getVertecId().longValue() == pAct.getVertecId()){
 
-                    if(! matches.containsKey(vOrgid)) {
-                        matches.put(vOrgid, 1L);
+                    if(! matches.containsKey(pOrgid)) {
+                        matches.put(pOrgid, 1L);
                     }
-                    else matches.replace(vOrgid, matches.get(vOrgid) + 1);
+                    else matches.replace(pOrgid, matches.get(pOrgid) + 1);
 
                 }
             }

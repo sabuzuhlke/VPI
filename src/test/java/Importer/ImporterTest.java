@@ -1,4 +1,4 @@
-package CurrentTests;
+package Importer;
 
 import VPI.Importer;
 import VPI.MyCredentials;
@@ -24,6 +24,7 @@ import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsonschema.SchemaAware;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -1627,7 +1628,7 @@ return false;
 
     private ResponseEntity<PDUserItemsResponse> getDummyUsersResponse() throws IOException {
         ObjectMapper m =  new ObjectMapper();
-        PDUserItemsResponse u =  m.readValue(new File("src/test/resources/PipedriveProduction users.json"), PDUserItemsResponse.class);
+        PDUserItemsResponse u =  m.readValue(new File("src/test/resources/Pipedrive users.json"), PDUserItemsResponse.class);
         return new ResponseEntity<>(u, HttpStatus.OK);
 
     }
@@ -1637,5 +1638,27 @@ return false;
         ZUKTeam u =  m.readValue(new File("src/test/resources/VRAPI Team.json"), ZUKTeam.class);
         return new ResponseEntity<>(u, HttpStatus.OK);
 
+    }
+
+    @Test
+    public void findActivitiesLinkedToOrganisations() throws IOException {
+        final ZUKActivities activitiesResponse = getDummyActivitiesResponse().getBody();
+        final ZUKOrganisations zukOrgs = getDummyOrganisationsResponse().getBody();
+
+        List<Long> orgids = zukOrgs.getOrganisationList().stream()
+                .map(JSONOrganisation::getObjid)
+                .collect(toList());
+
+        List<JSONActivity> activities = new ArrayList<>();
+
+        activitiesResponse.getActivityList().forEach(activity -> {
+            if (orgids.contains(activity.getCustomer_link())) {
+                activities.add(activity);
+            }
+        });
+
+        System.out.println("Activities pointed to by organisations (" + activities.size() + "): ");
+
+        activities.forEach(acttivity -> System.out.println(acttivity.getId()));
     }
 }
