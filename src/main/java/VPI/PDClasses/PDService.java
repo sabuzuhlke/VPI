@@ -1,5 +1,7 @@
 package VPI.PDClasses;
 
+import VPI.Keys.DevelopmentKeys;
+import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.Activities.PDActivityItemsResponse;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
@@ -25,7 +27,7 @@ public class PDService {
 
     public PDService(String server, String apiKey) {
         this.restTemplate = new RestTemplate();
-        this.apiKey = apiKey;
+        this.apiKey = DevelopmentKeys.key; //= apiKey;
         this.server = server;
     }
 

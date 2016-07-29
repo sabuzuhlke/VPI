@@ -1,6 +1,7 @@
 package VPI.VertecClasses;
 
 import VPI.Entities.Organisation;
+import VPI.Keys.TestVertecKeys;
 import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
 import VPI.VertecClasses.VertecOrganisations.OrganisationList;
 import VPI.MyCredentials;
@@ -21,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.List;
 
+import static VPI.Keys.TestVertecKeys.*;
+
 public class VertecService {
     private RestTemplate restTemplate;
     private String server;
@@ -32,8 +35,8 @@ public class VertecService {
         this.server = server;
 
         MyCredentials creds = new MyCredentials();
-        this.username = creds.getUserName();
-        this.pwd = creds.getPass();
+        this.username = TestVertecKeys.usr; // = creds.getUserName();
+        this.pwd = TestVertecKeys.pwd; //= creds.getPass();
     }
 
     static {

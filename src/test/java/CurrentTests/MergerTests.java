@@ -1,8 +1,7 @@
 package CurrentTests;
 
 import VPI.Entities.Activity;
-import VPI.Entities.util.Utilities;
-import VPI.Merger;
+import VPI.MergerClasses.OrganisationMerger;
 import VPI.MyCredentials;
 import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
@@ -20,7 +19,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 
 public class MergerTests {
-    private Merger merger;
+    private OrganisationMerger organisationMerger;
     private PDService pipedrive;
     private VertecService vertec;
 
@@ -33,7 +32,7 @@ public class MergerTests {
         MyCredentials creds = new MyCredentials();
         pipedrive = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
         vertec = new VertecService("localhost:9999");
-        merger = new Merger(pipedrive, vertec);
+        organisationMerger = new OrganisationMerger(pipedrive, vertec);
     }
 
     @Test
@@ -66,7 +65,7 @@ public class MergerTests {
         afo.setActivitiesForOrganisation(vActivities);
         afo.setName("Certain Match Org & co");
 
-        List<Long> mergedOrgs = merger.findMergedOrganisationPair(afo,pdActivities);
+        List<Long> mergedOrgs = organisationMerger.findMergedOrganisationPair(afo,pdActivities,1);
 
         assertEquals(2, mergedOrgs.size());
         assertEquals(afo.getOrganisationId(),mergedOrgs.get(0));
@@ -80,7 +79,7 @@ public class MergerTests {
         afo.setName("50-50 org");
         afo.setOrganisationId(6L);
 
-        mergedOrgs = merger.findMergedOrganisationPair(afo,pdActivities);
+        mergedOrgs = organisationMerger.findMergedOrganisationPair(afo,pdActivities,2);
 
         assertTrue(mergedOrgs.isEmpty());
 
@@ -93,14 +92,14 @@ public class MergerTests {
         afo.setName("No MatchO");
         afo.setActivitiesForOrganisation(vActivities);
 
-        mergedOrgs = merger.findMergedOrganisationPair(afo,pdActivities);
+        mergedOrgs = organisationMerger.findMergedOrganisationPair(afo,pdActivities,3);
         assertTrue(mergedOrgs.isEmpty());
 
     }
 
     @Test
     public void testDoMerge() throws IOException {
-        merger.doMerge();
+        organisationMerger.doMerge();
     }
 
 }

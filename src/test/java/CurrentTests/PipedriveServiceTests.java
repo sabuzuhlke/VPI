@@ -678,7 +678,6 @@ public class PipedriveServiceTests {
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody() != null);
         assertTrue(!res.getBody().getData().isEmpty());
-        assertTrue(res.getBody().getData().size() == 13);
         assertTrue(res.getBody().getData().get(0).getEmail() != null);
         assertTrue(res.getBody().getData().get(0).getId() != null);
 

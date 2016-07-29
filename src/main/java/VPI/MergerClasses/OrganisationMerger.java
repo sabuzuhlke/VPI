@@ -1,6 +1,7 @@
-package VPI;
+package VPI.MergerClasses;
 
 import VPI.Entities.Activity;
+import VPI.GlobalClass;
 import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.Entities.util.Utilities;
 import VPI.PDClasses.Activities.PDActivityReceived;
@@ -19,13 +20,13 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.*;
 
-public class Merger {
+public class OrganisationMerger {
     public PDService PS;
     public VertecService VS;
     public List<List<Long>> uncertainMerges;
     public List<Long> noMergesFound;
 
-    public Merger(PDService PS, VertecService VS) {
+    public OrganisationMerger(PDService PS, VertecService VS) {
         this.PS = PS;
         this.VS = VS;
 
@@ -40,7 +41,6 @@ public class Merger {
 
         DualHashBidiMap<Long, Long> mergedOrganisations = new DualHashBidiMap<>();
         //Load in idmaps v to pd
-        //TODO run on production instance
         DualHashBidiMap<Long,Long> orgIdMap = Utilities.loadIdMap("productionMaps/productionOrganisationMap");
 
         System.out.println("OrgidMap.size(): " + orgIdMap.size());
@@ -78,14 +78,15 @@ public class Merger {
 
         List<Activity> pActivities = pdActivityReceiveds.stream()
                 .map(activity -> {
-                    System.out.println(activity.getOrg_id() + " pOrg mapped to vOrg: " + orgIdMap.getKey(activity.getOrg_id()));
                    return new Activity(activity,orgIdMap.getKey(activity.getOrg_id()),null,null,null,null,null);
                 })
                 .collect(toList());
 
+        int i = 1;
         for(ActivitiesForOrganisation org : missingOrgsWithActivities){
-            List<Long> pair = findMergedOrganisationPair(org, pActivities);
+            List<Long> pair = findMergedOrganisationPair(org, pActivities, i);
             if(!pair.isEmpty()) mergedOrganisations.put(pair.get(0), pair.get(1));
+            i++;
         }
 
         return mergedOrganisations;
@@ -107,7 +108,7 @@ public class Merger {
         }
     }
 
-    public List<Long> findMergedOrganisationPair(ActivitiesForOrganisation afo, List<Activity> pdActivities){
+    public List<Long> findMergedOrganisationPair(ActivitiesForOrganisation afo, List<Activity> pdActivities, int logCounter){
         System.out.println("------NEW PAIR TO MATCH----------");
         HashMap<Long,Long> matches = new HashMap<>();
 
@@ -129,7 +130,7 @@ public class Merger {
 
         if(matches.size() == 1){
 
-            GlobalClass.log.info("Organisation " + afo.getName() + " (vid:" + afo.getOrganisationId() + ")"
+            GlobalClass.log.info(logCounter + ")   Organisation " + afo.getName() + " (vid:" + afo.getOrganisationId() + ")"
                     + " -> " + matches.keySet().toArray()[0] + " with 100% certainty");
 
             List<Long> pair = new ArrayList<>();
@@ -146,7 +147,7 @@ public class Merger {
             }
             for(Long org : matches.keySet()){
 
-                GlobalClass.log.info("Organisation " + afo.getName() + " (vid:" + afo.getOrganisationId() + ")"
+                GlobalClass.log.info(logCounter + ") Organisation " + afo.getName() + " (vid:" + afo.getOrganisationId() + ")"
                         + " -> " + org + " with " + ((matches.get(org).floatValue()/total) * 100) + " % certainty");
 
                 List<Long> pair = new ArrayList<>();
@@ -158,7 +159,7 @@ public class Merger {
             return new ArrayList<>();
         } else{
             //log
-            GlobalClass.log.info("Could not find Surviving organisation on PipeDrive for " + afo.getName() +  " (vid:" + afo.getOrganisationId() + ")");
+            GlobalClass.log.info(logCounter + ") Could not find Surviving organisation on PipeDrive for " + afo.getName() +  " (vid:" + afo.getOrganisationId() + ")");
 
             noMergesFound.add(afo.getOrganisationId());
             return new ArrayList<>();
