@@ -35,6 +35,22 @@ public class OrganisationMerger {
     }
 
 
+    public void doMerge() throws IOException {
+        DualHashBidiMap<Long, Long> mergedOrgs = findVorgsMergedOnPD();
+        for (Long mergeID : mergedOrgs.keySet()) {
+            VS.mergeTwoOrganisations(mergeID, mergedOrgs.get(mergeID));
+        }
+        for (Long id: noMergesFound) {
+            Organisation o = VS.getOrganisationCommonRep(id).getBody();
+            GlobalClass.log.info("No Merge Found for Organisation: " + o.getName());
+        }
+        for (List<Long> mergeConflicts : uncertainMerges) {
+            Organisation mo = VS.getOrganisationCommonRep(mergeConflicts.get(0)).getBody();
+            Organisation so = VS.getOrganisationCommonRep(mergeConflicts.get(1)).getBody();
+            GlobalClass.log.info("Uncertainty in merge found for missing org: " + mo.getName() +", potential org to merge into: " + so.getName());
+        }
+    }
+
     public DualHashBidiMap<Long,Long> findVorgsMergedOnPD() throws IOException { //Map<Lost, Surviving>
 
         //find out which organisations have been merged
@@ -92,21 +108,6 @@ public class OrganisationMerger {
         return mergedOrganisations;
     }
 
-    public void doMerge() throws IOException {
-        DualHashBidiMap<Long, Long> mergedOrgs = findVorgsMergedOnPD();
-        for (Long mergeID : mergedOrgs.keySet()) {
-            VS.mergeTwoOrganisations(mergeID, mergedOrgs.get(mergeID));
-        }
-        for (Long id: noMergesFound) {
-            Organisation o = VS.getOrganisationCommonRep(id).getBody();
-            GlobalClass.log.info("No Merge Found for Organisation: " + o.getName());
-        }
-        for (List<Long> mergeConflicts : uncertainMerges) {
-            Organisation mo = VS.getOrganisationCommonRep(mergeConflicts.get(0)).getBody();
-            Organisation so = VS.getOrganisationCommonRep(mergeConflicts.get(1)).getBody();
-            GlobalClass.log.info("Uncertainty in merge found for missing org: " + mo.getName() +", potential org to merge into: " + so.getName());
-        }
-    }
 
     public List<Long> findMergedOrganisationPair(ActivitiesForOrganisation afo, List<Activity> pdActivities, int logCounter){
         System.out.println("------NEW PAIR TO MATCH----------");
