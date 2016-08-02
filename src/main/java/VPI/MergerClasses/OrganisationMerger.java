@@ -1,6 +1,7 @@
 package VPI.MergerClasses;
 
 import VPI.Entities.Activity;
+import VPI.Entities.Contact;
 import VPI.GlobalClass;
 import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.Entities.util.Utilities;
@@ -33,7 +34,6 @@ public class OrganisationMerger {
         this.uncertainMerges = new ArrayList<>();
         this.noMergesFound = new ArrayList<>();
     }
-
 
     public void doMerge() throws IOException {
         DualHashBidiMap<Long, Long> mergedOrgs = findVorgsMergedOnPD();

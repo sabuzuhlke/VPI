@@ -1,19 +1,31 @@
 package VPI.MergerClasses;
 
 import VPI.Entities.Contact;
+import VPI.Entities.util.Utilities;
 import VPI.GlobalClass;
+import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.VertecClasses.VertecService;
+import com.sun.xml.internal.bind.v2.runtime.reflect.ListTransducedAccessorImpl;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.tomcat.jni.Global;
+import org.apache.tomcat.util.modeler.Util;
+import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static VPI.Entities.util.Utilities.loadIdMap;
+import static java.util.stream.Collectors.*;
 
 public class ContactMerger {
     public PDService PS;
     public VertecService VS;
+
+    //List of Pairs where fst is VertecId of missing org, sndis VertecId of potential match (emails matched)
     public List<List<Long>> uncertainMerges;
     public List<Long> noMergesFound;
 
@@ -26,8 +38,32 @@ public class ContactMerger {
         this.noMergesFound = new ArrayList<>();
     }
 
-    public void doMerge(){
-        DualHashBidiMap<Long, Long> mergedContacts = findVcontactsMergedOnPD();// <merged, surviving>
+    public void doMerge() throws IOException {
+        //get all contacts from vertec --> sure about this?
+        //load idmap of contacts previously posted to vertec
+        Map<Long,Long> contactsPostedToPD = loadIdMap("productionMaps/productionContactMap");
+        //get all contacts from pipedrive
+        List<Contact> pipedriveContacts= PS.getAllContacts()
+                .getBody()
+                .getData()
+                .stream()
+                .map(c -> new Contact(c, null, null))
+                .collect(toList());
+
+        //find ids that are not present on PD but are present in the idmap --> these guys have either been merged or deleted
+        List<Long> idsOnPD = pipedriveContacts.stream()
+                .map(Contact::getVertecId)
+                .collect(toList());
+
+        List<Long> missingIds = contactsPostedToPD.keySet().stream()
+        .filter(id -> ! idsOnPD.contains(id))
+        .collect(toList());
+
+        //TODO get contacts Vrom vertec as Contact based on missingIds
+        List<Contact> missingContacts = new ArrayList<>();
+        //for each missing contact try to find out whom it has been merged into. Best way probably would be to start with e-mail addresses
+        // , then with activities /Projects and organisations won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./
+        HashMap<Long, Long> mergedContacts = findVcontactsMergedOnPD(missingContacts, pipedriveContacts);// <merged, surviving>
         for(Long id : mergedContacts.keySet()){
             //VS.mergeTwoContacts(id,mergedContacts.get(id));
         }
@@ -45,15 +81,50 @@ public class ContactMerger {
         }
     }
 
-    private DualHashBidiMap<Long, Long> findVcontactsMergedOnPD() {
-        //get all contacts from vertec
-        //load idmap of contacts previously posted to vertec
-        //get all contacts from pipedrive
-        //find ids that are not present on PD but are present in the idmap --> these guys have either been merged or deleted
-        //for each missing contact try to find out whom it has been merged into. Best way probably would be to start with e-mail addresses TODO write VRAPI query to get multiple Email addresses
-        // , then with activities /Projects and organisations won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./
+    public HashMap<Long, Long> findVcontactsMergedOnPD(List<Contact> vertecContacts, List<Contact> pipedriveContacts) {
 
 
-        return null;
+        HashMap<Long, Long> map = new HashMap<>();
+        Map<Long, List<Contact>> countMap = new HashMap<>();
+        vertecContacts.forEach(contact -> {
+
+            pipedriveContacts.forEach(pipedrive -> {
+
+               pipedrive.getEmails().forEach(email -> {
+
+                   if (email.getValue().equals(contact.getEmails().get(0).getValue())) {
+
+                       if (countMap.containsKey(contact.getVertecId())) {
+                           countMap.get(contact.getVertecId()).add(pipedrive);
+                       } else {
+                           List<Contact> l = new ArrayList<>();
+                           l.add(pipedrive);
+                           countMap.put(contact.getVertecId(), l);
+                       }
+                   }
+
+               });
+
+            });
+            List<Contact> matchedContacts = countMap.get(contact.getVertecId()) == null ? new ArrayList<>() : countMap.get(contact.getVertecId());
+            if (matchedContacts.size() == 1) {
+                System.out.println("Unique match found for contact: " + contact.getFullName() + ", Vertec ID " + contact.getVertecId()
+                        + " matched to " + matchedContacts.get(0).getFullName() + " VertecID " + matchedContacts.get(0).getVertecId());
+                map.put(contact.getVertecId(), matchedContacts.get(0).getVertecId());
+            } else if (matchedContacts.size() == 0) {
+                System.out.println("No matched found for contact " + contact.getFullName() + ", Vertec ID " + contact.getVertecId());
+                noMergesFound.add(contact.getVertecId());
+            } else {
+                System.out.println("Mulptiple matches found for contact: " + contact.getFullName() + ", Vertec ID " + contact.getVertecId());
+                matchedContacts.forEach(matchedContact -> {
+                    System.out.println(matchedContact.getFullName() + ", Vertec ID " + matchedContact.getVertecId());
+                });
+                matchedContacts.forEach(mc -> uncertainMerges.add(Arrays.asList(contact.getVertecId(), mc.getVertecId())));
+            }
+
+
+        });
+
+        return map;
     }
 }

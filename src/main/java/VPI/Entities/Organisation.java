@@ -86,7 +86,7 @@ public class Organisation {
      *
      * @param ownerEmail has to be got from a map using the ownerId of the vertec organisation
      */
-    public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, Long pipedriveId,String ownerEmail){
+    public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, Long pipedriveId, String ownerEmail){
         this.vertecId = organisation.getVertecId();
         this.pipedriveId = pipedriveId;
         this.active = organisation.getActive();

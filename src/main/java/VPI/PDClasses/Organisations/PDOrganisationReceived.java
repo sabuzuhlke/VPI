@@ -3,10 +3,12 @@ package VPI.PDClasses.Organisations;
 import VPI.Keys.DevelopmentKeys;
 import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.PDOwner;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PDOrganisationReceived {
 
     private String name;
