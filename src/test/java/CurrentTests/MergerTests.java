@@ -178,8 +178,13 @@ public class MergerTests {
     }
 
     @Test
-    public void testDoMerge() throws IOException {
+    public void testDoOrganisationMerge() throws IOException {
         organisationMerger.doMerge();
+    }
+
+    @Test
+    public void testDoContactMerge() throws IOException {
+        contactMerger.doMerge();
     }
 
 }

@@ -451,6 +451,36 @@ public class PipedriveServiceTests {
      */
 
     @Test
+    public void canGetAllActivitiesForContact(){
+        PDContactSend pcs = new PDContactSend();
+        pcs.setName("TestGuy");
+
+        Long guyId = PS.postContact(pcs).getBody().getData().getId();
+
+        PDActivitySend pda = new PDActivitySend();
+        pda.setSubject("Contact Habba Bababa");
+        pda.setType("call");
+        pda.setPerson_id(guyId);
+
+        List<Long> activityIds = new ArrayList<>();
+        activityIds.add(PS.postActivity(pda).getBody().getData().getId());
+
+        pda = new PDActivitySend();
+        pda.setSubject("Try again, didn't pick up ");
+        pda.setType("call");
+        pda.setPerson_id(guyId);
+        activityIds.add(PS.postActivity(pda).getBody().getData().getId());
+
+        assertEquals("Did not post both activities",2 , activityIds.size());
+
+        List<PDActivityReceived> activities = PS.getAllActivitiesForContact(guyId);
+
+        assertEquals("Not all posted activities were got", activityIds.size(), activities.size());
+
+        PS.deleteActivityList(activityIds);
+    }
+
+    @Test
     public void canPutContact() {
 
         //first Test no need to assert, taken care of in prev test

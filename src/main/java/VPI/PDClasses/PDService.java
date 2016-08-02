@@ -449,8 +449,26 @@ public class PDService {
     }
 
     @SuppressWarnings("unused")
-    public ResponseEntity<PDActivityItemsResponse> getAllActivitiesForContact(Long contactId) {
-        return getFromPipedrive(server + "persons/" + contactId + "/activities" + apiKey, PDActivityItemsResponse.class);
+    public List<PDActivityReceived> getAllActivitiesForContact(Long contactId) {
+        int start = 0;
+        int limit = 500;
+        boolean moreInfo = true;
+
+        List<PDActivityReceived> activities = new ArrayList<>();
+
+        while(moreInfo){
+            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server +  "persons/" + contactId + "/activities" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
+            if(res.getStatusCode() == HttpStatus.OK){
+                moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+                activities.addAll(res.
+                        getBody().
+                        getData());
+                start = res.getBody().getAdditional_data().getPagination().getLimit();
+                limit += 500;
+            }
+        }
+        return activities;
     }
 
     public List<PDActivityReceived> getAllActivities() {

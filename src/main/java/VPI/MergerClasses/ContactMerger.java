@@ -59,7 +59,10 @@ public class ContactMerger {
         .filter(id -> ! idsOnPD.contains(id))
         .collect(toList());
 
+        System.out.println("Number of missing contacts: " + missingIds.size());
+
         //TODO get contacts Vrom vertec as Contact based on missingIds
+
         List<Contact> missingContacts = new ArrayList<>();
         //for each missing contact try to find out whom it has been merged into. Best way probably would be to start with e-mail addresses
         // , then with activities /Projects and organisations won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./
@@ -67,10 +70,12 @@ public class ContactMerger {
         for(Long id : mergedContacts.keySet()){
             //VS.mergeTwoContacts(id,mergedContacts.get(id));
         }
+        System.out.println("=======> No merges have been found for the following contacts: " + noMergesFound.size());
         for(Long id : noMergesFound){
             JSONContact c = VS.getContact(id).getBody();
             GlobalClass.log.info("No Merge found for Contact " + c.getFirstName() + " " + c.getSurname() + " (v_id: " + c.getObjid() + ")");
         }
+        System.out.println("=======> Could not uniquely identify merge by email for the following: " + uncertainMerges.size());
         for(List<Long> conflict : uncertainMerges){
             JSONContact mergedC = VS.getContact(conflict.get(0)).getBody();
             JSONContact survivingC = VS.getContact(conflict.get(1)).getBody();
