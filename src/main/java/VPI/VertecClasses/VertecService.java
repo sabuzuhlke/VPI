@@ -1,8 +1,9 @@
 package VPI.VertecClasses;
 
-import VPI.Entities.Organisation;
+import VPI.Entities.Contact;
+import VPI.Entities.util.ContactList;
 import VPI.Keys.TestVertecKeys;
-import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
+import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
 import VPI.VertecClasses.VertecOrganisations.OrganisationList;
 import VPI.MyCredentials;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
@@ -22,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.List;
 
-import static VPI.Keys.TestVertecKeys.*;
+import static VPI.Entities.util.Utilities.*;
 
 public class VertecService {
     private RestTemplate restTemplate;
@@ -107,19 +108,12 @@ public class VertecService {
     }
 
     public ResponseEntity<OrganisationList> getOrganisationList(List<Long> ids){
-        String idsAsString = "";
-        for(int i = 0; i < ids.size(); i++) {
-            if (i < ids.size() -1) {
-                idsAsString += ids.get(i) + ",";
-            } else {
-                idsAsString += ids.get(i);
-            }
-        }
-        return getFromVertec("https://" + server + "/organisations/" + idsAsString, OrganisationList.class);
+
+        return getFromVertec("https://" + server + "/organisations/" + idsAsString(ids), OrganisationList.class);
     }
 
-    public ResponseEntity<ActivitiesForOrganisation> getActivitiesForOrganisation(Long id){
-        return getFromVertec("https://" + server + "/organisation/" + id +"/activities", ActivitiesForOrganisation.class);
+    public ResponseEntity<ActivitiesForAddressEntry> getActivitiesForAddressEntry(Long id){
+        return getFromVertec("https://" + server + "/organisation/" + id +"/activities", ActivitiesForAddressEntry.class);
     }
 
     public ResponseEntity<JSONContact> getContact(long v_id){
@@ -142,5 +136,10 @@ public class VertecService {
     //TODO: test
     public ResponseEntity<VPI.VertecClasses.VertecOrganisations.Organisation> getOrganisationCommonRep(Long id) {
         return getFromVertec("https://" + server + "/organisation/" + id, VPI.VertecClasses.VertecOrganisations.Organisation.class);
+    }
+
+    public List<Contact> getContactList(List<Long> ids) {
+
+        return getFromVertec("https://" + server + "/contact/" + idsAsString(ids), ContactList.class).getBody().getContacts();
     }
 }

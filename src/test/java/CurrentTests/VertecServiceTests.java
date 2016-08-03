@@ -1,6 +1,6 @@
 package CurrentTests;
 
-import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
+import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import VPI.VertecClasses.VertecProjects.JSONProject;
@@ -239,15 +239,15 @@ public class VertecServiceTests {
     public void canGetActivitiesForOrganisation(){
         Long id = 711840L;//an org with adressAktivitaeten
 
-        ActivitiesForOrganisation aFO = VS.getActivitiesForOrganisation(id).getBody();
-        List<VPI.VertecClasses.VertecActivities.Activity> activities = aFO.getActivitiesForOrganisation();
+        ActivitiesForAddressEntry aFO = VS.getActivitiesForAddressEntry(id).getBody();
+        List<VPI.VertecClasses.VertecActivities.Activity> activities = aFO.getActivities();
 
         //Following tests only work for given organisation
         assertTrue(6 <= activities.size());
 
         VPI.VertecClasses.VertecActivities.Activity activity = activities.get(5);
 
-        assertEquals(711840L, aFO.getOrganisationId().longValue());
+        assertEquals(711840L, aFO.getId().longValue());
 
         assertEquals(1106982L, activity.getVertecId().longValue());
         assertEquals(711840L, activity.getVertecOrganisationLink().longValue());

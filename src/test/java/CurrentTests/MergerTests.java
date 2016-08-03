@@ -7,11 +7,11 @@ import VPI.MergerClasses.ContactMerger;
 import VPI.MergerClasses.OrganisationMerger;
 import VPI.MyCredentials;
 import VPI.PDClasses.PDService;
-import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
+import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
 import VPI.VertecClasses.VertecService;
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
@@ -19,12 +19,18 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 public class MergerTests {
     private OrganisationMerger organisationMerger;
     private ContactMerger contactMerger;
     private PDService pipedrive;
     private VertecService vertec;
+
+    private VertecService mockVertecService;
+    private PDService mockPDService;
+
+    private ContactMerger mockContactMerger;
 
 
     @Before
@@ -37,13 +43,18 @@ public class MergerTests {
         vertec = new VertecService("localhost:9999");
         organisationMerger = new OrganisationMerger(pipedrive, vertec);
         contactMerger = new ContactMerger(pipedrive, vertec);
+
+        mockVertecService = mock(VertecService.class);
+        mockPDService = mock(PDService.class);
+
+        mockContactMerger = new ContactMerger(mockPDService,mockVertecService);
+
     }
 
-    @Test
-    public void canClassifyContactMatches(){
+   @Test
+   public void canFindContactMatches(){
 
-    }
-
+   }
     @Test
     public void canFindMatchingEmailPairs() {
         //Given a list of contacts recieved from vertec (default email only),
@@ -97,7 +108,7 @@ public class MergerTests {
         List<Contact> vertecContacts = Arrays.asList(v1, v2, v3, v4);
         List<Contact> pipedriveContacts = Arrays.asList(p1, p2, p3);
 
-        HashMap<Long, Long> matches = contactMerger.findVcontactsMergedOnPD(vertecContacts, pipedriveContacts);
+        HashMap<Long, Long> matches = contactMerger.findMergesByEmail(vertecContacts, pipedriveContacts);
 
         assertTrue(! matches.isEmpty());
         assertEquals("Could not find match when one should be found", 20L, matches.get(2L).longValue());
@@ -140,41 +151,102 @@ public class MergerTests {
         vertecActivity.setVertecId(1L);
         vActivities.add(vertecActivity);
 
-        ActivitiesForOrganisation afo = new ActivitiesForOrganisation();
-        afo.setOrganisationId(5L);
-        afo.setActivitiesForOrganisation(vActivities);
+        ActivitiesForAddressEntry afo = new ActivitiesForAddressEntry();
+        afo.setId(5L);
+        afo.setActivities(vActivities);
         afo.setName("Certain Match Org & co");
 
         List<Long> mergedOrgs = organisationMerger.findMergedOrganisationPair(afo,pdActivities,1);
 
         assertEquals(2, mergedOrgs.size());
-        assertEquals(afo.getOrganisationId(),mergedOrgs.get(0));
+        assertEquals(afo.getId(),mergedOrgs.get(0));
         assertEquals(pdActivities.get(0).getVertecOrganisationLink(),mergedOrgs.get(1));
 
         //We keep the previous afo, for simplicity's sake
         vertecActivity = new VPI.VertecClasses.VertecActivities.Activity();
         vertecActivity.setVertecId(2L);
 
-        afo.getActivitiesForOrganisation().add(vertecActivity);
+        afo.getActivities().add(vertecActivity);
         afo.setName("50-50 org");
-        afo.setOrganisationId(6L);
+        afo.setId(6L);
 
         mergedOrgs = organisationMerger.findMergedOrganisationPair(afo,pdActivities,2);
 
         assertTrue(mergedOrgs.isEmpty());
 
-        afo = new ActivitiesForOrganisation();
+        afo = new ActivitiesForAddressEntry();
         vActivities = new ArrayList<>();
         vertecActivity = new VPI.VertecClasses.VertecActivities.Activity();
         vertecActivity.setVertecId(3535245L);
         vActivities.add(vertecActivity);
-        afo.setOrganisationId(7L);
+        afo.setId(7L);
         afo.setName("No MatchO");
-        afo.setActivitiesForOrganisation(vActivities);
+        afo.setActivities(vActivities);
 
         mergedOrgs = organisationMerger.findMergedOrganisationPair(afo,pdActivities,3);
         assertTrue(mergedOrgs.isEmpty());
 
+    }
+
+    @Test
+    public void canFindContactMergesByActivity(){
+        Activity pipedriveActivity = new Activity();
+        List<Activity> pdActivities = new ArrayList<>();
+
+        pipedriveActivity.setVertecId(1L);
+        pipedriveActivity.setVertecContactLink(2L);
+        pdActivities.add(pipedriveActivity);
+
+        pipedriveActivity = new Activity();
+        pipedriveActivity.setVertecId(2L);
+        pipedriveActivity.setVertecContactLink(4L);
+        pdActivities.add(pipedriveActivity);
+
+        pipedriveActivity = new Activity();
+        pipedriveActivity.setVertecId(3L);
+        pipedriveActivity.setVertecContactLink(2L);
+        pdActivities.add(pipedriveActivity);
+
+        VPI.VertecClasses.VertecActivities.Activity vertecActivity = new VPI.VertecClasses.VertecActivities.Activity();
+        List<VPI.VertecClasses.VertecActivities.Activity> vActivities = new ArrayList<>();
+
+        vertecActivity.setVertecId(1L);
+        vActivities.add(vertecActivity);
+
+        ActivitiesForAddressEntry afc = new ActivitiesForAddressEntry();
+        afc.setId(5L);
+        afc.setActivities(vActivities);
+        afc.setName("Certain Match Contact");
+
+        List<Long> mergedOrgs = contactMerger.findMergesByActivity(afc,pdActivities,1);
+
+        assertEquals(2, mergedOrgs.size());
+        assertEquals(afc.getId(),mergedOrgs.get(0));
+        assertEquals(pdActivities.get(0).getVertecOrganisationLink(),mergedOrgs.get(1));
+
+        //We keep the previous afo, for simplicity's sake
+        vertecActivity = new VPI.VertecClasses.VertecActivities.Activity();
+        vertecActivity.setVertecId(2L);
+
+        afc.getActivities().add(vertecActivity);
+        afc.setName("50-50 contact");
+        afc.setId(6L);
+
+        mergedOrgs =  contactMerger.findMergesByActivity(afc,pdActivities,2);
+
+        assertTrue(mergedOrgs.isEmpty());
+
+        afc = new ActivitiesForAddressEntry();
+        vActivities = new ArrayList<>();
+        vertecActivity = new VPI.VertecClasses.VertecActivities.Activity();
+        vertecActivity.setVertecId(3535245L);
+        vActivities.add(vertecActivity);
+        afc.setId(7L);
+        afc.setName("No Match Contact");
+        afc.setActivities(vActivities);
+
+        mergedOrgs =  contactMerger.findMergesByActivity(afc,pdActivities,3);
+        assertTrue(mergedOrgs.isEmpty());
     }
 
     @Test

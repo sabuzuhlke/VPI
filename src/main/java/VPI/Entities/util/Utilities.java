@@ -4,6 +4,7 @@ import java.io.*;
 import java.text.Bidi;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.BidiMap;
@@ -172,6 +173,18 @@ public class Utilities {
             }
         reader.close();
         return idMap;
+    }
+
+   static  public String idsAsString(List<Long> ids) {
+        String idsAsString = "";
+        for(int i = 0; i < ids.size(); i++) {
+            if (i < ids.size() -1) {
+                idsAsString += ids.get(i) + ",";
+            } else {
+                idsAsString += ids.get(i);
+            }
+        }
+        return idsAsString;
     }
 }
 

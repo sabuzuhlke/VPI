@@ -63,7 +63,7 @@ public class Contact {
         this.emails = pdr.getEmail();
         this.phones = pdr.getPhone();
 
-        this.pipedriveOrgLink = pdr.getOrg_id().getValue();
+        this.pipedriveOrgLink = pdr.getOrg_id() == null ? null : pdr.getOrg_id().getValue();
         this.vertecOrgLink = vertecOrgLink;
 
         this.position = pdr.getPosition();

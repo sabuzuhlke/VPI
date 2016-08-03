@@ -1,14 +1,13 @@
 package VPI.MergerClasses;
 
 import VPI.Entities.Activity;
-import VPI.Entities.Contact;
 import VPI.GlobalClass;
 import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.Entities.util.Utilities;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.PDService;
-import VPI.VertecClasses.VertecActivities.ActivitiesForOrganisation;
+import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
 import VPI.VertecClasses.VertecService;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.springframework.http.HttpEntity;
@@ -82,8 +81,8 @@ public class OrganisationMerger {
 
         //foreach missing id: getActivites linked to that org from vertec
         // missingOrgsWithActivities has an entry for each missing organisation
-        List<ActivitiesForOrganisation> missingOrgsWithActivities = missingIds.stream()
-                .map(VS::getActivitiesForOrganisation)
+        List<ActivitiesForAddressEntry> missingOrgsWithActivities = missingIds.stream()
+                .map(VS::getActivitiesForAddressEntry)
                 .map(HttpEntity::getBody)
                 .collect(toList());
 
@@ -99,7 +98,7 @@ public class OrganisationMerger {
                 .collect(toList());
 
         int i = 1;
-        for(ActivitiesForOrganisation org : missingOrgsWithActivities){
+        for(ActivitiesForAddressEntry org : missingOrgsWithActivities){
             List<Long> pair = findMergedOrganisationPair(org, pActivities, i);
             if(!pair.isEmpty()) mergedOrganisations.put(pair.get(0), pair.get(1));
             i++;
@@ -109,11 +108,11 @@ public class OrganisationMerger {
     }
 
 
-    public List<Long> findMergedOrganisationPair(ActivitiesForOrganisation afo, List<Activity> pdActivities, int logCounter){
+    public List<Long> findMergedOrganisationPair(ActivitiesForAddressEntry afo, List<Activity> pdActivities, int logCounter){
         System.out.println("------NEW PAIR TO MATCH----------");
         HashMap<Long,Long> matches = new HashMap<>();
 
-        for(VPI.VertecClasses.VertecActivities.Activity act : afo.getActivitiesForOrganisation()){
+        for(VPI.VertecClasses.VertecActivities.Activity act : afo.getActivities()){
             for(Activity pAct : pdActivities) {
 
                 Long vOrgid = act.getVertecOrganisationLink();
@@ -131,11 +130,11 @@ public class OrganisationMerger {
 
         if(matches.size() == 1){
 
-            GlobalClass.log.info(logCounter + ")   Organisation " + afo.getName() + " (vid:" + afo.getOrganisationId() + ")"
+            GlobalClass.log.info(logCounter + ")   Organisation " + afo.getName() + " (vid:" + afo.getId() + ")"
                     + " -> " + matches.keySet().toArray()[0] + " with 100% certainty");
 
             List<Long> pair = new ArrayList<>();
-            pair.add(afo.getOrganisationId());
+            pair.add(afo.getId());
             pair.add((Long) matches.keySet().toArray()[0]);
             return pair;
         }
@@ -148,21 +147,21 @@ public class OrganisationMerger {
             }
             for(Long org : matches.keySet()){
 
-                GlobalClass.log.info(logCounter + ") Organisation " + afo.getName() + " (vid:" + afo.getOrganisationId() + ")"
+                GlobalClass.log.info(logCounter + ") Organisation " + afo.getName() + " (vid:" + afo.getId() + ")"
                         + " -> " + org + " with " + ((matches.get(org).floatValue()/total) * 100) + " % certainty");
 
                 List<Long> pair = new ArrayList<>();
-                pair.add(afo.getOrganisationId());
+                pair.add(afo.getId());
                 pair.add((Long) matches.keySet().toArray()[0]);
                 uncertainMerges.add(pair);
             }
 
             return new ArrayList<>();
-        } else{
+        } else {
             //log
-            GlobalClass.log.info(logCounter + ") Could not find Surviving organisation on PipeDrive for " + afo.getName() +  " (vid:" + afo.getOrganisationId() + ")");
+            GlobalClass.log.info(logCounter + ") Could not find Surviving organisation on PipeDrive for " + afo.getName() +  " (vid:" + afo.getId() + ")");
 
-            noMergesFound.add(afo.getOrganisationId());
+            noMergesFound.add(afo.getId());
             return new ArrayList<>();
         }
     }
