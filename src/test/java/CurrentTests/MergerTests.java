@@ -3,11 +3,13 @@ package CurrentTests;
 import VPI.Entities.Activity;
 import VPI.Entities.Contact;
 import VPI.Entities.util.ContactDetail;
+import VPI.Entities.util.Utilities;
 import VPI.MergerClasses.ContactMerger;
 import VPI.MergerClasses.OrganisationMerger;
 import VPI.MyCredentials;
 import VPI.PDClasses.PDService;
 import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
+import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.util.*;
 
+import static VPI.Entities.util.Utilities.loadIdMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -258,5 +261,7 @@ public class MergerTests {
     public void testDoContactMerge() throws IOException {
         contactMerger.doMerge();
     }
+
+
 
 }
