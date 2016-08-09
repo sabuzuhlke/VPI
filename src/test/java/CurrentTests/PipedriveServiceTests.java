@@ -8,6 +8,9 @@ import VPI.PDClasses.Activities.PDActivityResponse;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.*;
 import VPI.Entities.util.ContactDetail;
+import VPI.PDClasses.HierarchyClasses.LinkedOrg;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.PDFollower;
 import VPI.PDClasses.Deals.*;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
@@ -15,6 +18,8 @@ import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDOrganisationItemsResponse;
 import VPI.PDClasses.Organisations.PDOrganisationResponse;
 import VPI.PDClasses.Users.PDUserItemsResponse;
+import VPI.VertecClasses.VertecService;
+import VPI.VertecClasses.VertecTeam.Employee;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -30,7 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.FileWriter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
@@ -380,11 +384,19 @@ public class PipedriveServiceTests {
         res = PS.getAllOrganisations();
         assertEquals(res.getStatusCode(), HttpStatus.OK);
         organisations = res.getBody();
+//        try {
+//            FileWriter file = new FileWriter("Pipedriveorgs.txt");
+//            file.write(res.getBody().toString());
+//            file.close();
+//        } catch (Exception e) {
+//            System.out.println("Failed to output to file");
+//        }
         //The following asserts that the more_items_in_collection field of the response is false -- Meaning that there are no more organisations to return
         //assertTrue(!organisations.getAdditional_data().getPagination().getMore_items_in_collection());
         //assertTrue(organisations.getData() != null);
         //assertTrue(organisations.getData().get(0) != null);
     }
+
 
     @Test
     public void canGetAndPostContactsForOrganisation() {
@@ -757,7 +769,7 @@ public class PipedriveServiceTests {
         Long childId  = PS.postOrganisation(orgChild).getBody().getData().getId();
         System.out.println("POSTED: " + childId);
 
-        PDRelationship rel = new PDRelationship(parentId, childId);
+        PDRelationshipSend rel = new PDRelationshipSend(parentId, childId);
 
         //parent should always be first argument
         ResponseEntity<String> res = PS.postOrganisationRelationship(rel);
@@ -770,6 +782,45 @@ public class PipedriveServiceTests {
 
         PS.deleteOrganisation(parentId);
         PS.deleteOrganisation(childId);
+
+    }
+
+    @Test
+    public void canGetPDRelationship(){
+        Long id = 5168L; //HSBC Bank Canada on dev PD
+
+        List<PDRelationshipReceived> pdrrs = PS.getRelationships(id);
+
+        assertEquals("Not all relationships got", 2, pdrrs.size());
+
+        PDRelationshipReceived pdr = pdrrs.get(0);
+        assertEquals(pdr.getType(), "parent");
+
+        LinkedOrg lorg = pdr.getDaughter();
+        assertEquals("HSBC Bank Canada", lorg.getName());
+        assertEquals(5168L, lorg.getId().longValue());
+        assertEquals("300-885 West Georgia Street, Vancouver, V6C 3E9, Canada", lorg.getAddress());
+
+
+        lorg = pdr.getParent();
+        assertEquals("Sondent (HSBC consultant)", lorg.getName());
+        assertEquals(3742L, lorg.getId().longValue());
+
+        pdr = pdrrs.get(1);
+        assertEquals(pdr.getType(), "parent");
+        assertEquals(71L, pdr.getId().longValue());
+
+        lorg = pdr.getDaughter();
+        assertEquals("HSBC Global Services (UK) Ltd, Park St", lorg.getName());
+        assertEquals(3670L, lorg.getId().longValue());
+        assertEquals("62-67 Park Street, London SE1 9DZ, United Kingdom", lorg.getAddress());
+
+
+        lorg = pdr.getParent();
+        assertEquals("HSBC Bank Canada", lorg.getName());
+        assertEquals(5168L, lorg.getId().longValue());
+        assertEquals("300-885 West Georgia Street, Vancouver, V6C 3E9, Canada", lorg.getAddress());
+
 
     }
 //
@@ -1274,4 +1325,7 @@ public class PipedriveServiceTests {
     }
 
     //TODO: TEST wether first_name and last_name actually get propagated
+
+
+
 }

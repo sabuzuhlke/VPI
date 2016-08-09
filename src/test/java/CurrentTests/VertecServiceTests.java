@@ -7,6 +7,7 @@ import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
+import VPI.VertecClasses.VertecTeam.Employee;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -18,12 +19,11 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by sabu on 29/04/2016.
- */
+
 public class VertecServiceTests {
 
     private VertecService VS;
@@ -52,11 +52,10 @@ public class VertecServiceTests {
 
         ZUKOrganisations res = new ZUKOrganisations();
 
-        try{
+        try {
 
-            res = m.readValue(response,ZUKOrganisations.class);
-        }
-        catch (Exception e){
+            res = m.readValue(response, ZUKOrganisations.class);
+        } catch (Exception e) {
             System.out.println("Error in unmarshalling ZUK response: " + e);
         }
 
@@ -72,7 +71,7 @@ public class VertecServiceTests {
         assertTrue(res.getDanglingContacts().get(1).getFirstName().equals("Mama"));
 
         System.out.println(res.toPrettyJSON());
-        assertTrue( ! res.getOrganisationList().isEmpty());
+        assertTrue(!res.getOrganisationList().isEmpty());
         assertTrue(res.getOrganisationList().size() == 2);
         assertTrue(res.getOrganisationList().get(1).getObjid() == 2L);
         assertTrue(res.getOrganisationList().get(1).getContacts().size() == 2);
@@ -92,7 +91,8 @@ public class VertecServiceTests {
 
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void canGetAllProjectsAndPhasesFromVertec() {
 
         ResponseEntity<ZUKProjects> res = VS.getZUKProjects();
@@ -169,7 +169,7 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void canGetOrgById(){
+    public void canGetOrgById() {
         Long id = 709814L;
 
         JSONOrganisation org = VS.getOrganisation(id).getBody();
@@ -179,7 +179,7 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void canCetProjectByCode(){
+    public void canCetProjectByCode() {
         String code = "c15823";
 
         JSONProject p = VS.getProject(code).getBody();
@@ -189,7 +189,7 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void canGetProjectById(){
+    public void canGetProjectById() {
         Long id = 12065530L;
 
         JSONProject p = VS.getProject(id).getBody();
@@ -198,8 +198,8 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void cangetAddressEntryById(){
-        JSONContact contact  = VS.getContact(20027532L).getBody();
+    public void cangetAddressEntryById() {
+        JSONContact contact = VS.getContact(20027532L).getBody();
 
         System.out.println(contact);
         assertTrue("inactive contact", contact.getActive());
@@ -211,7 +211,7 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void canGetOrganisationsById(){//TODO make pass
+    public void canGetOrganisationsById() {//TODO make pass
         List<Long> orgids = new ArrayList<>();
         orgids.add(28055040L);
         orgids.add(28055047L);
@@ -236,7 +236,7 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void canGetActivitiesForOrganisation(){
+    public void canGetActivitiesForOrganisation() {
         Long id = 711840L;//an org with adressAktivitaeten
 
         ActivitiesForAddressEntry aFO = VS.getActivitiesForAddressEntry(id).getBody();
@@ -262,7 +262,15 @@ public class VertecServiceTests {
     }
 
 
+    @Test
+    public void canGetZUKTeam() {
+        List<Employee> employees = VS.getSalesTeam();
 
+        assertTrue("Tim not in team, that can't be!", employees.stream()
+                .map(Employee::getEmail)
+                .collect(toList())
+                .contains("tim.cianchi@zuhlke.com"));
+    }
 
 
 }

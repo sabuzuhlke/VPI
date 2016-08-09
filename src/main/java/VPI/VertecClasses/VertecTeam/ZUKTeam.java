@@ -9,17 +9,17 @@ import java.util.List;
 public class ZUKTeam {
 
     @JsonProperty("teamMembers")
-    public List<TeamMember> members;
+    public List<Employee> members;
 
     public ZUKTeam() {
         this.members = new ArrayList<>();
     }
 
-    public List<TeamMember> getMembers() {
+    public List<Employee> getMembers() {
         return members;
     }
 
-    public void setMembers(List<TeamMember> members) {
+    public void setMembers(List<Employee> members) {
         this.members = members;
     }
 

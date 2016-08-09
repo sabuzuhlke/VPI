@@ -8,6 +8,9 @@ import VPI.PDClasses.Activities.PDActivityResponse;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.*;
 import VPI.PDClasses.Deals.*;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipResopnse;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.Organisations.*;
 import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
@@ -27,7 +30,7 @@ public class PDService {
 
     public PDService(String server, String apiKey) {
         this.restTemplate = new RestTemplate();
-        this.apiKey = ProductionKeys.key; //= apiKey;
+        this.apiKey = DevelopmentKeys.key; //= apiKey;
         this.server = server;
     }
 
@@ -256,6 +259,7 @@ public class PDService {
 
         }
         res.getBody().setData(orgsRecieved);
+        System.out.println(res.getBody());
         return res;
     }
 
@@ -602,13 +606,23 @@ public class PDService {
      * Organisation relationships
      */
 //------------------------------------------------------------------------------------------------------------------POST
-    public ResponseEntity<String> postOrganisationRelationship(PDRelationship relationship) {
+    public ResponseEntity<String> postOrganisationRelationship(PDRelationshipSend relationship) {
         //TODO: change res to accept new pojo instead of string (org rel)
         try {
             return postToPipedrive(server + "organizationRelationships" + apiKey, relationship, String.class);
         } catch (Exception e) {
             System.out.println("Unable to post org rel: " + relationship.toString());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public List<PDRelationshipReceived> getRelationships(Long Id) {
+        try {
+            return getFromPipedrive(server + "organizationRelationships?org_id=" + Id + "&" + apiKey.substring(1), PDRelationshipResopnse.class).getBody().getData();
+
+        } catch (Exception e) {
+            System.out.println("Unable get relationships for organisation: " + Id);
+            throw new RuntimeException("Unable get relationships for organisation:" + Id);
         }
     }
 
@@ -738,6 +752,7 @@ public class PDService {
             deleteActivityList(activitiesToDel);
         }
     }
+
 
 }
 

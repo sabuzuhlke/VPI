@@ -8,7 +8,7 @@ import VPI.PDClasses.Deals.PDDealReceived;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Deals.util.PDPersonId;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
-import VPI.PDClasses.PDRelationship;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
@@ -504,7 +504,7 @@ public class VertecSynchroniserTests {
 
         sync.setOrgIdMap(map);
 
-        List<PDRelationship> rels = sync.getOrganistionHeirarchy(orgs);
+        List<PDRelationshipSend> rels = sync.getOrganistionHeirarchy(orgs);
 
         assertTrue(rels.size() == 2);
         assertTrue(rels.get(0).getType().equals("parent"));

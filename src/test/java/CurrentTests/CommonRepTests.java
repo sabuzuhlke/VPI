@@ -4,18 +4,23 @@ import VPI.Entities.Activity;
 import VPI.Entities.Contact;
 import VPI.Entities.util.ContactDetail;
 import VPI.Entities.Organisation;
+import VPI.Entities.util.Utilities;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivitySend;
 import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Contacts.util.OrgId;
+import VPI.PDClasses.HierarchyClasses.LinkedOrg;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDOwner;
-import VPI.PDClasses.PDRelationship;
+import org.apache.commons.collections4.BidiMap;
 import org.junit.Test;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +72,8 @@ public class CommonRepTests {
     }
 
     @Test
-    public void canConvertOrgReceivedtoCommon(){
+    public void canConvertOrgReceivedtoCommon() throws IOException {
+        BidiMap<Long, Long> orgIdmap = Utilities.loadIdMap("productionMaps/productionOrganisationMap");
         PDOrganisationReceived pdr = new PDOrganisationReceived();
         pdr.setAddress("10, Downig street, London, UK");
         pdr.setId(1L);
@@ -84,9 +90,16 @@ public class CommonRepTests {
         pdr.setV_id(2L);
 
         Long parentId = 5L;
-        PDRelationship rel = new PDRelationship(parentId,1L);
+        LinkedOrg parent = new LinkedOrg();
+        parent.setName("Hola");
+        parent.setId(9L);
 
-        Organisation org = new Organisation(pdr, rel);
+        LinkedOrg child = new LinkedOrg();
+        child.setName(pdr.getName());
+        child.setId(pdr.getId());
+        PDRelationshipReceived rel = new PDRelationshipReceived(parent,child);
+
+        Organisation org = new Organisation(pdr, rel, orgIdmap);
 
         assertEquals(pdr.getId(), org.getPipedriveId());
         assertEquals(pdr.getV_id(), org.getVertecId());

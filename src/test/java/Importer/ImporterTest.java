@@ -9,8 +9,8 @@ import VPI.PDClasses.Contacts.PDContactReceived;
 import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.Deals.PDDealSend;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.PDRelationship;
 import VPI.PDClasses.PDService;
 import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
@@ -24,7 +24,6 @@ import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsonschema.SchemaAware;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -48,9 +47,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Created by gebo on 07/06/2016.
- */
 public class ImporterTest {
 
     private Importer importer;
@@ -558,7 +554,7 @@ return false;
 
         importer.postOrganisationPostList();
 
-        List<PDRelationship> relationships = importer.builOrganisationHierarchies();
+        List<PDRelationshipSend> relationships = importer.builOrganisationHierarchies();
 
         int parentrelCount = importer.getVertecOrganisationList().stream()
                 .filter(organisation -> organisation.getParentOrganisationId() != null)
@@ -1633,12 +1629,7 @@ return false;
 
     }
 
-    private ResponseEntity<ZUKTeam> getDummyVertecTeamResponse() throws IOException {
-        ObjectMapper m =  new ObjectMapper();
-        ZUKTeam u =  m.readValue(new File("src/test/resources/VRAPI Team.json"), ZUKTeam.class);
-        return new ResponseEntity<>(u, HttpStatus.OK);
 
-    }
 
     @Test
     public void findActivitiesLinkedToOrganisations() throws IOException {
@@ -1660,5 +1651,12 @@ return false;
         System.out.println("Activities pointed to by organisations (" + activities.size() + "): ");
 
         activities.forEach(acttivity -> System.out.println(acttivity.getId()));
+    }
+
+    private ResponseEntity<ZUKTeam> getDummyVertecTeamResponse() throws IOException {
+        ObjectMapper m =  new ObjectMapper();
+        ZUKTeam u =  m.readValue(new File("src/test/resources/Old/VRAPI Team.json"), ZUKTeam.class);
+        return new ResponseEntity<>(u, HttpStatus.OK);
+
     }
 }

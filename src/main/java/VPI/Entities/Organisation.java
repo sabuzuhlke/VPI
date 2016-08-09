@@ -1,13 +1,16 @@
 package VPI.Entities;
 
 import VPI.Entities.util.Utilities;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.PDRelationship;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.BidiMap;
 
-public class Organisation {
+import java.util.Comparator;
+
+public class Organisation implements Comparable<Organisation> {
 
     private Long vertecId;
     private Long pipedriveId;
@@ -41,7 +44,7 @@ public class Organisation {
      *
      * @param relationship has to be got seperately from pipedrive
      */
-    public Organisation(PDOrganisationReceived pdr, PDRelationship relationship){
+    public Organisation(PDOrganisationReceived pdr, PDRelationshipReceived relationship, BidiMap<Long,Long> orgIdMap){
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
         this.active = true;
@@ -52,7 +55,10 @@ public class Organisation {
         this.full_address = pdr.getAddress();
         this.created = pdr.getCreationTime();
 
-        this.vParentOrganisation = relationship.getRel_owner_org_id();
+        if(relationship != null){
+
+            this.vParentOrganisation = orgIdMap.getKey(relationship.getParent().getId());
+        }
         this.website = pdr.getWebsite();
         this.category = pdr.getCategory();
         this.businessDomain = pdr.getBusinessDomain();
@@ -110,8 +116,9 @@ public class Organisation {
         this.supervisingEmail = ownerEmail;
         this.ownedOnVertecBy = organisation.getOwnedOnVertecBy();
 
-        //TODO modifiedDate
+        this.modified = Utilities.formatVertecDate(organisation.getModified());
     }
+
 
     /**
      *
@@ -153,6 +160,41 @@ public class Organisation {
             System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
         }
         return retStr;
+    }
+
+
+    public boolean equals(Organisation org) {
+        return org != null && vertecId == org.getVertecId().longValue()
+                && pipedriveId == org.getPipedriveId().longValue()
+                && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
+                && active == org.getActive()
+                && vParentOrganisation == org.getvParentOrganisation().longValue()
+                && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
+                && supervisingEmail.equals(org.getSupervisingEmail())
+                && supervisingEmail.equals(org.getSupervisingEmail())
+                && name.equals(org.getName())
+                && website.equals(org.getWebsite())
+                && category.equals(org.getCategory())
+                && businessDomain.equals(org.getBusinessDomain())
+                && full_address.equals(org.getFull_address())
+                && buildingName.equals(org.getBuildingName())
+                && street_no.equals(org.getStreet_no())
+                && street.equals(org.getStreet())
+                && city.equals(org.getCity())
+                && country.equals(org.getCountry())
+                && zip.equals(org.getZip());
+        //creation and modification dates need not bee checked here
+
+    }
+    @Override
+    public int compareTo(Organisation org) {
+        if(org == null) return -1;
+        if(org.getVertecId() == null && vertecId != null) return -1;
+        if(vertecId == null && org.getVertecId() != null) return 1; //this and above line will push orgs without v_ids to the end of the list
+        if(vertecId == null && org.getVertecId() == null) return 0;
+        if(this.vertecId > org.getVertecId()) return 1;
+        if(this.vertecId == org.getVertecId()) return 0;
+        else return -1;
     }
 
     public Long getVertecId() {
@@ -305,6 +347,26 @@ public class Organisation {
 
     public void setvParentOrganisation(Long vParentOrganisation) {
         this.vParentOrganisation = vParentOrganisation;
+    }
+
+    @Override
+    public String toString() {
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try {
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (Exception e) {
+            System.out.println("Could not convert Entities.Organisation to JSON: " + e.toString());
+        }
+        return retStr;
+    }
+
+    public static class OrganisationComparator implements Comparator<Organisation> {
+        @Override
+        public int compare(Organisation o1, Organisation o2) {
+            return o1.compareTo(o2);
+        }
     }
 
 }

@@ -11,7 +11,7 @@ import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationResponse;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.PDRelationship;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.PDService;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecActivities.JSONActivity;
@@ -120,7 +120,7 @@ public class VertecSynchroniser {
         this.contactIdMap.putAll(putMap);
 
         //get list of pd relationships, then post them
-        List<PDRelationship> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
+        List<PDRelationshipSend> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
         postRelationshipList(relationships);
 
         //return list of orgs and contact ids that have been posted/edited to pipedrive
@@ -207,7 +207,7 @@ public class VertecSynchroniser {
 //
 //        //get list of pd relationships, then post them
 //        System.out.println("Building relationship hierarchy");
-//        List<PDRelationship> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
+//        List<PDRelationshipSend> relationships = getOrganistionHeirarchy(allVertecData.getOrganisationList());
 //        long relTime = System.nanoTime();
 //        System.out.println("Took " + ((relTime - contputTime)/1000000) + " milliseconds");
 //        System.out.println("Found " + relationships.size() + " relationships, now posting them");
@@ -708,9 +708,9 @@ public class VertecSynchroniser {
     }
 
 
-    public List<PDRelationship> getOrganistionHeirarchy(List<JSONOrganisation> orgs) {
+    public List<PDRelationshipSend> getOrganistionHeirarchy(List<JSONOrganisation> orgs) {
 
-        List<PDRelationship> rels = new ArrayList<>();
+        List<PDRelationshipSend> rels = new ArrayList<>();
 
         for (JSONOrganisation org : orgs) {
 
@@ -719,7 +719,7 @@ public class VertecSynchroniser {
 
             if (childOrgPId != null && parentOrgPId != null) {
 
-                PDRelationship rel = new PDRelationship(parentOrgPId, childOrgPId);
+                PDRelationshipSend rel = new PDRelationshipSend(parentOrgPId, childOrgPId);
                 rels.add(rel);
 
             }
@@ -731,9 +731,9 @@ public class VertecSynchroniser {
     }
 
     //TODO: at some point work out exactly what eachof the post functions should return; --> TO TRACK ACTIVITY OF SYNCHRONISER
-    public void postRelationshipList(List<PDRelationship> relationships) {
+    public void postRelationshipList(List<PDRelationshipSend> relationships) {
 
-        for (PDRelationship rel : relationships) {
+        for (PDRelationshipSend rel : relationships) {
 
             PDS.postOrganisationRelationship(rel);
 

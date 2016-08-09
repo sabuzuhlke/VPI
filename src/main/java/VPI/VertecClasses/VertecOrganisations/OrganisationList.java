@@ -21,7 +21,8 @@ public class OrganisationList {
         this.organisations = organisations;
     }
 
-    public String toJSONString(){
+    @Override
+    public String toString(){
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
         try{
