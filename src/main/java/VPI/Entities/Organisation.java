@@ -1,12 +1,9 @@
 package VPI.Entities;
 
 import VPI.Entities.util.Utilities;
-import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
-import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections4.BidiMap;
 
 import java.util.Comparator;
 
@@ -44,7 +41,7 @@ public class Organisation implements Comparable<Organisation> {
      *
      * @param relationship has to be got seperately from pipedrive
      */
-    public Organisation(PDOrganisationReceived pdr, PDRelationshipReceived relationship, BidiMap<Long,Long> orgIdMap){
+    public Organisation(PDOrganisationReceived pdr/*, PDRelationshipReceived relationship, BidiMap<Long,Long> orgIdMap*/){
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
         this.active = true;
@@ -55,14 +52,16 @@ public class Organisation implements Comparable<Organisation> {
         this.full_address = pdr.getAddress();
         this.created = pdr.getCreationTime();
 
-        if(relationship != null){
-
-            this.vParentOrganisation = orgIdMap.getKey(relationship.getParent().getId());
-        }
+//        if(relationship != null){
+//
+//            this.vParentOrganisation = orgIdMap.getKey(relationship.getParent().getId());
+//        }
         this.website = pdr.getWebsite();
         this.category = pdr.getCategory();
         this.businessDomain = pdr.getBusinessDomain();
         //TODO modified Date,
+        this.modified = pdr.getUpdate_time(); //""2016-07-22 09:43:57""
+        this.created = pdr.getCreationTime();
 
     }
 
@@ -117,6 +116,7 @@ public class Organisation implements Comparable<Organisation> {
         this.ownedOnVertecBy = organisation.getOwnedOnVertecBy();
 
         this.modified = Utilities.formatVertecDate(organisation.getModified());
+        this.created = Utilities.formatVertecDate(organisation.getCreated());
     }
 
 

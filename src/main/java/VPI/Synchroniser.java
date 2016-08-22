@@ -3,19 +3,16 @@ package VPI;
 import VPI.Entities.Organisation;
 import VPI.Entities.OrganisationContainer;
 import VPI.Entities.util.Utilities;
-import VPI.InsightClasses.VOrganisation;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.PDService;
-import VPI.PipedriveStateClasses.PipedriveState;
+import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.Employee;
-import VPI.VertecStateClasses.VertecState;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
 import org.apache.commons.collections4.BidiMap;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Synchroniser {
 
