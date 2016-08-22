@@ -1,4 +1,4 @@
-package VPI.PipedriveStateClasses;
+package VPI.SynchroniserClasses.PipedriveStateClasses;
 
 
 import VPI.PDClasses.Activities.PDActivityReceived;

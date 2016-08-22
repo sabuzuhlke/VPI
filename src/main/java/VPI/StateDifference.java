@@ -1,20 +1,20 @@
 package VPI;
 
-import VPI.PipedriveStateClasses.PipedriveState;
-import VPI.VertecStateClasses.VertecState;
+import VPI.SynchroniserClasses.OrganisationDifferences;
+import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
+import VPI.SynchroniserClasses.SynchroniserState;
+import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
 
-/**
- * Created by sabu on 13/07/2016.
- */
 public class StateDifference {
 
-//    private OrganisationDifferences organisationDifferences;
-//    private ContactDifferences contactDifferences;
-//    private ProjectDifferences projectDifferences;
-//    private ActivityDifferences activityDifferences;
-//
-//    public StateDifference(VertecState vertecState, PipedriveState pipedriveState) {
-//        this.organisationDifferences
-//                = new OrganisationDifferences(vertecState.getVertecOrganisations(), pipedriveState.getpDOrganisation());
-//    }
+    private OrganisationDifferences organisationDifferences;
+
+    public StateDifference(VertecState vertecState, PipedriveState pipedriveState, SynchroniserState synchroniserState) {
+        this.organisationDifferences
+                = new OrganisationDifferences(vertecState, pipedriveState, synchroniserState);
+    }
+
+    public OrganisationDifferences getOrganisationDifferences() {
+        return organisationDifferences;
+    }
 }
