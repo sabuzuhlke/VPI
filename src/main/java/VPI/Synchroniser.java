@@ -38,6 +38,15 @@ public class Synchroniser {
         this.vertecOwnerMap = constructReverseMap(constructMap(vertec.getSalesTeam()));
     }
 
+    /**
+     * TODO Find good representation for owner email to id maps
+     * Todo find out how to best use state difference model to use for comparing and updating elements
+     * Todo State cases are: 1) new on Vertec,  2) new on PD, 3) has already been imported
+     * Case 1) All Organisations fall into this category that do not exist on pipedrive && that have never been imported to PD -- might be able to reduce it to last contition
+     * Case 2) All Organisattions fall  into this category that are in the PD orgList, and have no VID
+     * Case 3) All organisations fall into this category that match on VID from the pd and vertec  org Lists
+     */
+
     public void synchOrganisations() throws IOException {
 
         OrganisationContainer vertecOrganisations = getVertecOrganisations();
