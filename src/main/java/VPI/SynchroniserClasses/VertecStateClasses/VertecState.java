@@ -70,12 +70,14 @@ public class VertecState {
         Map<Long, Organisation> orgmap = new HashMap<>();
 
         //extract list of VIDs
-        List<Long> vidsFromPipedrive = organisationsFromPipedrive.orgsWithVIDs.keySet().stream().collect(Collectors.toList());
+        Collection<Organisation> orgsFromPipedrive = organisationsFromPipedrive.orgsWithVIDs.values();
         Set<Long> IdsFromVertec = organisations.keySet(); // this Set contains all Ids we have previously imported from vertec
 
         //get all of them that we haven't imported previously in getVertecOrganisations
-        List<Long> unimportedIds = vidsFromPipedrive.stream()
-                .filter(orgId -> !IdsFromVertec.contains(orgId))
+        List<Long> unimportedIds = orgsFromPipedrive.stream()
+                .filter(org -> !IdsFromVertec.contains(org.getVertecId()))
+                .filter(org -> org.getOwnedOnVertecBy().equals("Sales Team"))
+                .map(Organisation::getVertecId)
                 .collect(Collectors.toList());
 
         //For testing:
@@ -83,8 +85,10 @@ public class VertecState {
         System.out.println(unimportedIds);
         System.out.println(unimportedIds.size());
 
+        if(unimportedIds.isEmpty()) return new HashMap<>();
+
         //get them all from vertec
-        List<Organisation> orgsFromPipedrive = vertec.getOrganisationList(unimportedIds)
+        List<Organisation> vertecOrgsFromPipedrive = vertec.getOrganisationList(unimportedIds)
                 .getBody().getOrganisations().stream()
                 .map(org ->  new Organisation(org,
                             //To set the pipedriveID of the created organisation we'll have to access the organisations we got from pipedrive
@@ -93,7 +97,7 @@ public class VertecState {
                 .collect(Collectors.toList());
 
         //return in appropriate format
-        for(Organisation org : orgsFromPipedrive){
+        for(Organisation org : vertecOrgsFromPipedrive){
             orgmap.put(org.getVertecId(), org);
         }
         return orgmap;

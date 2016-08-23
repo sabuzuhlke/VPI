@@ -37,7 +37,7 @@ public class Utilities {
                      String[] dateFormatter = pDate.split(" ");
                      String date = dateFormatter[0];
                      String time = dateFormatter[1];
-                     return date + " " + time;
+                     return date + "T" + time;
                  }
              }
          } catch (Exception e){

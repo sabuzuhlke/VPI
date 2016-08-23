@@ -49,7 +49,7 @@ public class Organisation implements Comparable<Organisation> {
         this.active = true;
 
         this.supervisingEmail = pdr.getOwner_id().getEmail();
-        this.ownedOnVertecBy = pdr.getOwnedBy();
+        this.ownedOnVertecBy = readPdOwnedOnVertecBy(pdr.getOwnedBy());
         this.name = pdr.getName();
         this.full_address = pdr.getAddress();
         this.created = pdr.getCreationTime();
@@ -66,6 +66,13 @@ public class Organisation implements Comparable<Organisation> {
         this.modified = pdr.getUpdate_time(); //""2016-07-22 09:43:57""
         this.created = pdr.getCreationTime();
 
+    }
+
+    private String readPdOwnedOnVertecBy(String ownedBy) {
+        if(ownedBy == null) return "No Owner";
+        else if(ownedBy.equals("12")) return "Sales Team";
+        else if(ownedBy.equals("13")) return "Not ZUK";
+        else return "unrecognised";
     }
 
     /**

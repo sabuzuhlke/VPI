@@ -22,6 +22,7 @@ import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.EmployeeList;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.org.apache.xpath.internal.operations.Or;
 import org.apache.commons.collections4.BidiMap;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,10 +33,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -187,11 +185,25 @@ public class SynchroniserTest {
                         , synchroniser.getSynchroniserState()
                         , synchroniser.getPipedriveState());
 
-        System.out.println("ids to del:");
-        System.out.println(idsToDel);
-        System.out.println(idsToDel.size());
-    }
 
+        Map<Organisation, Organisation> conflicts = synchroniser.getStateDifference().getOrganisationDifferences().getDeletionConflicts();
+      assertEquals("Would delete more orgs than necessary",1,idsToDel.size());
+      assertEquals("More delete conflicts than actually",1, conflicts.size());
+
+        assertEquals("Would del wrong org", 10001010101010L, idsToDel.get(0).longValue());
+        assertEquals("wrong orgdel conflict", 28117744L, conflicts.keySet().stream()
+                .map(Organisation::getVertecId)
+                .collect(toList())
+                .get(0)
+        .longValue());
+        assertEquals("wrong orgdel conflict", 28117744L, conflicts.values().stream()
+                .map(Organisation::getVertecId)
+                .collect(toList())
+                .get(0)
+        .longValue());
+
+
+    }
 
 
     @Test
@@ -346,10 +358,6 @@ public class SynchroniserTest {
             return rels;
         };
     }
-
-
-
-
 
 
 

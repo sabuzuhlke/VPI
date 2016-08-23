@@ -20,6 +20,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -54,11 +55,18 @@ public class VertecService {
     }
 
     private <RES> ResponseEntity<RES> getFromVertec(String uri, Class<RES> responseType) {
+
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("Authorization", username + ':' + pwd);
-        return restTemplate.exchange(
+        try{
+
+            return restTemplate.exchange(
                 new RequestEntity<>(headers, HttpMethod.GET, URI.create(uri)),
                 responseType);
+        } catch (HttpClientErrorException e){
+            System.out.println(new RequestEntity<>(headers, HttpMethod.GET, URI.create(uri)));
+            throw e;
+        }
     }
 
     /**

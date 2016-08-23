@@ -83,11 +83,10 @@ public class OrganisationDifferences {
         List<Long> idsToDel = new ArrayList<>();
         //this is enough since vertecState contains all vertec organisations from vertec that appear on pipedrive(even inactive ones)
         List<Organisation> deletedVertecOrgs = vertecState.organisations.getAll().stream()
-                .filter(org -> modifiedSinceLastSync(synchroniserState, org)) // have been modified since last synch
-                .filter(org -> org.getOwnedOnVertecBy().equals("Sales Team")) // are owned by zuk
                 .filter(org -> !org.getActive()) //are inactive now
+                .filter(org ->  org.getOwnedOnVertecBy().equals("Sales Team")) // are owned by zuk
+                .filter(org -> modifiedSinceLastSync(synchroniserState, org))// have been modified since last synch
                 .collect(Collectors.toList());
-
         OrganisationContainer pipedriveOrgs = pipedriveState.organisations;
 
         deletedVertecOrgs.forEach(vOrg -> {
@@ -108,7 +107,7 @@ public class OrganisationDifferences {
     private boolean modifiedSinceLastSync(SynchroniserState synchroniserState, Organisation org) {
         LocalDateTime orgMod = LocalDateTime.parse(Utilities.formatToVertecDate(org.getModified()));
         LocalDateTime syncTime = LocalDateTime.parse(synchroniserState.getSyncTime());
-        return (orgMod.isBefore(syncTime));
+        return (orgMod.isAfter(syncTime));
     }
 
 
@@ -164,4 +163,75 @@ public class OrganisationDifferences {
         return idsToCreate;
     }
 
+    public Set<Organisation> getCreateOnVertec() {
+        return createOnVertec;
+    }
+
+    public void setCreateOnVertec(Set<Organisation> createOnVertec) {
+        this.createOnVertec = createOnVertec;
+    }
+
+    public Set<Organisation> getCreateOnPipedrive() {
+        return createOnPipedrive;
+    }
+
+    public void setCreateOnPipedrive(Set<Organisation> createOnPipedrive) {
+        this.createOnPipedrive = createOnPipedrive;
+    }
+
+    public Set<Organisation> getDeleteFromVertec() {
+        return deleteFromVertec;
+    }
+
+    public void setDeleteFromVertec(Set<Organisation> deleteFromVertec) {
+        this.deleteFromVertec = deleteFromVertec;
+    }
+
+    public Set<Organisation> getDeleteFromPipedrive() {
+        return deleteFromPipedrive;
+    }
+
+    public void setDeleteFromPipedrive(Set<Organisation> deleteFromPipedrive) {
+        this.deleteFromPipedrive = deleteFromPipedrive;
+    }
+
+    public Map<Organisation, Organisation> getDeletionConflicts() {
+        return deletionConflicts;
+    }
+
+    public void setDeletionConflicts(Map<Organisation, Organisation> deletionConflicts) {
+        this.deletionConflicts = deletionConflicts;
+    }
+
+    public Set<Organisation> getUpdateOnVertec() {
+        return updateOnVertec;
+    }
+
+    public void setUpdateOnVertec(Set<Organisation> updateOnVertec) {
+        this.updateOnVertec = updateOnVertec;
+    }
+
+    public Set<Organisation> getUpdateOnPipedrive() {
+        return updateOnPipedrive;
+    }
+
+    public void setUpdateOnPipedrive(Set<Organisation> updateOnPipedrive) {
+        this.updateOnPipedrive = updateOnPipedrive;
+    }
+
+    public Set<Organisation> getUpdateConflicts() {
+        return updateConflicts;
+    }
+
+    public void setUpdateConflicts(Set<Organisation> updateConflicts) {
+        this.updateConflicts = updateConflicts;
+    }
+
+    public Set<Organisation> getNoChanges() {
+        return noChanges;
+    }
+
+    public void setNoChanges(Set<Organisation> noChanges) {
+        this.noChanges = noChanges;
+    }
 }
