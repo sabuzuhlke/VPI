@@ -1,38 +1,30 @@
 package VPI;
 
 import VPI.Entities.Organisation;
-import VPI.Entities.OrganisationContainer;
-import VPI.Entities.util.Utilities;
-import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.PDService;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
+import VPI.SynchroniserClasses.SynchroniserState;
 import VPI.VertecClasses.VertecService;
-import VPI.VertecClasses.VertecTeam.Employee;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
-import org.apache.commons.collections4.BidiMap;
 
 import java.io.IOException;
-import java.util.*;
 
 public class Synchroniser {
 
     private VertecState vertecState;
     private PipedriveState pipedriveState;
+    private SynchroniserState synchroniserState;
 
-    private PDService pipedrive;
-    private VertecService vertec;
-    private Importer importer;
-    private Map<Long, String> pdOwnerMap;
-    private Map<Long, String> vertecOwnerMap;
-    List<Organisation> pdOrgPostList;
+    private StateDifference stateDifference;
 
-    public Synchroniser(PDService pipedrive, VertecService vertec) {
-        this.pipedrive = pipedrive;
-        this.vertec = vertec;
-        this.importer = new Importer(pipedrive, vertec);
 
-        this.pdOwnerMap = constructReverseMap(importer.teamIdMap);
-        this.vertecOwnerMap = constructReverseMap(constructMap(vertec.getSalesTeam()));
+    public Synchroniser(PDService pipedrive, VertecService vertec) throws IOException {
+        this.synchroniserState = new SynchroniserState(vertec, pipedrive);
+
+        this.pipedriveState = new PipedriveState(pipedrive, this.synchroniserState);
+        this.vertecState = new VertecState(vertec, this.synchroniserState);
+
+        this.stateDifference = new StateDifference(vertecState, pipedriveState, synchroniserState);
     }
 
     /**
@@ -46,22 +38,22 @@ public class Synchroniser {
 
     public void synchOrganisations() throws IOException {
 
-        OrganisationContainer vertecOrganisations = getVertecOrganisations();
 
-        OrganisationContainer pipedrivePOrganisations = getPipedriveOrganisations();
+        pipedriveState.setOrganisations(pipedriveState.loadPipedriveOrganisations());
+        //vertecState.setOrganisations(vertecState.getVertecOrganisations((pipedriveState.organisations.orgsWithVIDs)));
 
-        for(Organisation vOrg : vertecOrganisations.organisationMap.values()){
-            Organisation pOrg = vertecOrganisations.getByV(vOrg.getVertecId());
-
-            compareOrgansiations(vOrg, pOrg);
-
-        }
-
-        for(Organisation org : pipedrivePOrganisations.orgsWithoutVID){
-            //Todo Try to find a matching organisation on vertec (Not necessarily in vertecOrganisations)
-            //if match found, call compareOrganisations
-            //else, post to Vertec
-        }
+//        for(Organisation vOrg : vertecOrganisations.orgsWithVIDs.values()){
+//            Organisation pOrg = vertecOrganisations.getByV(vOrg.getVertecId());
+//
+//            compareOrgansiations(vOrg, pOrg);
+//
+//        }
+//
+//        for(Organisation org : pipedrivePOrganisations.orgsWithoutVID){
+//            //Todo Try to find a matching organisation on vertec (Not necessarily in vertecOrganisations)
+//            //if match found, call compareOrganisations
+//            //else, post to Vertec
+//        }
 
         //These sorts are not necessary, but on average they are going to double the speed of the below code
 //        Collections.sort(vertecOrganisations);
@@ -107,67 +99,39 @@ public class Synchroniser {
 
 
     //=================================HELPER FUNCTIONS==========================================================
-    public OrganisationContainer getVertecOrganisations() throws IOException {
 
-        Map<Long, Organisation> organisations = new HashMap<>();
-        List<Organisation> nonVIDOrgs = new ArrayList<>();
-        BidiMap<Long, Long> orgIdmap = Utilities.loadIdMap("productionMaps/productionOrganisationMap");
 
-        vertec.getAllZUKOrganisations().getBody().getOrganisations()
-                .forEach(org -> {
-                    Organisation organisation = new Organisation(org, orgIdmap.get(org.getVertecId()), vertecOwnerMap.get(org.getOwnerId()));
-                    if (organisation.getVertecId() == null) {
-                        nonVIDOrgs.add(organisation);
-                    } else {
-                        organisations.put(organisation.getVertecId(), organisation);
-                    }
-
-                });
-        return new OrganisationContainer(organisations, nonVIDOrgs);
+    public VertecState getVertecState() {
+        return vertecState;
     }
 
-    public OrganisationContainer getPipedriveOrganisations() throws IOException {
-        BidiMap<Long, Long> orgIdmap = Utilities.loadIdMap("productionMaps/productionOrganisationMap");
-        Map<Long, Organisation> orgs = new HashMap<>();
-        List<Organisation> nonVidOrgs = new ArrayList<>();
-
-        pipedrive.getAllOrganisations().getBody().getData()
-                .forEach(org -> {
-                    List<PDRelationshipReceived> relList = pipedrive.getRelationships(org.getId());
-                    PDRelationshipReceived pdr = null;
-                    for (PDRelationshipReceived rel : relList) {
-                        if (rel.getType().equals("parent") && !rel.getParent().getName().equals(org.getName())) {
-                            pdr = rel;
-                        }
-                    }
-                    Organisation organisation = new Organisation(org, pdr, orgIdmap);
-                    if(organisation.getVertecId() == null){
-                        nonVidOrgs.add(organisation);
-                    } else {
-                        orgs.put(organisation.getVertecId(), organisation);
-                    }
-                });
-        return new OrganisationContainer(orgs,nonVidOrgs);
+    public void setVertecState(VertecState vertecState) {
+        this.vertecState = vertecState;
     }
 
-    public Map<Long, String> constructReverseMap(Map<String, Long> normalMap) {
-
-
-        Map<Long, String> reverseMap = new HashMap<>();
-
-        for (String email : normalMap.keySet()) {
-            reverseMap.put(normalMap.get(email), email);
-        }
-
-        return reverseMap;
+    public PipedriveState getPipedriveState() {
+        return pipedriveState;
     }
 
-    public Map<String, Long> constructMap(List<Employee> employees) {
-        Map<String, Long> teamIdMap = new DefaultHashMap<>(5295L);
-        for (Employee e : employees) {
-            if (e.getEmail() != null && !e.getEmail().isEmpty())
-                teamIdMap.put(e.getEmail(), e.getId());
-        }
-        return teamIdMap;
+    public void setPipedriveState(PipedriveState pipedriveState) {
+        this.pipedriveState = pipedriveState;
+    }
+
+    public SynchroniserState getSynchroniserState() {
+        return synchroniserState;
+    }
+
+    public void setSynchroniserState(SynchroniserState synchroniserState) {
+        this.synchroniserState = synchroniserState;
+    }
+
+    public StateDifference getStateDifference() {
+        return stateDifference;
+    }
+
+    public void setStateDifference(StateDifference stateDifference) {
+        this.stateDifference = stateDifference;
     }
 }
+
+

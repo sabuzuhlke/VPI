@@ -1,9 +1,11 @@
 package VPI.Entities;
 
 import VPI.Entities.util.Utilities;
+import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.BidiMap;
 
 import java.util.Comparator;
 
@@ -41,7 +43,7 @@ public class Organisation implements Comparable<Organisation> {
      *
      * @param relationship has to be got seperately from pipedrive
      */
-    public Organisation(PDOrganisationReceived pdr/*, PDRelationshipReceived relationship, BidiMap<Long,Long> orgIdMap*/){
+    public Organisation(PDOrganisationReceived pdr, PDRelationshipReceived relationship, BidiMap<Long,Long> orgIdMap){
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
         this.active = true;
@@ -52,10 +54,11 @@ public class Organisation implements Comparable<Organisation> {
         this.full_address = pdr.getAddress();
         this.created = pdr.getCreationTime();
 
-//        if(relationship != null){
-//
-//            this.vParentOrganisation = orgIdMap.getKey(relationship.getParent().getId());
-//        }
+        if(relationship != null){
+
+            this.vParentOrganisation = orgIdMap.getKey(relationship.getParent().getId());
+        }
+
         this.website = pdr.getWebsite();
         this.category = pdr.getCategory();
         this.businessDomain = pdr.getBusinessDomain();

@@ -3,9 +3,7 @@ package VPI.Entities.util;
 import java.io.*;
 import java.text.Bidi;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.*;
@@ -173,6 +171,20 @@ public class Utilities {
             }
         reader.close();
         return idMap;
+    }
+
+    static public List<Long> loadIdList(String filename) throws IOException {
+        List<Long> ids = new ArrayList<>();
+        File file = new File(filename);
+        String line;
+
+        FileReader reader = new FileReader(file.getAbsolutePath());
+        BufferedReader breader = new BufferedReader(reader);
+
+        while((line = breader.readLine()) != null){
+            ids.add(Long.parseLong(line));
+        }
+        return ids;
     }
 
    static  public String idsAsString(List<Long> ids) {

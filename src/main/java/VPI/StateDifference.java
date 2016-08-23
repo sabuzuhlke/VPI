@@ -10,8 +10,7 @@ public class StateDifference {
     private OrganisationDifferences organisationDifferences;
 
     public StateDifference(VertecState vertecState, PipedriveState pipedriveState, SynchroniserState synchroniserState) {
-        this.organisationDifferences
-                = new OrganisationDifferences(vertecState, pipedriveState, synchroniserState);
+        this.organisationDifferences = new OrganisationDifferences(vertecState, pipedriveState, synchroniserState);
     }
 
     public OrganisationDifferences getOrganisationDifferences() {

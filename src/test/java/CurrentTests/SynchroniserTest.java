@@ -2,6 +2,7 @@ package CurrentTests;
 
 import VPI.Entities.Organisation;
 import VPI.Entities.OrganisationContainer;
+import VPI.Entities.util.Utilities;
 import VPI.Importer;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
@@ -21,6 +22,7 @@ import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.EmployeeList;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.BidiMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
@@ -31,9 +33,13 @@ import org.springframework.http.ResponseEntity;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -74,7 +80,7 @@ public class SynchroniserTest {
     @Test
     public void canGetVertecOrganisations() throws IOException {
         when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
-       OrganisationContainer orgs = synchroniser.getVertecOrganisations();
+        OrganisationContainer orgs = synchroniser.getVertecState().loadVertecOrganisations(null); //todo once getOrganisationsBasedOnPipedrive is tested, replace with correct order
 
         Organisation organisation = orgs.getByV(1910117L);
 
@@ -102,13 +108,13 @@ public class SynchroniserTest {
     }
 
     @Test
-    public void canGetPipedtiveOrganisations() throws IOException {
+    public void canGetPipedriveOrganisations() throws IOException {
         when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
         when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
 
-        OrganisationContainer orgs = synchroniser.getPipedriveOrganisations();
+        OrganisationContainer orgs = synchroniser.getPipedriveState().loadPipedriveOrganisations();
 
-        Organisation testOrg = orgs.getByP(184L);
+        Organisation testOrg = orgs.getByP(2023L);
 
         System.out.println(testOrg);
         assertTrue(testOrg.getFull_address().contains("Schmelzhütterstraße 26, Dornbirn, 6850, Österreich"));
@@ -117,14 +123,84 @@ public class SynchroniserTest {
         assertEquals(668483L, testOrg.getVertecId().longValue());
 
 
-
+        testOrg = orgs.getByP(460L);
         System.out.println(testOrg);
         assertEquals("News UK", testOrg.getName());
         assertEquals(null, testOrg.getVertecId());
         assertEquals(null, testOrg.getVertecId());
-        assertEquals(21768524L, testOrg.getvParentOrganisation().longValue());
+        assertEquals(668483L, testOrg.getvParentOrganisation().longValue());
 
 
+    }
+
+    @Test
+    public void canRecogniseOrgsToCreateOnPipedrive() throws IOException {
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+
+        synchroniser.getVertecState().organisations = synchroniser.getVertecState().loadVertecOrganisations(null);//todo once getOrganisationsBasedOnPipedrive is tested, replace with correct order
+        List<Long> idsSelected = synchroniser
+                .getStateDifference()
+                .getOrganisationDifferences()
+                .findOrganisationsToCreateOnPipedrive(synchroniser.getVertecState(), synchroniser.getSynchroniserState());
+
+        System.out.println("Ids added to postlist: ");
+        System.out.println(idsSelected);
+
+        assertTrue(idsSelected.contains(15158065L));
+        assertTrue(idsSelected.contains(28055033L));
+        assertTrue(idsSelected.contains(693963L));
+        assertTrue(idsSelected.contains(28055102L));
+        assertTrue(idsSelected.contains(28055116L));
+        assertTrue(idsSelected.contains(28055109L));
+    }
+
+    @Test
+    public void canRecogniseOrgsToCreateOnVertec() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        synchroniser.getPipedriveState().organisations = synchroniser.getPipedriveState().loadPipedriveOrganisations();
+
+        List<Long> idsSelected = synchroniser.getStateDifference()
+                .getOrganisationDifferences()
+                .findOrganisationsToCreateOnVertec(synchroniser.getPipedriveState());
+        System.out.println("ids selected:");
+        System.out.println(idsSelected);
+        assertEquals("Not all organisations to create on vertec were found in  test set", 350L, idsSelected.size());
+
+    }
+
+    @Test
+    public void canRecogniseorgsToDelFromPipedrive() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        synchroniser.getPipedriveState().organisations = synchroniser.getPipedriveState().loadPipedriveOrganisations();
+        synchroniser.getVertecState().organisations = synchroniser.getVertecState().loadVertecOrganisations(synchroniser.getPipedriveState().organisations);
+
+        List<Long> idsToDel = synchroniser.getStateDifference()
+                .getOrganisationDifferences()
+                .findOrganisationsToDeleteFromPipedrive(synchroniser.getVertecState()
+                        , synchroniser.getSynchroniserState()
+                        , synchroniser.getPipedriveState());
+
+        System.out.println("ids to del:");
+        System.out.println(idsToDel);
+        System.out.println(idsToDel.size());
+    }
+
+
+
+    @Test
+    public void canGetOrganisationsBasedOnpipedrive() throws IOException {
+
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
     }
 
 
@@ -147,6 +223,12 @@ public class SynchroniserTest {
     private ResponseEntity<OrganisationList> getDummyVertecOrganisationsResponse() throws IOException {
         ObjectMapper m = new ObjectMapper();
         OrganisationList body = m.readValue(new File("src/test/resources/AllVertecOrganisations.json"), OrganisationList.class);
+        return new ResponseEntity<>(body, HttpStatus.OK);
+    }
+
+    private ResponseEntity<OrganisationList> getDummyVertecOrganisationsFromPipedriveResponse() throws IOException {
+        ObjectMapper m = new ObjectMapper();
+        OrganisationList body = m.readValue(new File("src/test/resources/PostedNonTeamOrganisations.json"), OrganisationList.class);
         return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
@@ -223,6 +305,12 @@ public class SynchroniserTest {
 
     }
 
+    /**
+     * This function serves to emulate what pipedrive would return when asked for relationships between organisations
+     * Setting the ids of the returned relationship subjects should not matter as long as they exist in the test dataset
+     * Care should be taken to test appropriate values of organisation fields according to supplied test ids
+     */
+
     private Answer<List<PDRelationshipReceived>> getPDRelationshipAnswer() {
         return invocation -> {
             List<PDRelationshipReceived> rels = new ArrayList<>();
@@ -236,7 +324,7 @@ public class SynchroniserTest {
 
             LinkedOrg relationshipSubject = new LinkedOrg(); //this org is to emulate the organisation the relationship is gottern for
             relationshipSubject.setName("Zumtobel Lighting");//DO NOT change this name, so that the tests will test the correct behaviour
-            relationshipSubject.setId(2L);
+            relationshipSubject.setId(2023L);
             relationshipSubject.setAddress("22 Jump Street");
             relationshipSubject.setOwnerId(1363402L);
             pdr.setDaughter(relationshipSubject);
@@ -258,6 +346,13 @@ public class SynchroniserTest {
             return rels;
         };
     }
+
+
+
+
+
+
+
 
 }
 
