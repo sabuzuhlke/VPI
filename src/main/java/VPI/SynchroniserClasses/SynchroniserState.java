@@ -20,33 +20,48 @@ import static java.util.stream.Collectors.toSet;
  * Class for storing all maps of vertec_id <-> pipederive_id, posted previously
  */
 public class SynchroniserState {
-
-    private DualHashBidiMap<Long, Long> organisationMap;
-
-    private List<Long> externalOrganisations;
+    //String representing the date/time at which the sync last finished running
     private String syncTime;
 
-    private Map<Long, String> pdOwnerMap;
+    //Map of Pipedrive UserId -> User email
+    private Map<Long, String> pipedriveOwnerMap;
+    //Map of Vertec UserId -> User email
     private Map<Long, String> vertecOwnerMap;
+
+    //Organisation items
+
+    //Map of Vertec_Id <-> Pipedrive_Id for organisationState we have posted to pipedrive
+    private DualHashBidiMap<Long, Long> organisationIdMap;
+
+    //List of Vertec Ids that we imported from vertec but are not owned by ZUK sales team members
+    private List<Long> vertecIdsOfNonZUKOrganisations;
 
 
     public SynchroniserState(VertecService vertec, PDService pipedrive) throws IOException {
-        this.organisationMap = loadOrganisationIdMap();
-        this.pdOwnerMap = constructReverseMap(constructTeamIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive)));
-        this.vertecOwnerMap = constructReverseMap(constructMap(vertec.getSalesTeam()));
-        this.externalOrganisations = loadExternalOrganisations();
+        this.organisationIdMap = loadOrganisationIdMap();
+        this.pipedriveOwnerMap = constructReverseMap(constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive)));
+        this.vertecOwnerMap = constructReverseMap(constructVertecUserEmailToIdMap(vertec.getSalesTeam()));
+        this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
         this.syncTime = loadSyncTime();
     }
 
-
-
-
+    /**
+     * Loads latest organisation Id Map from file
+     */
     private DualHashBidiMap<Long, Long> loadOrganisationIdMap() throws IOException {
         return Utilities.loadIdMap("productionMaps/productionOrganisationMap");
     }
+
+    /**
+     * Loads latest list of external organisationState from file
+     */
     private List<Long> loadExternalOrganisations() throws IOException {
         return Utilities.loadIdList("productionMaps/productionMissingOrganisations15-07-16");
     }
+
+    /**
+     * Loads latest time that sync was run
+     */
     private String loadSyncTime() throws IOException {
         String line;
         File file = new File("synctime");
@@ -56,21 +71,24 @@ public class SynchroniserState {
         return line;
     }
 
-
+    /**
+     *Function to create the reverse of a map, used to create common representation of entities by storing email of owner rather than vertec and pipedrive ids
+     */
     public Map<Long, String> constructReverseMap(Map<String, Long> normalMap) {
-
-
-        Map<Long, String> reverseMap = new HashMap<>();
-
+        //TODO: 'constructReverseMap' check defualt value is correct person
+        Map<Long, String> reverseMap = new DefaultHashMap<>("sabine.strauss§@zuhlke.com");
         for (String email : normalMap.keySet()) {
             reverseMap.put(normalMap.get(email), email);
         }
-
         return reverseMap;
     }
 
-    public Map<String, Long> constructMap(List<Employee> employees) {
-        Map<String, Long> teamIdMap = new DefaultHashMap<>(5295L);
+    /**
+     * Uses list of Vertec Employees to build map of Employee email -> Employee Id
+     */
+    public Map<String, Long> constructVertecUserEmailToIdMap(List<Employee> employees) {
+        //TODO: 'constructMap' check defualt value is correct person
+        Map<String, Long> teamIdMap = new DefaultHashMap<>(23560788L);
         for (Employee e : employees) {
             if (e.getEmail() != null && !e.getEmail().isEmpty())
                 teamIdMap.put(e.getEmail(), e.getId());
@@ -78,6 +96,9 @@ public class SynchroniserState {
         return teamIdMap;
     }
 
+    /**
+     * Gets a list of ZUK Employee emails
+     */
     public Set<String> getVertecUserEmails(VertecService vertec) {
         return vertec.getTeamDetails()
                 .getBody()
@@ -86,11 +107,18 @@ public class SynchroniserState {
                 .map(Employee::getEmail)
                 .collect(toSet());
     }
+
+    /**
+     * Gets a list of Users from pipedrive
+     */
     public List<PDUser> getPipedriveUsers(PDService pipedrive ) {
         return pipedrive.getAllUsers().getBody().getData();
     }
 
-    public Map<String, Long> constructTeamIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
+    /**
+     * Matches vertec employee emails to pipedrive user emails and creates map entry for user email -> pipedriveId
+     */
+    public Map<String, Long> constructPipedriveUserEmailToIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
         Map<String, Long> teamIdMap = new DefaultHashMap<>(1533390L);
         for (String v_email : v_emails) {
             Boolean mapped = false;
@@ -111,44 +139,17 @@ public class SynchroniserState {
     }
 
 
+    //============================================ Helper Functions ====================================================
 
-    public DualHashBidiMap<Long, Long> getOrganisationMap() {
-        return organisationMap;
-    }
-
-    public void setOrganisationMap(DualHashBidiMap<Long, Long> organisationMap) {
-        this.organisationMap = organisationMap;
-    }
-
-    public Map<Long, String> getPdOwnerMap() {
-        return pdOwnerMap;
-    }
-
-    public void setPdOwnerMap(Map<Long, String> pdOwnerMap) {
-        this.pdOwnerMap = pdOwnerMap;
+    public DualHashBidiMap<Long, Long> getOrganisationIdMap() {
+        return organisationIdMap;
     }
 
     public Map<Long, String> getVertecOwnerMap() {
         return vertecOwnerMap;
     }
 
-    public void setVertecOwnerMap(Map<Long, String> vertecOwnerMap) {
-        this.vertecOwnerMap = vertecOwnerMap;
-    }
-
-    public List<Long> getExternalOrganisations() {
-        return externalOrganisations;
-    }
-
-    public void setExternalOrganisations(List<Long> externalOrganisations) {
-        this.externalOrganisations = externalOrganisations;
-    }
-
     public String getSyncTime() {
         return syncTime;
-    }
-
-    public void setSyncTime(String syncTime) {
-        this.syncTime = syncTime;
     }
 }

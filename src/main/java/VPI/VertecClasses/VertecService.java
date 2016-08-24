@@ -71,10 +71,10 @@ public class VertecService {
 
     /**
      * Returns a ZUKOrganisations containing all organisastions relevant to ZUK along with nested contacts
-     * and a list of dangling contacts not attached to organisations
+     * and a list of dangling contacts not attached to organisationState
      */
     public ResponseEntity<ZUKOrganisations> getZUKOrganisations() {
-        return getFromVertec("https://" + server + "/organisations/ZUK", ZUKOrganisations.class);
+        return getFromVertec("https://" + server + "/organisationState/ZUK", ZUKOrganisations.class);
     }
 
     /**
@@ -82,7 +82,7 @@ public class VertecService {
      * /Entities.Organisation/
      */
     public ResponseEntity<OrganisationList> getAllZUKOrganisations() {
-        return getFromVertec("https://" + server + "/organisations/all", OrganisationList.class);
+        return getFromVertec("https://" + server + "/organisationState/all", OrganisationList.class);
     }
 
     /**
@@ -127,7 +127,7 @@ public class VertecService {
 
     public ResponseEntity<OrganisationList> getOrganisationList(List<Long> ids) {
 
-        return getFromVertec("https://" + server + "/organisations/" + idsAsString(ids), OrganisationList.class);
+        return getFromVertec("https://" + server + "/organisationState/" + idsAsString(ids), OrganisationList.class);
     }
 
     public ResponseEntity<ActivitiesForAddressEntry> getActivitiesForAddressEntry(Long id) {

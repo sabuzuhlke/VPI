@@ -12,7 +12,6 @@ import VPI.PDClasses.Contacts.PDContactSend;
 import VPI.PDClasses.Contacts.util.OrgId;
 import VPI.PDClasses.HierarchyClasses.LinkedOrg;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
-import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDOwner;
@@ -36,7 +35,7 @@ public class CommonRepTests {
         org.setActive(true);
 
         org.setPipedriveId(1L);
-        org.setFull_address("10, Downig street, London, UK");
+        org.setFullAddress("10, Downig street, London, UK");
         //org.setBuildingName("this building");
         org.setBusinessDomain("business");
         org.setCategory("arms trade");
@@ -48,7 +47,7 @@ public class CommonRepTests {
         org.setOwnedOnVertecBy("ZUK");
         //org.setPipedriveId(null);
         //org.setStreet("street");
-        //org.setStreet_no("NO");
+        //org.setStreetNo("NO");
         org.setSupervisingEmail("wolfgang.emmerich@zuhlke.com");
         org.setVertecId(1L);
         org.setWebsite("www.com");
@@ -60,7 +59,7 @@ public class CommonRepTests {
 
         assertEquals(pds.getActive_flag(), org.getActive());
 
-        assertTrue(pds.getAddress().equals(org.getFull_address()));
+        assertTrue(pds.getAddress().equals(org.getFullAddress()));
         assertTrue(pds.getCreationTime().equals(org.getCreated()));
         assertTrue(pds.getName().equals(org.getName()));
         assertTrue(pds.getOwnedBy().equals(org.getOwnedOnVertecBy()));
@@ -108,7 +107,7 @@ public class CommonRepTests {
         assertTrue(pdr.getOwner_id().getEmail().equals(org.getSupervisingEmail()));
         assertTrue(pdr.getOwnedBy().equals(org.getOwnedOnVertecBy()));
         assertTrue(pdr.getName().equals(org.getName()));
-        assertTrue(pdr.getAddress().equals(org.getFull_address()));
+        assertTrue(pdr.getAddress().equals(org.getFullAddress()));
         assertTrue(pdr.getCreationTime().equals(org.getCreated()));
         assertEquals(parentId, org.getvParentOrganisation());
 
@@ -150,7 +149,7 @@ public class CommonRepTests {
         assertTrue(org.getCategory().equals(organisation.getCategory()));
         assertTrue(org.getBusinessDomain().equals(organisation.getBusinessDomain()));
         assertTrue(org.getBuildingName().equals(organisation.getBuildingName()));
-        assertTrue(org.getStreet_no().equals(organisation.getStreet_no()));
+        assertTrue(org.getStreet_no().equals(organisation.getStreetNo()));
         assertTrue(org.getStreet().equals(organisation.getStreet()));
         assertTrue(org.getCity().equals(organisation.getCity()));
         assertTrue(org.getCountry().equals(organisation.getCountry()));
@@ -159,7 +158,7 @@ public class CommonRepTests {
         assertTrue(formatVertecDate(org.getModified()).equals(organisation.getModified()));
         assertTrue(formatVertecDate(org.getCreated()).equals(organisation.getCreated()));
 
-        assertTrue(formatVertecAddress(org).equals(organisation.getFull_address()));
+        assertTrue(formatVertecAddress(org).equals(organisation.getFullAddress()));
 
         assertTrue(ownerEmailFromMap.equals(organisation.getSupervisingEmail()));
 
@@ -184,7 +183,7 @@ public class CommonRepTests {
         cOrg.setCreated("1889-11-32 00:00:00");
 
         cOrg.setStreet("Street");
-        cOrg.setStreet_no("2");
+        cOrg.setStreetNo("2");
         cOrg.setModified("1999-12-12 00:00:00");
         cOrg.setOwnedOnVertecBy("zuk");
         cOrg.setZip("7878");
@@ -204,7 +203,7 @@ public class CommonRepTests {
         assertTrue(cOrg.getCountry().equals(org.getCountry()));
         assertTrue(cOrg.getWebsite().equals(org.getWebsite()));
         assertTrue(cOrg.getCreated().equals(org.getCreated()));
-        assertTrue(cOrg.getStreet_no().equals(org.getStreet_no()));
+        assertTrue(cOrg.getStreetNo().equals(org.getStreet_no()));
         assertTrue(cOrg.getStreet().equals(org.getStreet()));
         assertTrue(cOrg.getStreet().equals(org.getStreet()));
         assertTrue(cOrg.getOwnedOnVertecBy().equals(org.getOwnedOnVertecBy()));

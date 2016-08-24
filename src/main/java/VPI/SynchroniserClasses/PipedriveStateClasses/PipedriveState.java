@@ -1,63 +1,33 @@
 package VPI.SynchroniserClasses.PipedriveStateClasses;
 
-import VPI.Entities.Organisation;
-import VPI.Entities.OrganisationContainer;
-import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
+import VPI.Entities.OrganisationState;
 import VPI.PDClasses.PDService;
 import VPI.SynchroniserClasses.SynchroniserState;
-import org.apache.commons.collections4.BidiMap;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class PipedriveState {
 
     public PDService pipedrive;
-    public OrganisationContainer organisations;
 
-    private SynchroniserState synchroniserState;
+    public OrganisationState organisationState;
 
     public PipedriveState(PDService pipedrive, SynchroniserState synchroniserState) {
         this.pipedrive = pipedrive;
-        this.synchroniserState = synchroniserState;
+        this.organisationState = new OrganisationState(pipedrive, synchroniserState);
+    }
+
+    public void refresh() {
+        organisationState.refreshFromPipedrive();
     }
 
 
-    public OrganisationContainer loadPipedriveOrganisations() throws IOException {
+    //====================================== Helper Methods ============================================================
 
-        BidiMap<Long, Long> orgIdmap = synchroniserState.getOrganisationMap();
-        Map<Long, Organisation> orgs = new HashMap<>();
-        List<Organisation> nonVidOrgs = new ArrayList<>();
-
-        pipedrive.getAllOrganisations().getBody().getData()
-                .forEach(org -> {
-                    List<PDRelationshipReceived> relList = pipedrive.getRelationships(org.getId());
-                    PDRelationshipReceived pdr = null;
-                    for (PDRelationshipReceived rel : relList) {
-                        //below line filters all relationships and keeps the one that contains the parent of the given organisation
-                        if (rel.getType().equals("parent") && !rel.getParent().getName().equals(org.getName())) {
-                            pdr = rel;
-                        }
-                    }
-                    Organisation organisation = new Organisation(org, pdr, orgIdmap);
-                    if(organisation.getVertecId() == null){
-                        nonVidOrgs.add(organisation);
-                    } else {
-                        orgs.put(organisation.getVertecId(), organisation);
-                    }
-                });
-        return new OrganisationContainer(orgs,nonVidOrgs);
+    public OrganisationState getOrganisationState() {
+        return organisationState;
     }
 
-    public OrganisationContainer getOrganisations() {
-        return organisations;
-    }
-
-    public void setOrganisations(OrganisationContainer organisations) {
-        this.organisations = organisations;
+    public void setOrganisationState(OrganisationState organisationState) {
+        this.organisationState = organisationState;
     }
 
     public PDService getPipedrive() {
@@ -67,12 +37,31 @@ public class PipedriveState {
     public void setPipedrive(PDService pipedrive) {
         this.pipedrive = pipedrive;
     }
-
-    public SynchroniserState getSynchroniserState() {
-        return synchroniserState;
-    }
-
-    public void setSynchroniserState(SynchroniserState synchroniserState) {
-        this.synchroniserState = synchroniserState;
-    }
 }
+
+//
+//    public OrganisationState loadPipedriveOrganisations() throws IOException {
+//
+//        BidiMap<Long, Long> orgIdmap = synchroniserState.getOrganisationIdMap();
+//        Map<Long, Organisation> orgs = new HashMap<>();
+//        List<Organisation> nonVidOrgs = new ArrayList<>();
+//
+//        pipedrive.getAllOrganisations().getBody().getData()
+//                .forEach(org -> {
+//                    List<PDRelationshipReceived> relList = pipedrive.getRelationships(org.getId());
+//                    PDRelationshipReceived pdr = null;
+//                    for (PDRelationshipReceived rel : relList) {
+//                        //below line filters all relationships and keeps the one that contains the parent of the given organisation
+//                        if (rel.getType().equals("parent") && !rel.getParent().getName().equals(org.getName())) {
+//                            pdr = rel;
+//                        }
+//                    }
+//                    Organisation organisation = new Organisation(org, pdr, orgIdmap);
+//                    if(organisation.getVertecId() == null){
+//                        nonVidOrgs.add(organisation);
+//                    } else {
+//                        orgs.put(organisation.getVertecId(), organisation);
+//                    }
+//                });
+//        return new OrganisationState(orgs,nonVidOrgs);
+//    }

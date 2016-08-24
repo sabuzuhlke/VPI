@@ -1,6 +1,7 @@
 package VPI.Entities;
 
 import VPI.Entities.util.Utilities;
+import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
@@ -23,9 +24,9 @@ public class Organisation implements Comparable<Organisation> {
     private String category;
     private String businessDomain;
 
-    private String full_address;
+    private String fullAddress;
     private String buildingName;
-    private String street_no;
+    private String streetNo;
     private String street;
     private String city;
     private String country;
@@ -40,6 +41,29 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     /**
+     * Constructor used to create organisation from PDOrganisationRecieved
+     */
+    public Organisation(PDOrganisationReceived pdr, BidiMap<Long,Long> orgIdMap){
+        this.pipedriveId = pdr.getId();
+        this.vertecId = pdr.getV_id();
+        this.active = true;
+
+        this.supervisingEmail = pdr.getOwner_id().getEmail();
+        this.ownedOnVertecBy = readPdOwnedOnVertecBy(pdr.getOwnedBy());
+        this.name = pdr.getName();
+        this.fullAddress = pdr.getAddress();
+        this.created = pdr.getCreationTime();
+
+        this.website = pdr.getWebsite();
+        this.category = pdr.getCategory();
+        this.businessDomain = pdr.getBusinessDomain();
+        //TODO modified Date,
+        this.modified = pdr.getUpdate_time(); //""2016-07-22 09:43:57""
+        this.created = pdr.getCreationTime();
+
+    }
+
+    /**
      *
      * @param relationship has to be got seperately from pipedrive
      */
@@ -51,7 +75,7 @@ public class Organisation implements Comparable<Organisation> {
         this.supervisingEmail = pdr.getOwner_id().getEmail();
         this.ownedOnVertecBy = readPdOwnedOnVertecBy(pdr.getOwnedBy());
         this.name = pdr.getName();
-        this.full_address = pdr.getAddress();
+        this.fullAddress = pdr.getAddress();
         this.created = pdr.getCreationTime();
 
         if(relationship != null){
@@ -70,8 +94,8 @@ public class Organisation implements Comparable<Organisation> {
 
     private String readPdOwnedOnVertecBy(String ownedBy) {
         if(ownedBy == null) return "No Owner";
-        else if(ownedBy.equals("12")) return "Sales Team";
-        else if(ownedBy.equals("13")) return "Not ZUK";
+        else if(ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM)) return "Sales Team";
+        else if(ownedBy.equals(ProductionKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
         else return "unrecognised";
     }
 
@@ -82,7 +106,7 @@ public class Organisation implements Comparable<Organisation> {
     public PDOrganisationSend toPDSend(Long ownerId){
         PDOrganisationSend pds = new PDOrganisationSend();
 
-        pds.setAddress(this.full_address);
+        pds.setAddress(this.fullAddress);
         pds.setCreationTime(this.created);
         pds.setName(this.name);
         pds.setOwnedBy(this.ownedOnVertecBy);
@@ -98,6 +122,56 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     /**
+     * Fresh ORganisation will contain values updated on their respective system that need to put into this organisation
+     * This will be posted to pipedrive as an update
+     */
+    public void updateOrganisationWithFreshValues(Organisation freshOrganisation) {
+        //Vertec Id will be the same for both
+        //Pipedrive id is not affected
+
+        this.ownedOnVertecBy = (freshOrganisation.ownedOnVertecBy != null && !freshOrganisation.ownedOnVertecBy.equals("")) ?
+                freshOrganisation.ownedOnVertecBy :
+                this.ownedOnVertecBy;
+        this.active = freshOrganisation.active != null ? freshOrganisation.active : this.active;
+        this.supervisingEmail = (freshOrganisation.supervisingEmail != null && !freshOrganisation.supervisingEmail.equals("")) ?
+                freshOrganisation.supervisingEmail :
+                this.supervisingEmail;
+        this.name = (freshOrganisation.name != null && !freshOrganisation.name.equals("")) ?
+                freshOrganisation.name :
+                this.name;
+        this.website = (freshOrganisation.website != null && !freshOrganisation.website.equals("")) ?
+                freshOrganisation.website :
+                this.website;
+        this.category = (freshOrganisation.category != null && !freshOrganisation.category.equals("")) ?
+                freshOrganisation.category :
+                this.category;
+        this.businessDomain = (freshOrganisation.businessDomain != null && !freshOrganisation.businessDomain.equals("")) ?
+                freshOrganisation.businessDomain :
+                this.businessDomain;
+        this.fullAddress = (freshOrganisation.fullAddress != null && !freshOrganisation.fullAddress.equals("")) ?
+                freshOrganisation.fullAddress :
+                this.fullAddress;
+        this.buildingName = (freshOrganisation.buildingName != null && !freshOrganisation.buildingName.equals("")) ?
+                freshOrganisation.buildingName :
+                this.buildingName;
+        this.streetNo = (freshOrganisation.streetNo != null && !freshOrganisation.streetNo.equals("")) ?
+                freshOrganisation.streetNo :
+                this.streetNo;
+        this.street = (freshOrganisation.street != null && !freshOrganisation.street.equals("")) ?
+                freshOrganisation.street :
+                this.street;
+        this.city = (freshOrganisation.city != null && !freshOrganisation.city.equals("")) ?
+                freshOrganisation.city :
+                this.city;
+        this.country = (freshOrganisation.country != null && !freshOrganisation.country.equals("")) ?
+                freshOrganisation.country :
+                this.country;
+        this.zip = (freshOrganisation.zip != null && !freshOrganisation.zip.equals("")) ?
+                freshOrganisation.zip :
+                this.zip;
+    }
+
+    /**
      *
      * @param ownerEmail has to be got from a map using the ownerId of the vertec organisation
      */
@@ -108,14 +182,15 @@ public class Organisation implements Comparable<Organisation> {
         this.website = organisation.getWebsite();
         this.category = organisation.getCategory();
         this.businessDomain = organisation.getBusinessDomain();
+        this.name = organisation.getName();
 
         this.buildingName = organisation.getBuildingName();
-        this.street_no = organisation.getStreet_no();
+        this.streetNo = organisation.getStreet_no();
         this.street = organisation.getStreet();
         this.city = organisation.getCity();
         this.country = organisation.getCountry();
         this.zip = organisation.getZip();
-        this.full_address = Utilities.formatVertecAddress(organisation);
+        this.fullAddress = Utilities.formatVertecAddress(organisation);
 
         this.vParentOrganisation = organisation.getParentOrganisation();
 
@@ -147,7 +222,7 @@ public class Organisation implements Comparable<Organisation> {
         org.setBusinessDomain(businessDomain);
         org.setBuildingName(buildingName);
         org.setStreet(street);
-        org.setStreet_no(street_no);
+        org.setStreet_no(streetNo);
         org.setCity(city);
         org.setCountry(country);
         org.setZip(zip);
@@ -178,17 +253,16 @@ public class Organisation implements Comparable<Organisation> {
                 && pipedriveId == org.getPipedriveId().longValue()
                 && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
                 && active == org.getActive()
-                && vParentOrganisation == org.getvParentOrganisation().longValue()
                 && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
-                && supervisingEmail.equals(org.getSupervisingEmail())
-                && supervisingEmail.equals(org.getSupervisingEmail())
+                && supervisingEmail.equals(
+                        org.getSupervisingEmail())
                 && name.equals(org.getName())
                 && website.equals(org.getWebsite())
                 && category.equals(org.getCategory())
                 && businessDomain.equals(org.getBusinessDomain())
-                && full_address.equals(org.getFull_address())
+                && fullAddress.equals(org.getFullAddress())
                 && buildingName.equals(org.getBuildingName())
-                && street_no.equals(org.getStreet_no())
+                && streetNo.equals(org.getStreetNo())
                 && street.equals(org.getStreet())
                 && city.equals(org.getCity())
                 && country.equals(org.getCountry())
@@ -279,12 +353,12 @@ public class Organisation implements Comparable<Organisation> {
         this.buildingName = buildingName;
     }
 
-    public String getStreet_no() {
-        return street_no;
+    public String getStreetNo() {
+        return streetNo;
     }
 
-    public void setStreet_no(String street_no) {
-        this.street_no = street_no;
+    public void setStreetNo(String streetNo) {
+        this.streetNo = streetNo;
     }
 
     public String getStreet() {
@@ -343,12 +417,12 @@ public class Organisation implements Comparable<Organisation> {
         this.pipedriveId = pipedriveId;
     }
 
-    public String getFull_address() {
-        return full_address;
+    public String getFullAddress() {
+        return fullAddress;
     }
 
-    public void setFull_address(String full_address) {
-        this.full_address = full_address;
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
     }
 
     public Long getvParentOrganisation() {

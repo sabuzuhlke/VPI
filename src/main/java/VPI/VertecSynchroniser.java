@@ -93,14 +93,14 @@ public class VertecSynchroniser {
         constructTeamIdMap(getVertecUserEmails(allVertecData), getPipedriveUsers()); //TODO: use this instead of constructTestTeamMap() on deployment
         constructTestTeamMap();
 
-        //get all Pipedrive organisations
+        //get all Pipedrive organisationState
 
         //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
         resolveOrganisationsAndNestedContacts(
                 allVertecData.getOrganisationList(),
                 PDS.getAllOrganisations().getBody().getData());
 
-        //get all pipedrive contacts, filter to only use those without organisations
+        //get all pipedrive contacts, filter to only use those without organisationState
 
         //compare dangling vcontacts to leftover pdcontacts
         compareContacts(
@@ -150,24 +150,24 @@ public class VertecSynchroniser {
 //        long teamEnd = System.nanoTime();
 //        System.out.println("Took " + ((teamEnd - zukEndTime)/1000000) + " milliseconds");
 //
-//        //get all Pipedrive organisations
-//        System.out.println("Getting all organisations from pipedrive");
+//        //get all Pipedrive organisationState
+//        System.out.println("Getting all organisationState from pipedrive");
 //        List<PDOrganisationReceived> pipedriveOrgs = PS.getAllOrganisations().getBody().getData();
 //        long pdorgTime = System.nanoTime();
 //        System.out.println("Took " + ((pdorgTime - teamEnd)/1000000) + " milliseconds");
 //
 //        //compare pipedrive orgs along with nested contacts, removing nested contacts from contacts
-//        System.out.println("About to attempt to resolve organisations and their nested contacts");
+//        System.out.println("About to attempt to resolve organisationState and their nested contacts");
 //        resolveOrganisationsAndNestedContacts(allVertecData.getOrganisationList(), pipedriveOrgs);
 //        long resolveOrgTime = System.nanoTime();
 //        System.out.println("Took " + ((resolveOrgTime - pdorgTime)/1000000) + " milliseconds");
 //
-//        //get all pipedrive contacts, filter to only use those without organisations
+//        //get all pipedrive contacts, filter to only use those without organisationState
 //        System.out.println("Getting all contacts from pipedrive");
 //        List<PDContactReceived> pipedriveContacts = PS.getAllContacts().getBody().getData();
 //        long pdcontTime = System.nanoTime();
 //        System.out.println("Took " + ((pdcontTime - resolveOrgTime)/1000000) + " milliseconds");
-//        System.out.println("Getting all contacts (not attached to organisations) from vertec from ZUK info");
+//        System.out.println("Getting all contacts (not attached to organisationState) from vertec from ZUK info");
 //        List<PDContactReceived> contactsWithoutOrg = filterContactsWithOrg(pipedriveContacts);
 //        long vcontTime = System.nanoTime();
 //        System.out.println("Took " + ((vcontTime - pdcontTime)/1000000) + " milliseconds");
@@ -724,7 +724,7 @@ public class VertecSynchroniser {
 
             }
 
-        } //TODO: get all organisations reltionships and compare as pipedrive thorws bad request if rel already exists
+        } //TODO: get all organisationState reltionships and compare as pipedrive thorws bad request if rel already exists
 
         return rels;
 
@@ -751,7 +751,7 @@ public class VertecSynchroniser {
                     orgIdMap.put(vo.getObjid(), po.getId());
                     compareOrganisationDetails(vo, po);
 
-                    //TODO: Change so that all contacts get compared as to handle contacts changing organisations
+                    //TODO: Change so that all contacts get compared as to handle contacts changing organisationState
                     resolveContactsForOrgs(vo,po);
                 }
             }
@@ -944,7 +944,7 @@ public class VertecSynchroniser {
         return modifiedEmail || modifiedPhone || matchedName || modifiedOwner;
     }
 
-    //removes Contacts that are attached to organisations (as they are already handled
+    //removes Contacts that are attached to organisationState (as they are already handled
     public List<PDContactReceived> filterContactsWithOrg(List<PDContactReceived> pContacts) {
         //do more somthings
         List<PDContactReceived> filteredList = new ArrayList<>();
@@ -991,7 +991,7 @@ public class VertecSynchroniser {
     }
 
     public Map<Long, Long> postContacts(){
-        System.out.println("Posting " + contactPostList.size() + " Contacts not attached to organisations");
+        System.out.println("Posting " + contactPostList.size() + " Contacts not attached to organisationState");
         return PDS.postContactList(contactPostList);
     }
 

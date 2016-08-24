@@ -35,7 +35,7 @@ public class InsightService {
 
         }
         catch (Exception e){
-            System.out.println("Could not GET all organisations from insight: " + e.toString());
+            System.out.println("Could not GET all organisationState from insight: " + e.toString());
         }
         return res;
     }

@@ -52,7 +52,7 @@ public class OrganisationMerger {
 
     public DualHashBidiMap<Long,Long> findVorgsMergedOnPD() throws IOException { //Map<Lost, Surviving>
 
-        //find out which organisations have been merged
+        //find out which organisationState have been merged
 
         DualHashBidiMap<Long, Long> mergedOrganisations = new DualHashBidiMap<>();
         //Load in idmaps v to pd
@@ -61,7 +61,7 @@ public class OrganisationMerger {
         System.out.println("OrgidMap.size(): " + orgIdMap.size());
 
 
-        //get all organisations from pd
+        //get all organisationState from pd
         List<PDOrganisationReceived> pOrganisations = PS.getAllOrganisations()
                 .getBody()
                 .getData();

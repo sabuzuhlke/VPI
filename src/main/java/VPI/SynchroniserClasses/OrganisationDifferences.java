@@ -1,7 +1,7 @@
 package VPI.SynchroniserClasses;
 
 import VPI.Entities.Organisation;
-import VPI.Entities.OrganisationContainer;
+import VPI.Entities.OrganisationState;
 import VPI.Entities.util.Utilities;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
@@ -15,26 +15,28 @@ public class OrganisationDifferences {
     private Set<Organisation> createOnVertec;
     private Set<Organisation> createOnPipedrive;
 
-    private Set<Organisation> deleteFromVertec;
+    private Set<Long> deleteFromVertec;
     private Set<Organisation> deleteFromPipedrive;
-    private Map<Organisation, Organisation> deletionConflicts;
+    private Map<Organisation, Organisation> deletionFromPipedriveConflicts;
+    private Set<Organisation> deletionFromVertecConflicts;
 
     private Set<Organisation> updateOnVertec;
     private Set<Organisation> updateOnPipedrive;
-    private Set<Organisation> updateConflicts;
+    private Set<Organisation> updateConflicts; //contains PDOrganisation
     private Set<Organisation> noChanges;
-
 
     public OrganisationDifferences(VertecState vertecState, PipedriveState pipedriveState, SynchroniserState synchroniserState) {
         createOnPipedrive = new HashSet<>();
         deleteFromPipedrive = new HashSet<>();
         createOnVertec = new HashSet<>();
-        deletionConflicts = new HashMap<>();
+        deletionFromPipedriveConflicts = new HashMap<>();
+        deletionFromVertecConflicts = new HashSet<>();
         deleteFromVertec = new HashSet<>();
         updateOnVertec = new HashSet<>();
         updateOnPipedrive = new HashSet<>();
         updateConflicts = new HashSet<>();
         noChanges = new HashSet<>();
+        calculateOrganisationDifferences(vertecState, pipedriveState, synchroniserState);
     }
 
     /**
@@ -45,18 +47,18 @@ public class OrganisationDifferences {
      * @param synchroniserState
      */
     public void calculateOrganisationDifferences(VertecState vertecState, PipedriveState pipedriveState, SynchroniserState synchroniserState) {
-        //Logic in here to populate each list with appropriate organisations
+        //Logic in here to populate each list with appropriate organisationState
         findOrganisationsToCreateOnVertec(pipedriveState);
-        findOrganisationsToCreateOnPipedrive(vertecState, synchroniserState);
+        findOrganisationsToCreateOnPipedrive(vertecState, synchroniserState, pipedriveState);
 
-        findOrganisationsToDeleteFromVertec(pipedriveState, synchroniserState);
+        findOrganisationsToDeleteFromVertec(pipedriveState, synchroniserState, vertecState);
         findOrganisationsToDeleteFromPipedrive(vertecState, synchroniserState, pipedriveState);
 
         compareMatchingOrganisations(pipedriveState, vertecState, synchroniserState);
     }
 
     /**
-     * Matches organisations by Vertec_Id, will then compare them and add each entry to one of the following lists:
+     * Matches organisationState by Vertec_Id, will then compare them and add each entry to one of the following lists:
      * -> toUpdateOnVertec -> different values, no update on vertec, update on pipedrive since last sync
      * -> toUpdateOnPipedrive -> different values, update on vertec since last sync (overwrite pipedrive whether updated or not)
      * -> withConflict -> different values, update on vertec and on pipedrive since last sync
@@ -67,100 +69,161 @@ public class OrganisationDifferences {
      * @param synchroniserState
      */
     private void compareMatchingOrganisations(PipedriveState pipedriveState, VertecState vertecState, SynchroniserState synchroniserState) {
+
+        //only needs to deal with orgs that match on vid, since all other possibilities are dealt with by the other functions
+        vertecState.getOrganisationState().organisationsWithVIDs.values()
+                .forEach(vOrg -> {
+                    Organisation pOrg = pipedriveState.getOrganisationState().organisationsWithVIDs.get(vOrg.getVertecId());
+                    if (pOrg == null) return;
+                    decideWhereToUpdate(vOrg, pOrg, synchroniserState);
+
+                });
+    }
+
+    private void decideWhereToUpdate(Organisation vOrg, Organisation pOrg, SynchroniserState state) {
+
+        Boolean vOrgModifiedSinceLastSync = modifiedSinceLastSync(state, vOrg);
+        Boolean pOrgModifiedSinceLastSync = modifiedSinceLastSync(state, pOrg);
+
+        //Case 0: No Changes
+        //either if both Organisations every single field equals, or none of them have been modified since the last sync
+        if (vOrg.equals(pOrg) || (!vOrgModifiedSinceLastSync && !pOrgModifiedSinceLastSync)) {
+            noChanges.add(vOrg);
+            return;
+        }
+        //Case 1: CONFLICT
+        if (vOrgModifiedSinceLastSync && pOrgModifiedSinceLastSync) {
+            updateConflicts.add(pOrg);
+            return;
+        }
+        //Case 2: update Pipedrive
+        if (vOrgModifiedSinceLastSync && !pOrgModifiedSinceLastSync) {
+            updateOnPipedrive.add(updatePipedriveFromVertec(pOrg, vOrg));
+            return;
+        }
+
+        //Case 3: update on Vertec
+        if (pOrgModifiedSinceLastSync && !vOrgModifiedSinceLastSync) {
+            updateOnVertec.add(updateVertecFromPipedrive(vOrg, pOrg));
+            return;
+        }
+
+
+    }
+
+
+    private Organisation updatePipedriveFromVertec(Organisation pOrg, Organisation vOrg) {
+        assert pOrg.getPipedriveId() != null;
+        pOrg.updateOrganisationWithFreshValues(vOrg);
+        return pOrg;
+    }
+
+    private Organisation updateVertecFromPipedrive(Organisation vOrg, Organisation pOrg) {
+        vOrg.updateOrganisationWithFreshValues(pOrg);
+        return null;
     }
 
     /**
-     * Finds Organisations to delete from Pipedrive, by getting All organisations from pipedrive that have been posted to pipedrive.
+     * Finds Organisations to delete from Pipedrive, by getting All organisationState from pipedrive that have been posted to pipedrive.
      * Conditions for Deletion: 1) set inactive on Vertec since last synch and not modified on pipedrive
      * 2) set inactive on Vertec since last synch, but has been modified on pipedrive -- mark as conflict
      *
-     * @param vertecState       all vertec organisations are contained herewithin
+     * @param vertecState       all vertec organisationState are contained herewithin
      * @param synchroniserState contains all necessary maps etc
      */
-    public List<Long> findOrganisationsToDeleteFromPipedrive(VertecState vertecState, SynchroniserState synchroniserState, PipedriveState pipedriveState) {
-
-
-        List<Long> idsToDel = new ArrayList<>();
-        //this is enough since vertecState contains all vertec organisations from vertec that appear on pipedrive(even inactive ones)
-        List<Organisation> deletedVertecOrgs = vertecState.organisations.getAll().stream()
+    public void findOrganisationsToDeleteFromPipedrive(VertecState vertecState, SynchroniserState synchroniserState, PipedriveState pipedriveState) {
+        deletionFromPipedriveConflicts = new HashMap<>();
+        deleteFromPipedrive = new HashSet<>();
+        //get all organisations from vertecState that have been deleted since the last sync and are owned by the sales team
+        List<Organisation> deletedVertecOrgs = vertecState.organisationState.getAllOrganisations().stream()
                 .filter(org -> !org.getActive()) //are inactive now
-                .filter(org ->  org.getOwnedOnVertecBy().equals("Sales Team")) // are owned by zuk
+                .filter(org -> org.getOwnedOnVertecBy().equals("Sales Team")) // are owned by zuk
                 .filter(org -> modifiedSinceLastSync(synchroniserState, org))// have been modified since last synch
                 .collect(Collectors.toList());
-        OrganisationContainer pipedriveOrgs = pipedriveState.organisations;
 
+        OrganisationState pipedriveOrgs = pipedriveState.organisationState;
+
+        //Check for any conflicts
         deletedVertecOrgs.forEach(vOrg -> {
-            Organisation pOrg = pipedriveOrgs.getByV(vOrg.getVertecId());
+            Organisation pOrg = pipedriveOrgs.getOrganisationByVertecId(vOrg.getVertecId());
             if (pOrg == null) return;
             if (modifiedSinceLastSync(synchroniserState, pOrg)) {
-                deletionConflicts.put(vOrg, pOrg);
+                deletionFromPipedriveConflicts.put(vOrg, pOrg);
             } else {
                 deleteFromPipedrive.add(vOrg);
-                idsToDel.add(vOrg.getVertecId());
             }
         });
 
-
-        return idsToDel;
-    }
-
-    private boolean modifiedSinceLastSync(SynchroniserState synchroniserState, Organisation org) {
-        LocalDateTime orgMod = LocalDateTime.parse(Utilities.formatToVertecDate(org.getModified()));
-        LocalDateTime syncTime = LocalDateTime.parse(synchroniserState.getSyncTime());
-        return (orgMod.isAfter(syncTime));
     }
 
 
     /**
-     * Finds organisations to delete from vertec by finding which organisations we posted in in the past that are no longer present
+     * Finds organisationState to delete from vertec by finding which organisationState we posted in in the past that are no longer present
      * on pipedrive
      *
+     * If we identify an organisation as one we should delete from vertec, we:
+     * 1) delete it, or
+     * 2) if organisation has been modified on vertec since last sync, we re-activate organisation on pipedrive and mark as conflict
+     *                                                                  and replace data with vertecData
      * @param pipedriveState
      * @param synchroniserState
      */
-    private void findOrganisationsToDeleteFromVertec(PipedriveState pipedriveState, SynchroniserState synchroniserState) {
+    public void findOrganisationsToDeleteFromVertec(PipedriveState pipedriveState, SynchroniserState synchroniserState, VertecState vertecState) {
+        synchroniserState.getOrganisationIdMap().keySet()
+                .stream()
+                .filter(id -> !pipedriveState.organisationState.organisationsWithVIDs.keySet().contains(id))
+                .filter(id -> vertecState.organisationState.organisationsWithVIDs.keySet().contains(id))
+                .forEach(id -> {
+                    if (modifiedSinceLastSync(synchroniserState, vertecState.organisationState.organisationsWithVIDs.get(id))) {
+                        deletionFromVertecConflicts.add(pipedriveState.getOrganisationState().organisationsWithVIDs.get(id));
+                    } else {
+
+                    }
+                });
     }
 
     /**
-     * Finds organisations to create on pipedrive by finding organisations on vertec that have no Pipedrive_Id
+     * Finds organisationState to create on pipedrive by finding organisationState on vertec that have no Pipedrive_Id
      * (Vertec entries whose Vertec_Id has not been previously mapped to a Pipedrive_Id)
+     * and that do not appear on pipedrive and are active
      *
      * @param vertecState
      */
-    public List<Long> findOrganisationsToCreateOnPipedrive(VertecState vertecState, SynchroniserState synchroniserState) {
-        //Organisations which do not appear in the OrganisationIdMap are the ones that need posting to Pipedrive
+    public void findOrganisationsToCreateOnPipedrive(VertecState vertecState, SynchroniserState synchroniserState, PipedriveState pipedriveState) {
+        //Organisations which do appear in vertec and are active but do not appear on pipedrive and in the orgid map are the ones that need posting to Pipedrive
 
-        List<Long> idsToCreate = new ArrayList<>();
         createOnPipedrive = new HashSet<>();
-        for (Organisation org : vertecState.organisations.getAll()) {
-            if (!synchroniserState.getOrganisationMap().keySet().contains(org.getVertecId())) {
-                createOnPipedrive.add(org);
-                idsToCreate.add(org.getVertecId());
-            }
-        }
-        //TODO posted organisations need to be added to the Organisationmap!!
-        return idsToCreate;
+        vertecState.organisationState.getAllOrganisations().stream()
+                .filter(org -> !synchroniserState.getOrganisationIdMap().containsKey(org.getVertecId()))
+                .filter(org -> !pipedriveState.getOrganisationState().organisationsWithVIDs.containsKey(org.getVertecId()))
+                .forEach(org -> createOnPipedrive.add(org));
+
+
+        //TODO posted organisationState need to be added to the Organisationmap!!
     }
 
     /**
-     * Finds organisations to create on vertec by finding organisations on pipedrive that have no Vertec_Id
+     * Finds organisationState to create on vertec by finding organisationState on pipedrive that have no Vertec_Id
      *
      * @param pipedriveState
      */
-    public List<Long> findOrganisationsToCreateOnVertec(PipedriveState pipedriveState) {
-        //All organisations that havent got a vid on pipedrive fall into this category
-        //NOT strictly speaking true. organisations might be added to PD that already exist on vertec, but as of yet we have no way of matching those
-        List<Long> idsToCreate = new ArrayList<>();
+    public void findOrganisationsToCreateOnVertec(PipedriveState pipedriveState) {
+        //All organisationState that havent got a vid on pipedrive fall into this category and are owned by sales team
+        //NOT strictly speaking true. organisationState might be added to PD that already exist on vertec, but as of yet we have no way of matching those
         createOnVertec = new HashSet<>();
+        pipedriveState.getOrganisationState().organisationsWithoutVIDs
+                //Todo Ask about posting incomplete entries
+                .forEach(org -> createOnVertec.add(org));
 
-        for (Organisation org : pipedriveState.getOrganisations().getAll()) {
-            if (org.getVertecId() == null) {
-                createOnVertec.add(org);
-                idsToCreate.add(org.getPipedriveId());
-            }
-        }
         //TODO add posted Organisations to orgIdMap!!!!
-        return idsToCreate;
+    }
+
+    //=================================================Helper functions=====================================================
+    private boolean modifiedSinceLastSync(SynchroniserState synchroniserState, Organisation org) {
+        LocalDateTime orgMod = LocalDateTime.parse(
+                Utilities.formatToVertecDate(org.getModified()));
+        LocalDateTime syncTime = LocalDateTime.parse(synchroniserState.getSyncTime());
+        return (orgMod.isAfter(syncTime));
     }
 
     public Set<Organisation> getCreateOnVertec() {
@@ -179,11 +242,11 @@ public class OrganisationDifferences {
         this.createOnPipedrive = createOnPipedrive;
     }
 
-    public Set<Organisation> getDeleteFromVertec() {
+    public Set<Long> getDeleteFromVertec() {
         return deleteFromVertec;
     }
 
-    public void setDeleteFromVertec(Set<Organisation> deleteFromVertec) {
+    public void setDeleteFromVertec(Set<Long> deleteFromVertec) {
         this.deleteFromVertec = deleteFromVertec;
     }
 
@@ -195,12 +258,12 @@ public class OrganisationDifferences {
         this.deleteFromPipedrive = deleteFromPipedrive;
     }
 
-    public Map<Organisation, Organisation> getDeletionConflicts() {
-        return deletionConflicts;
+    public Map<Organisation, Organisation> getDeletionFromPipedriveConflicts() {
+        return deletionFromPipedriveConflicts;
     }
 
-    public void setDeletionConflicts(Map<Organisation, Organisation> deletionConflicts) {
-        this.deletionConflicts = deletionConflicts;
+    public void setDeletionFromPipedriveConflicts(Map<Organisation, Organisation> deletionFromPipedriveConflicts) {
+        this.deletionFromPipedriveConflicts = deletionFromPipedriveConflicts;
     }
 
     public Set<Organisation> getUpdateOnVertec() {

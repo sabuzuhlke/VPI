@@ -643,7 +643,7 @@ public class PDService {
                 //.filter(org -> !orgsToKeep.contains(org.getId()))
                 .map(PDOrganisationReceived::getId)
                 .collect(toList());
-        System.out.println("Found " + orgsToDel.size() + " organisations to delete");
+        System.out.println("Found " + orgsToDel.size() + " organisationState to delete");
 
         /**
          * Keep contacts as they were already matched up and wed loose a lot of data
@@ -674,7 +674,7 @@ public class PDService {
         List<Long> currentDelList;
 
         int i = orgsToDel.size();
-        System.out.println("Deleting organisations...");
+        System.out.println("Deleting organisationState...");
         while(i >= 100){
             currentDelList  = new ArrayList<>();
 

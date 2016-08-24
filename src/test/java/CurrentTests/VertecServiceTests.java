@@ -105,7 +105,7 @@ public class VertecServiceTests {
 
     public String getJSONResultString() {
         return "{\n" +
-                "  \"organisations\" : [ {\n" +
+                "  \"organisationState\" : [ {\n" +
                 "    \"name\" : \"Association of good Fast Food Chains\",\n" +
                 "    \"streetAddress\" : \"666 Highway To Hell\",\n" +
                 "    \"additonalAdress\" : \" no!\",\n" +

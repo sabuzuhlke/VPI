@@ -62,7 +62,7 @@ public class ContactMerger {
 
         List<Contact> missingContacts = VS.getContactList(missingIds);
         //for each missing contact try to find out whom it has been merged into. Best way probably would be to start with e-mail addresses
-        // , then with activities /Projects and organisations won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./
+        // , then with activities /Projects and organisationState won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./
          findMatches(missingContacts, pipedriveContacts);// <merged, surviving>
 
         System.out.println("Unique match found for contacts: " + merges.size());

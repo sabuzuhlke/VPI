@@ -69,7 +69,7 @@ public class PDDealSend {
      * @param phase is phase recieved from vertec
      * @param user_id is pipedrive id of user that owns it (from external map)
      * @param person_id is pipedrive id of associated contact (from external map)
-     * @param org_id is pipedrive id of associated organisations (from external map)
+     * @param org_id is pipedrive id of associated organisationState (from external map)
      */
     public PDDealSend(JSONProject project, JSONPhase phase, Long user_id, Long person_id, Long org_id){
         //Title

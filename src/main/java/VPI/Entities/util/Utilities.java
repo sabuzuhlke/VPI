@@ -43,6 +43,7 @@ public class Utilities {
          } catch (Exception e){
              System.out.println("Could not split date: " + pDate);
          }
+         System.out.println(pDate);
          return null;
      }
      

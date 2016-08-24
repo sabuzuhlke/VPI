@@ -391,10 +391,10 @@ public class PipedriveServiceTests {
 //        } catch (Exception e) {
 //            System.out.println("Failed to output to file");
 //        }
-        //The following asserts that the more_items_in_collection field of the response is false -- Meaning that there are no more organisations to return
-        //assertTrue(!organisations.getAdditional_data().getPagination().getMore_items_in_collection());
-        //assertTrue(organisations.getData() != null);
-        //assertTrue(organisations.getData().get(0) != null);
+        //The following asserts that the more_items_in_collection field of the response is false -- Meaning that there are no more organisationState to return
+        //assertTrue(!organisationState.getAdditional_data().getPagination().getMore_items_in_collection());
+        //assertTrue(organisationState.getData() != null);
+        //assertTrue(organisationState.getData().get(0) != null);
     }
 
 

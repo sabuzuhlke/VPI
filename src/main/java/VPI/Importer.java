@@ -135,8 +135,8 @@ public class Importer {
         //3
         importActivitiesFromVertec();
         System.out.println("Got " + getVertecActivityList().size() + " Activities");
-        //find missing organisations and contacts linked to deals and activities
-        System.out.println("Getting missing organisations from Vertec...");
+        //find missing organisationState and contacts linked to deals and activities
+        System.out.println("Getting missing organisationState from Vertec...");
 
         //4
         importMissingOrganistationsFromVertec();
@@ -413,7 +413,7 @@ public class Importer {
             IntStream.range(0, postedIds.size())
                     .forEach(i -> organisationIdMap.put(organisationPostList.get(i).getV_id(), postedIds.get(i)));
         } else {
-            System.out.println("Could not add organisations to map, list sizes were not equal");
+            System.out.println("Could not add organisationState to map, list sizes were not equal");
         }
     }
 

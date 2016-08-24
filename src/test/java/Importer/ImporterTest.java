@@ -247,7 +247,7 @@ public class ImporterTest {
         when(vertec.getOrganisation(7700L)).thenReturn(getOrgWithParent1());
         when(vertec.getOrganisation(7777L)).thenReturn(getOrgWithParent2());
         when(vertec.getOrganisation(9999L)).thenReturn(getOrgWithParent3());
-        //Magic number 2  because there are 2 new fake parent organisations being imported (7777, 9999)
+        //Magic number 2  because there are 2 new fake parent organisationState being imported (7777, 9999)
         int numberOfFakeParents = 2;
 
 
@@ -1648,7 +1648,7 @@ return false;
             }
         });
 
-        System.out.println("Activities pointed to by organisations (" + activities.size() + "): ");
+        System.out.println("Activities pointed to by organisationState (" + activities.size() + "): ");
 
         activities.forEach(acttivity -> System.out.println(acttivity.getId()));
     }

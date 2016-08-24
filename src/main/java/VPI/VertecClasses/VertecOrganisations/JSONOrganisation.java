@@ -38,7 +38,7 @@ public class  JSONOrganisation {
     @JsonProperty("website")
     private String website = "";
 
-    @JsonIgnore //automatically set to true when recieved bulk of organisations, set outside constructor to false when org retrieved from nonZUK
+    @JsonIgnore //automatically set to true when recieved bulk of organisationState, set outside constructor to false when org retrieved from nonZUK
     private Boolean ownedByTeam;
 
     public JSONOrganisation() {

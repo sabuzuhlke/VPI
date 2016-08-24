@@ -40,7 +40,7 @@ public class InsightSynchroniser {
     public List<Long> importToPipedrive() {
         List<Long> org_ids = getProjectsForZUK();
         List<Long> orgs_pushed = importOrganisations(org_ids);
-        System.out.println("Posted " + orgs_pushed.size() + " organisations to Pipedrive");
+        System.out.println("Posted " + orgs_pushed.size() + " organisationState to Pipedrive");
         //importContacts();
         clear();
         return orgs_pushed;

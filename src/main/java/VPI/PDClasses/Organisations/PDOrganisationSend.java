@@ -47,7 +47,7 @@ public class PDOrganisationSend {
 
 
     /**
-     * Used to build organisations for putlist
+     * Used to build organisationState for putlist
      * @param jo is org recieved from vertec
      * @param po id org received from pipedrive
      * @param ownerId is pipedrive owner id as from external map
