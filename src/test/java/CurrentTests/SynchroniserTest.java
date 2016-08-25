@@ -162,9 +162,9 @@ public class SynchroniserTest {
         assertTrue(idsSelected.contains(28055102L));
         assertTrue(idsSelected.contains(28055116L));
         assertTrue(idsSelected.contains(28055109L));
-        assertTrue(! idsSelected.contains(28200543L));
-        assertTrue(! idsSelected.contains(28117744L));
-        assertTrue(! idsSelected.contains(10001010101010L));
+        assertTrue(!idsSelected.contains(28200543L));
+        assertTrue(!idsSelected.contains(28117744L));
+        assertTrue(!idsSelected.contains(10001010101010L));
     }
 
     @Test
@@ -191,7 +191,6 @@ public class SynchroniserTest {
         assertEquals("Not all organisationState to create on vertec were found in  test set", controlList.size(), idsSelected.size());
 
 
-
     }
 
     @Test
@@ -211,20 +210,21 @@ public class SynchroniserTest {
 
 
         Map<Organisation, Organisation> conflicts = synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts();
-      assertEquals("Would delete more orgs than necessary",1,idsToDel.size());
-      assertEquals("More delete conflicts than actually",1, conflicts.size());
+
+        assertEquals("Would delete more orgs than necessary", 1, idsToDel.size());
+        assertEquals("More delete conflicts than actually", 1, conflicts.size());
 
         assertEquals("Would del wrong org", 10001010101010L, idsToDel.get(0).longValue());
         assertEquals("wrong orgdel conflict", 28117744L, conflicts.keySet().stream()
                 .map(Organisation::getVertecId)
                 .collect(toList())
                 .get(0)
-        .longValue());
+                .longValue());
         assertEquals("wrong orgdel conflict", 28117744L, conflicts.values().stream()
                 .map(Organisation::getVertecId)
                 .collect(toList())
                 .get(0)
-        .longValue());
+                .longValue());
 
 
     }
@@ -233,6 +233,11 @@ public class SynchroniserTest {
     @Test
     public void canRecogniseOrgsToDelFromVertec() throws IOException {
 
+        Long conflicVertecId = 1976289L;
+        Long conflictPDId = 962L;
+
+        Long deletionVid = 7927685L;
+        Long deletionPID = 1654L;
         when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
 
         when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
@@ -241,9 +246,109 @@ public class SynchroniserTest {
 
         //check result
         System.out.println("Ids to del from vertec");
-        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec());
-        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().size());
-        //TODO assert stuffs
+        Set<Long> idsTodel = synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec();
+        System.out.println(idsTodel);
+        System.out.println(idsTodel.size());
+
+        assertEquals(3, idsTodel.size());
+        assertTrue(idsTodel.contains(20066194L));
+        assertTrue(idsTodel.contains(13111327L));
+        assertTrue(idsTodel.contains(7927685L));
+
+        System.out.println("\n DeletionConflicts");
+        Set<Long> deletionconflicts = synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromVertecConflicts();
+        System.out.println(deletionconflicts);
+
+        assertEquals(1, deletionconflicts.size());
+        assertTrue(deletionconflicts.contains(conflictPDId));
+
+    }
+
+    @Test
+    public void canDecideWhereToUpdate() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+//        System.out.println("No changes: ");
+//        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getNoChanges());
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getCreateOnVertec().size() + " organisations will be added to vertec:\n\n\n");
+        synchroniser.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
+            System.out.println(org.getName() + " created by " + org.getSupervisingEmail());
+        });
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnVertec().size() + " organisations will be updated on vertec\n\n\n");
+        synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnVertec().forEach(org -> {
+            System.out.println(org.toJSONString());
+        });
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().size()+ " organisations will be deleted from vertec");
+        synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().forEach(org -> {
+            System.out.println(synchroniser.getVertecState().getOrganisationState().organisationsWithVIDs.get(org).toJSONString());
+        });
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromVertecConflicts().size() + " organisations have been deleted on pipedrive but have been updated on vertec, so they are 'deletion conflicts' (This is fake example for testing)");
+        System.out.println("Vertec IDs: " + synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromVertecConflicts());
+
+
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().size() + " organisations will be posted to pipedrive");
+        synchroniser.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().forEach(org -> {
+            System.out.println(org.getName() + " created by " + org.getSupervisingEmail());
+        });
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive().size() + " organisations will be updated on pipedrive\n\n\n");
+        synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive().forEach(org -> {
+            System.out.println(org.toJSONString());
+        });
+
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive().size() + " organisations will be deleted from pipedrive (This fake again)");
+        synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive().forEach(org -> {
+            System.out.println(org.toJSONString());
+        });
+
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts().size() + " organisations have been deleted on vertec but have been updated on pipedrive, so they are 'deletion conflicts' (This is fake example for testing)");
+        System.out.println("Vertec IDs: " + synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts());
+
+
+
+        System.out.println("\n\n=================================================\n\n");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts().size() + " organisations have both been updated so will be marked as an 'update conflict'");
+        synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts().forEach(org -> {
+            synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflictsReciprocal().forEach(org2 -> {
+                if (org.getVertecId().longValue() == org2.getVertecId()) {
+                    System.out.println("Vertec Version: ");
+                    System.out.println("\n");
+                    System.out.println(org2.toJSONString());
+                    System.out.println("\n\n");
+                    System.out.println("Pipedrive Version: \n\n");
+                    System.out.println(org.toJSONString());
+                }
+            });
+        });
+
+
+//        System.out.println("\n\n=================================================\n\n");
+//        System.out.println("These organisations recieved no updates");
+//        synchroniser.getStateDifference().getOrganisationDifferences().getNoChanges().forEach(org -> {
+//            System.out.println(org.toJSONString());
+//        });
+        System.out.println("\n\n\n" + synchroniser.getStateDifference().getOrganisationDifferences().getNoChanges().size() + " Organisations did not change");
+
+
+//        System.out.println("OrgsToPutToVertec:");
+//        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnVertec());
+//        System.out.println("Listsize: " + synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnVertec().size());
+//        System.out.println("OrgsToPutToPD:");
+//        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive());
+//        System.out.println("Update conflicts:");
+
+//        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts());
+//        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts().size());
 
     }
 
@@ -390,8 +495,6 @@ public class SynchroniserTest {
             return rels;
         };
     }
-
-
 
 
 }

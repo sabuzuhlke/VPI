@@ -6,6 +6,7 @@ import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.collections4.BidiMap;
 
 import java.util.Comparator;
@@ -43,7 +44,7 @@ public class Organisation implements Comparable<Organisation> {
     /**
      * Constructor used to create organisation from PDOrganisationRecieved
      */
-    public Organisation(PDOrganisationReceived pdr, BidiMap<Long,Long> orgIdMap){
+    public Organisation(PDOrganisationReceived pdr, BidiMap<Long, Long> orgIdMap) {
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
         this.active = true;
@@ -52,6 +53,14 @@ public class Organisation implements Comparable<Organisation> {
         this.ownedOnVertecBy = readPdOwnedOnVertecBy(pdr.getOwnedBy());
         this.name = pdr.getName();
         this.fullAddress = pdr.getAddress();
+        this.created = pdr.getCreationTime();
+        this.buildingName = pdr.getAddress_subpremise();
+        this.streetNo = pdr.getAddress_street_number();
+        this.street = pdr.getAddress_route();
+        this.city = pdr.getAddress_locality();
+        this.country = pdr.getAddress_country();
+        this.zip = pdr.getAddress_postal_code();
+
         this.created = pdr.getCreationTime();
 
         this.website = pdr.getWebsite();
@@ -64,10 +73,9 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     /**
-     *
      * @param relationship has to be got seperately from pipedrive
      */
-    public Organisation(PDOrganisationReceived pdr, PDRelationshipReceived relationship, BidiMap<Long,Long> orgIdMap){
+    public Organisation(PDOrganisationReceived pdr, PDRelationshipReceived relationship, BidiMap<Long, Long> orgIdMap) {
         this.pipedriveId = pdr.getId();
         this.vertecId = pdr.getV_id();
         this.active = true;
@@ -76,9 +84,9 @@ public class Organisation implements Comparable<Organisation> {
         this.ownedOnVertecBy = readPdOwnedOnVertecBy(pdr.getOwnedBy());
         this.name = pdr.getName();
         this.fullAddress = pdr.getAddress();
-        this.created = pdr.getCreationTime();
+        ;
 
-        if(relationship != null){
+        if (relationship != null) {
 
             this.vParentOrganisation = orgIdMap.getKey(relationship.getParent().getId());
         }
@@ -93,17 +101,16 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     private String readPdOwnedOnVertecBy(String ownedBy) {
-        if(ownedBy == null) return "No Owner";
-        else if(ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM)) return "Sales Team";
-        else if(ownedBy.equals(ProductionKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
+        if (ownedBy == null) return "No Owner";
+        else if (ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM)) return "Sales Team";
+        else if (ownedBy.equals(ProductionKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
         else return "unrecognised";
     }
 
     /**
-     *
      * @param ownerId has to be gotten from Map using supervisingEmail
      */
-    public PDOrganisationSend toPDSend(Long ownerId){
+    public PDOrganisationSend toPDSend(Long ownerId) {
         PDOrganisationSend pds = new PDOrganisationSend();
 
         pds.setAddress(this.fullAddress);
@@ -129,6 +136,8 @@ public class Organisation implements Comparable<Organisation> {
         //Vertec Id will be the same for both
         //Pipedrive id is not affected
 
+        boolean fullAddressModified = false;
+
         this.ownedOnVertecBy = (freshOrganisation.ownedOnVertecBy != null && !freshOrganisation.ownedOnVertecBy.equals("")) ?
                 freshOrganisation.ownedOnVertecBy :
                 this.ownedOnVertecBy;
@@ -148,34 +157,38 @@ public class Organisation implements Comparable<Organisation> {
         this.businessDomain = (freshOrganisation.businessDomain != null && !freshOrganisation.businessDomain.equals("")) ?
                 freshOrganisation.businessDomain :
                 this.businessDomain;
-        this.fullAddress = (freshOrganisation.fullAddress != null && !freshOrganisation.fullAddress.equals("")) ?
-                freshOrganisation.fullAddress :
-                this.fullAddress;
-        this.buildingName = (freshOrganisation.buildingName != null && !freshOrganisation.buildingName.equals("")) ?
-                freshOrganisation.buildingName :
-                this.buildingName;
-        this.streetNo = (freshOrganisation.streetNo != null && !freshOrganisation.streetNo.equals("")) ?
-                freshOrganisation.streetNo :
-                this.streetNo;
-        this.street = (freshOrganisation.street != null && !freshOrganisation.street.equals("")) ?
-                freshOrganisation.street :
-                this.street;
-        this.city = (freshOrganisation.city != null && !freshOrganisation.city.equals("")) ?
-                freshOrganisation.city :
-                this.city;
-        this.country = (freshOrganisation.country != null && !freshOrganisation.country.equals("")) ?
-                freshOrganisation.country :
-                this.country;
-        this.zip = (freshOrganisation.zip != null && !freshOrganisation.zip.equals("")) ?
-                freshOrganisation.zip :
-                this.zip;
+        if (freshOrganisation.fullAddress != null && !freshOrganisation.fullAddress.equals("")) {
+            this.fullAddress = freshOrganisation.getFullAddress();
+            fullAddressModified = true;
+        } // else no change
+
+        if (fullAddressModified) {
+
+            this.buildingName = (freshOrganisation.buildingName != null ) ?
+                    freshOrganisation.buildingName :
+                    "";
+            this.streetNo = (freshOrganisation.streetNo != null ) ?
+                    freshOrganisation.streetNo :
+                    "";
+            this.street = (freshOrganisation.street != null) ?
+                    freshOrganisation.street :
+                    "";
+            this.city = (freshOrganisation.city != null ) ?
+                    freshOrganisation.city :
+                    "";
+            this.country = (freshOrganisation.country != null ) ?
+                    freshOrganisation.country :
+                    "";
+            this.zip = (freshOrganisation.zip != null ) ?
+                    freshOrganisation.zip :
+                    "";
+        }
     }
 
     /**
-     *
      * @param ownerEmail has to be got from a map using the ownerId of the vertec organisation
      */
-    public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, Long pipedriveId, String ownerEmail){
+    public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, Long pipedriveId, String ownerEmail) {
         this.vertecId = organisation.getVertecId();
         this.pipedriveId = pipedriveId;
         this.active = organisation.getActive();
@@ -206,10 +219,9 @@ public class Organisation implements Comparable<Organisation> {
 
 
     /**
-     *
      * @param ownerId has to be got from map using supervisingEmail
      */
-    public VPI.VertecClasses.VertecOrganisations.Organisation toVertecRep(Long ownerId){
+    public VPI.VertecClasses.VertecOrganisations.Organisation toVertecRep(Long ownerId) {
         VPI.VertecClasses.VertecOrganisations.Organisation org = new VPI.VertecClasses.VertecOrganisations.Organisation();
 
         org.setVertecId(vertecId);
@@ -234,14 +246,13 @@ public class Organisation implements Comparable<Organisation> {
         return org;
     }
 
-    public String toJSONString(){
+    public String toJSONString() {
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
-        try{
+        try {
 
             retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Could not convert XML Envelope to JSON: " + e.toString());
         }
         return retStr;
@@ -255,7 +266,7 @@ public class Organisation implements Comparable<Organisation> {
                 && active == org.getActive()
                 && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
                 && supervisingEmail.equals(
-                        org.getSupervisingEmail())
+                org.getSupervisingEmail())
                 && name.equals(org.getName())
                 && website.equals(org.getWebsite())
                 && category.equals(org.getCategory())
@@ -270,14 +281,16 @@ public class Organisation implements Comparable<Organisation> {
         //creation and modification dates need not bee checked here
 
     }
+
     @Override
     public int compareTo(Organisation org) {
-        if(org == null) return -1;
-        if(org.getVertecId() == null && vertecId != null) return -1;
-        if(vertecId == null && org.getVertecId() != null) return 1; //this and above line will push orgs without v_ids to the end of the list
-        if(vertecId == null && org.getVertecId() == null) return 0;
-        if(this.vertecId > org.getVertecId()) return 1;
-        if(this.vertecId == org.getVertecId()) return 0;
+        if (org == null) return -1;
+        if (org.getVertecId() == null && vertecId != null) return -1;
+        if (vertecId == null && org.getVertecId() != null)
+            return 1; //this and above line will push orgs without v_ids to the end of the list
+        if (vertecId == null && org.getVertecId() == null) return 0;
+        if (this.vertecId > org.getVertecId()) return 1;
+        if (this.vertecId == org.getVertecId()) return 0;
         else return -1;
     }
 

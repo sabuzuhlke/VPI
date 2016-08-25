@@ -24,6 +24,7 @@ public class Synchroniser {
 
         this.stateDifference = new StateDifference(vertecState, pipedriveState, synchroniserState);
         performFirstSync();
+        //TODO delete merged conact mappings from contact id map
     }
 
     /**

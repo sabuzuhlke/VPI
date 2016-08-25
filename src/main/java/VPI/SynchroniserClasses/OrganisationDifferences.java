@@ -3,6 +3,7 @@ package VPI.SynchroniserClasses;
 import VPI.Entities.Organisation;
 import VPI.Entities.OrganisationState;
 import VPI.Entities.util.Utilities;
+import VPI.Synchroniser;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
 
@@ -12,17 +13,18 @@ import java.util.stream.Collectors;
 
 public class OrganisationDifferences {
 
-    private Set<Organisation> createOnVertec;
+    private Set<Organisation> createOnVertec; //
     private Set<Organisation> createOnPipedrive;
 
-    private Set<Long> deleteFromVertec;
+    private Set<Long> deleteFromVertec;//
     private Set<Organisation> deleteFromPipedrive;
     private Map<Organisation, Organisation> deletionFromPipedriveConflicts;
-    private Set<Organisation> deletionFromVertecConflicts;
+    private Set<Long> deletionFromVertecConflicts; //will contain pipedrive Id of confliction organisation
 
-    private Set<Organisation> updateOnVertec;
+    private Set<Organisation> updateOnVertec;//
     private Set<Organisation> updateOnPipedrive;
     private Set<Organisation> updateConflicts; //contains PDOrganisation
+    private Set<Organisation> updateConflictsReciprocal = new HashSet<>();
     private Set<Organisation> noChanges;
 
     public OrganisationDifferences(VertecState vertecState, PipedriveState pipedriveState, SynchroniserState synchroniserState) {
@@ -71,7 +73,8 @@ public class OrganisationDifferences {
     private void compareMatchingOrganisations(PipedriveState pipedriveState, VertecState vertecState, SynchroniserState synchroniserState) {
 
         //only needs to deal with orgs that match on vid, since all other possibilities are dealt with by the other functions
-        vertecState.getOrganisationState().organisationsWithVIDs.values()
+        vertecState.getOrganisationState().organisationsWithVIDs.values().stream()
+                .filter(Organisation::getActive)
                 .forEach(vOrg -> {
                     Organisation pOrg = pipedriveState.getOrganisationState().organisationsWithVIDs.get(vOrg.getVertecId());
                     if (pOrg == null) return;
@@ -82,6 +85,7 @@ public class OrganisationDifferences {
 
     private void decideWhereToUpdate(Organisation vOrg, Organisation pOrg, SynchroniserState state) {
 
+        //TODO test
         Boolean vOrgModifiedSinceLastSync = modifiedSinceLastSync(state, vOrg);
         Boolean pOrgModifiedSinceLastSync = modifiedSinceLastSync(state, pOrg);
 
@@ -94,6 +98,7 @@ public class OrganisationDifferences {
         //Case 1: CONFLICT
         if (vOrgModifiedSinceLastSync && pOrgModifiedSinceLastSync) {
             updateConflicts.add(pOrg);
+            updateConflictsReciprocal.add((vOrg));
             return;
         }
         //Case 2: update Pipedrive
@@ -111,6 +116,9 @@ public class OrganisationDifferences {
 
     }
 
+    public Set<Organisation> getUpdateConflictsReciprocal() {
+        return updateConflictsReciprocal;
+    }
 
     private Organisation updatePipedriveFromVertec(Organisation pOrg, Organisation vOrg) {
         assert pOrg.getPipedriveId() != null;
@@ -120,7 +128,8 @@ public class OrganisationDifferences {
 
     private Organisation updateVertecFromPipedrive(Organisation vOrg, Organisation pOrg) {
         vOrg.updateOrganisationWithFreshValues(pOrg);
-        return null;
+        return vOrg;
+
     }
 
     /**
@@ -137,7 +146,6 @@ public class OrganisationDifferences {
         //get all organisations from vertecState that have been deleted since the last sync and are owned by the sales team
         List<Organisation> deletedVertecOrgs = vertecState.organisationState.getAllOrganisations().stream()
                 .filter(org -> !org.getActive()) //are inactive now
-                .filter(org -> org.getOwnedOnVertecBy().equals("Sales Team")) // are owned by zuk
                 .filter(org -> modifiedSinceLastSync(synchroniserState, org))// have been modified since last synch
                 .collect(Collectors.toList());
 
@@ -173,11 +181,12 @@ public class OrganisationDifferences {
                 .stream()
                 .filter(id -> !pipedriveState.organisationState.organisationsWithVIDs.keySet().contains(id))
                 .filter(id -> vertecState.organisationState.organisationsWithVIDs.keySet().contains(id))
+                .filter(id -> synchroniserState.getOrganisationIdMap().containsKey(id))
                 .forEach(id -> {
                     if (modifiedSinceLastSync(synchroniserState, vertecState.organisationState.organisationsWithVIDs.get(id))) {
-                        deletionFromVertecConflicts.add(pipedriveState.getOrganisationState().organisationsWithVIDs.get(id));
+                        deletionFromVertecConflicts.add(synchroniserState.getOrganisationIdMap().get(id));
                     } else {
-
+                        deleteFromVertec.add(id);
                     }
                 });
     }
@@ -222,7 +231,7 @@ public class OrganisationDifferences {
     private boolean modifiedSinceLastSync(SynchroniserState synchroniserState, Organisation org) {
         LocalDateTime orgMod = LocalDateTime.parse(
                 Utilities.formatToVertecDate(org.getModified()));
-        LocalDateTime syncTime = LocalDateTime.parse(synchroniserState.getSyncTime());
+        LocalDateTime syncTime = LocalDateTime.parse(synchroniserState.getPreviousCompleteSyncEndTime());
         return (orgMod.isAfter(syncTime));
     }
 
@@ -296,5 +305,13 @@ public class OrganisationDifferences {
 
     public void setNoChanges(Set<Organisation> noChanges) {
         this.noChanges = noChanges;
+    }
+
+    public Set<Long> getDeletionFromVertecConflicts() {
+        return deletionFromVertecConflicts;
+    }
+
+    public void setDeletionFromVertecConflicts(Set<Long> deletionFromVertecConflicts) {
+        this.deletionFromVertecConflicts = deletionFromVertecConflicts;
     }
 }
