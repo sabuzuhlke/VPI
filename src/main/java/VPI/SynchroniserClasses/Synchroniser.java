@@ -1,6 +1,7 @@
-package VPI;
+package VPI.SynchroniserClasses;
 
 import VPI.PDClasses.PDService;
+import VPI.StateDifference;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.SynchroniserState;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;

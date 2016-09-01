@@ -57,6 +57,7 @@ public class OrganisationState {
     public Map<Long, Organisation> getOrganisationsBasedOnPipedrive(OrganisationState organisationsFromPipedrive
             , Map<Long, Organisation> organisations) {
 
+
         if (organisationsFromPipedrive == null) return new HashMap<>();
         Map<Long, Organisation> orgmap = new HashMap<>();
 
@@ -70,6 +71,7 @@ public class OrganisationState {
                 .filter(org -> org.getOwnedOnVertecBy().equals("Sales Team"))
                 .map(Organisation::getVertecId)
                 .collect(Collectors.toList());
+
 
         if (unimportedIds.isEmpty()) return new HashMap<>();
 
@@ -86,6 +88,7 @@ public class OrganisationState {
         for (Organisation org : vertecOrgsFromPipedrive) {
             orgmap.put(org.getVertecId(), org);
         }
+
         return orgmap;
     }
 

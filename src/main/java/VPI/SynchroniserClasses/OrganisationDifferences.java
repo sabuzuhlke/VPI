@@ -3,7 +3,6 @@ package VPI.SynchroniserClasses;
 import VPI.Entities.Organisation;
 import VPI.Entities.OrganisationState;
 import VPI.Entities.util.Utilities;
-import VPI.Synchroniser;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
 
@@ -157,6 +156,10 @@ public class OrganisationDifferences {
             if (pOrg == null) return;
             if (modifiedSinceLastSync(synchroniserState, pOrg)) {
                 deletionFromPipedriveConflicts.put(vOrg, pOrg);
+            } else if (synchroniserState.modificationMadeByCrashingSync(pOrg.getModified())) {
+                //if org would be deleted from vertec, but pipedrive has been modified within the crashWindow, then that means that
+                //it was a deletion conflict and we have already dealt with it
+                return;
             } else {
                 deleteFromPipedrive.add(vOrg);
             }
@@ -168,11 +171,12 @@ public class OrganisationDifferences {
     /**
      * Finds organisationState to delete from vertec by finding which organisationState we posted in in the past that are no longer present
      * on pipedrive
-     *
+     * <p>
      * If we identify an organisation as one we should delete from vertec, we:
      * 1) delete it, or
      * 2) if organisation has been modified on vertec since last sync, we re-activate organisation on pipedrive and mark as conflict
-     *                                                                  and replace data with vertecData
+     * and replace data with vertecData
+     *
      * @param pipedriveState
      * @param synchroniserState
      */

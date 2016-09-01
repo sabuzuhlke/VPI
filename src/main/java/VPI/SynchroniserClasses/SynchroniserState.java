@@ -7,6 +7,7 @@ import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.Employee;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.tomcat.jni.Time;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ import static java.util.stream.Collectors.toSet;
  */
 public class SynchroniserState {
 
+    //TODO get updateLogs to be able to decide who made the last change , needed for fault tolerance
     /**
      * Crash tolerant logic:
      * If program ceases execution part of the way though applying changes to pipedrive/vertec
@@ -30,6 +32,7 @@ public class SynchroniserState {
      * and changes made between possibleCrashTime and the current time.
      * If the application had not crashed in the previous sync then the previousCompleteSyncEndTime == possibleCrashTime == previousSyncStartTime
      */
+    public String PATH_TO_FAULT_TOLERANCE_FILES = "/Users/gebo/IdeaProjects/VPI/src/main/resources/";
 
     //String representing the date/time at which the sync last finished running
     private String previousCompleteSyncEndTime;
@@ -60,6 +63,22 @@ public class SynchroniserState {
         this.vertecOwnerMap = constructReverseMap(constructVertecUserEmailToIdMap(vertec.getSalesTeam()));
         this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
         this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
+        this.crashWindows = new HashSet<>();
+        //TODO: finish setting up times/ crashWindows
+    }
+
+    /**
+     * Constructor used purely for testing purposes, sets PATH_TO_FAULT_TOLERANT_FILES to filepath so we can test
+     * different scenarios
+     */
+    public SynchroniserState(VertecService vertec, PDService pipedrive, String filepath) throws IOException {
+        this.PATH_TO_FAULT_TOLERANCE_FILES = filepath;
+        this.organisationIdMap = loadOrganisationIdMap();
+        this.pipedriveOwnerMap = constructReverseMap(constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive)));
+        this.vertecOwnerMap = constructReverseMap(constructVertecUserEmailToIdMap(vertec.getSalesTeam()));
+        this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
+        this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
+        this.crashWindows = new HashSet<>();
         //TODO: finish setting up times/ crashWindows
     }
 
@@ -160,112 +179,168 @@ public class SynchroniserState {
         return previousCompleteSyncEndTime;
     }
 
+    public void setPATH_TO_FAULT_TOLERANCE_FILES(String PATH_TO_FAULT_TOLERANCE_FILES) {
+        this.PATH_TO_FAULT_TOLERANCE_FILES = PATH_TO_FAULT_TOLERANCE_FILES;
+    }
 
+    public String getPATH_TO_FAULT_TOLERANCE_FILES() {
+
+        return PATH_TO_FAULT_TOLERANCE_FILES;
+    }
     // FAULT TOLERANCE FUNCTIONS =======================================================================================
     /**
      * Called when synchroniser successfully completes applying changes
      * Sets previousCompletionTime == possibleCrashTime == previousSyncStartTime == currentTime
      * and clears Set of time intervals during which sync made changes then crashed
      */
-    public void finishSync(){
+    public void finishSync() throws IOException {
+        setPreviousCompleteSyncTime();
         clearCrashWindows();
-        //TODO: set times for next sync
+        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
+        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
     }
 
     /**
      * Function to test if a dateTime is within the any of the time intervals that the program was making modifications since the previousCompleteSync
      * (These time intervals represent times at which the program was attempting a sync but failed)
      */
-    public Boolean modificationMadeByCrashingSync(LocalDateTime time) {
-        return crashWindows.stream().anyMatch(timeInterval -> timeInterval.isTimeWithinInterval(time));
+    public Boolean modificationMadeByCrashingSync(String time) {
+        String vertecFormat = Utilities.formatToVertecDate(time);
+        LocalDateTime ldt;
+        ldt = vertecFormat == null ? LocalDateTime.parse(time) :  LocalDateTime.parse(vertecFormat);
+
+        return crashWindows.stream().anyMatch(timeInterval -> timeInterval.isTimeWithinInterval(ldt));
     }
 
     public void addCrashWindow() throws IOException {
-        crashWindows.add(new TimeInterval(loadPreviousSyncStartTime(), loadPossibleCrashTime()));
-        //TODO: add to file
+        String previousStartTime = loadPreviousSyncStartTime();
+        String possibleCrashTime = loadPossibleCrashTime();
+
+        if(previousStartTime == null && possibleCrashTime == null) return; //Program did not crash previously, so we are fine.
+        TimeInterval crashWindow = new TimeInterval(previousStartTime, possibleCrashTime);
+
+        new File(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows").createNewFile();
+        FileWriter file = new FileWriter(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows", true); // do not overwrite
+        file.write(crashWindow.toString());
+        file.close();
+
+        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
+        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
+
     }
 
-    public void clearCrashWindows() {
+    public void clearCrashWindows() throws IOException {
         crashWindows.clear();
-        //TODO: clear crashWindowsFile
+        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows");
     }
 
     /**
      *
      */
-    public void loadCrashWindows() {
-        //TODO: load intervals from file
+    public void loadCrashWindows() throws IOException {
+        boolean emptyFileCreeated = new File(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows").createNewFile();
+        if(emptyFileCreeated) return; // file is empty as it has just been created
+
+        FileReader file = new FileReader(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows");
+        BufferedReader reader = new BufferedReader(file);
+        String line;
+
+        while((line = reader.readLine()) != null){
+            String[] times = line.split(" ");
+            String t1 = times[0];
+            String t2 = times[1];
+            crashWindows.add(new TimeInterval(t1, t2));
+        }
+        file.close();
     }
 
     /**
      * Loads latest time that sync was run
      */
     private String loadPreviousCompleteSyncEndTime() throws IOException {
-        return loadSingleLineFileToString("previousCompleteSyncEndTime");
+        return Utilities.loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "previousCompleteSyncEndTime");
         //return LocalDateTime previousFinishTime = LocalDateTime.parse(s);
     }
 
     /**
      * Set file: previousCompleteSyncEndTime to contain currentTime
      */
-    private void setPreviousCompleteSyncTime() {
-        setFileToCurrentTime("previousCompleteSyncEndTime");
+    private void setPreviousCompleteSyncTime() throws IOException {
+        setFileToCurrentTime(PATH_TO_FAULT_TOLERANCE_FILES + "previousCompleteSyncEndTime");
     }
 
     /**
      * Loads last time time that sync was started
      */
     private String loadPreviousSyncStartTime() throws IOException {
-        return loadSingleLineFileToString("");
+        return Utilities.loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
     }
 
     /**
      * Set file: previousSyncStartTime to contain currentTime
      */
-    private void setPreviousSyncStartTime() {
-        setFileToCurrentTime(""); //TODO: add previousSyncStartTime file
+    private void setPreviousSyncStartTime() throws IOException {
+        //TODO call when posting starts
+        setFileToCurrentTime(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
     }
 
     private String loadPossibleCrashTime() throws IOException {
-        return loadSingleLineFileToString(""); //TODO: add possibleCrashTimeFile
+        return Utilities.loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
     }
 
     /**
      * Set file: possibleCrashTime to contain currentTime
      */
-    private void setPossibleCrashTime() {
-        setFileToCurrentTime(""); //TODO: add possibleCrashTime file
+    private void setPossibleCrashTime() throws IOException {
+        //TODO call after each post
+        setFileToCurrentTime(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
     }
 
     /**
-     * Given Filename, sets file to contain currentTime
+     * Given Filename, sets file to contain currentTime --> overwrites
      */
-    private void setFileToCurrentTime(String filename) {
-        //TODO: set File to current time
-    }
-
-    private String loadSingleLineFileToString(String filepath) throws IOException {
-        String line;
-        File file = new File(filepath);
-        FileReader reader = new FileReader(file.getAbsolutePath());
-        BufferedReader breader = new BufferedReader(reader);
-        line = breader.readLine();
-        return line;
+    public void setFileToCurrentTime(String filepath) throws IOException {
+        boolean b = new File(filepath).createNewFile();
+        FileWriter file = new FileWriter(filepath);
+        file.write(Utilities.getCurrentTime());
+        file.close();
     }
 
 
+    public Set<TimeInterval> getCrashWindows() {
+        return crashWindows;
+    }
 
-    private class TimeInterval {
+    public class TimeInterval {
         private LocalDateTime iS;
         private LocalDateTime iE;
 
         public TimeInterval(String iS, String iE) {
-            this.iS = LocalDateTime.parse(iS);
-            this.iE = LocalDateTime.parse(iE);
+            LocalDateTime t1 = LocalDateTime.parse(iS);
+            LocalDateTime t2 = LocalDateTime.parse(iE);
+            if (t1.isBefore(t2)) {
+                this.iS = t1;
+                this.iE = t2;
+            } else {
+                this.iE = t1;
+                this.iS = t2;
+            }
         }
 
         public Boolean isTimeWithinInterval(LocalDateTime time) {
             return time.isAfter(iS) && time.isBefore(iE);
+        }
+
+        @Override
+        public String toString() {
+            return iS + " " + iE.toString();
+        }
+
+        @Override
+        public boolean equals(Object o){
+            if(! (o instanceof TimeInterval)) return false;
+            TimeInterval ti = (TimeInterval) o;
+            return this.iS.toString().equals(ti.iS.toString()) && this.iE.toString().equals(ti.iE.toString());
         }
     }
 }

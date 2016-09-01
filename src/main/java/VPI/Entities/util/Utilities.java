@@ -2,11 +2,15 @@ package VPI.Entities.util;
 
 import java.io.*;
 import java.text.Bidi;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.*;
+
+import static java.io.File.*;
 
 public class Utilities {
 
@@ -198,6 +202,57 @@ public class Utilities {
             }
         }
         return idsAsString;
+    }
+
+    static public String getCurrentTime(){
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        Date date = new Date();
+        return dateFormat.format(date);
+    }
+
+    public static void writeSingleLineFile(String line, String filepath) throws IOException {
+        new File(filepath).createNewFile();
+        FileWriter writer = new FileWriter(filepath);
+        writer.write(line);
+        writer.close();
+    }
+
+
+    public static String loadSingleLineFileToString(String filepath) throws IOException {
+        String line;
+        boolean b = new File(filepath).createNewFile();
+        FileReader reader = new FileReader(filepath);
+        BufferedReader breader = new BufferedReader(reader);
+        line = breader.readLine();
+        return line;
+    }
+    static public void overwriteSingleLineFile(String line, String filepath) throws IOException {
+        boolean b = new File(filepath).createNewFile();
+        FileWriter file = new FileWriter(filepath);
+        file.write(line);
+        file.close();
+    }
+
+    static public void overwriteFile(File source, String filePath) throws IOException {
+
+        boolean b = new File(filePath).createNewFile();
+        FileWriter file = new FileWriter(filePath);
+        FileReader reader = new FileReader(source.getAbsolutePath());
+        BufferedReader breader = new BufferedReader(reader);
+
+        String line;
+       while((line = breader.readLine()) != null){
+           file.write(line);
+           file.write("\n");
+       }
+        file.close();
+    }
+
+    static public void clearFile(String filepath) throws IOException {
+        new File(filepath).createNewFile();
+        FileWriter file = new FileWriter(filepath);
+        file.write("");
+        file.close();
     }
 }
 

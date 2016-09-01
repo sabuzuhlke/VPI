@@ -2,6 +2,7 @@ package CurrentTests;
 
 import VPI.*;
 import VPI.Entities.Organisation;
+import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
@@ -34,10 +35,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.FileWriter;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -384,17 +387,19 @@ public class PipedriveServiceTests {
         res = PS.getAllOrganisations();
         assertEquals(res.getStatusCode(), HttpStatus.OK);
         organisations = res.getBody();
-//        try {
-//            FileWriter file = new FileWriter("Pipedriveorgs.txt");
-//            file.write(res.getBody().toString());
-//            file.close();
-//        } catch (Exception e) {
-//            System.out.println("Failed to output to file");
-//        }
+        System.out.println(res.getBody());
+        try {
+            FileWriter file = new FileWriter("Pipedriveorgs.txt");
+            file.write(res.getBody().toString());
+            file.close();
+        } catch (Exception e) {
+            System.out.println("Failed to output to file");
+        }
         //The following asserts that the more_items_in_collection field of the response is false -- Meaning that there are no more organisationState to return
-        //assertTrue(!organisationState.getAdditional_data().getPagination().getMore_items_in_collection());
-        //assertTrue(organisationState.getData() != null);
-        //assertTrue(organisationState.getData().get(0) != null);
+        assertTrue(!res.getBody().getAdditional_data().getPagination().getMore_items_in_collection());
+        assertTrue(res.getBody().getData() != null);
+        assertTrue(res.getBody().getData().get(0) != null);
+        System.out.println(res.getBody().getData().size());
     }
 
 
@@ -1326,6 +1331,28 @@ public class PipedriveServiceTests {
 
     //TODO: TEST wether first_name and last_name actually get propagated
 
+    /**
+     * Updates =======================================================================================================
+     */
 
+    @Test
+    public void canGetUpdateLogsofOrg(){
+        Long orgid = 1071L;
+        PDUpdateLogs ul = PS.getUpdateLogsFOrOrganisation(orgid).getBody();
 
+        PDUpdate pu = ul.getPDUpdates().get(0);
+        PDUpdate putwo = ul.getPDUpdates().get(1);
+
+        assertTrue(LocalDateTime.parse(pu.getTimestamp()).isAfter(LocalDateTime.parse(putwo.getTimestamp()))
+                || LocalDateTime.parse(pu.getTimestamp()).isEqual(LocalDateTime.parse(putwo.getTimestamp())));
+
+        assertNotNull(pu.getObject());
+
+        PDUpdateData pud = pu.getData();
+        assertNotNull(pud.getId());
+        assertNotNull(pud.getItem_id());
+        assertNotNull(pud.getLog_time());
+        assertNotNull(pud.getUser_id());
+
+    }
 }

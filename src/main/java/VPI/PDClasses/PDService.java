@@ -626,6 +626,13 @@ public class PDService {
         }
     }
 
+    /**
+     * UpdateLogs
+     */
+    public ResponseEntity<PDUpdateLogs> getUpdateLogsFOrOrganisation(Long id){
+        return getFromPipedrive(server + "organizations/" + id + "/flow" + apiKey, PDUpdateLogs.class);
+    }
+
 
     /**
      * UTILITIES
