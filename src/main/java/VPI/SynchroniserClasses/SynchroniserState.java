@@ -23,6 +23,10 @@ import static java.util.stream.Collectors.toSet;
  */
 public class SynchroniserState {
 
+    public static Long SYNCHRONISER_PD_USERID = 1533390L;
+    public static Long SYNCHRONISER_VERTEC_USERID = 23560788L;
+
+
     //TODO get updateLogs to be able to decide who made the last change , needed for fault tolerance
     /**
      * Crash tolerant logic:
@@ -64,7 +68,7 @@ public class SynchroniserState {
         this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
         this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
         this.crashWindows = new HashSet<>();
-        //TODO: finish setting up times/ crashWindows
+        //TODO: finish setting up times/ crashWindows -- or  not
     }
 
     /**
@@ -305,6 +309,18 @@ public class SynchroniserState {
         file.write(Utilities.getCurrentTime());
         file.close();
     }
+
+    /**
+     * Determines whether supplied datetime has been modified since last sync completion
+     */
+    public boolean isModified(String modificationDateTime){
+        if (modificationDateTime == null) return false;
+        LocalDateTime mDT = LocalDateTime.parse(modificationDateTime);
+        LocalDateTime sFT = LocalDateTime.parse(previousCompleteSyncEndTime);
+
+        return mDT.isAfter(sFT);
+    }
+
 
 
     public Set<TimeInterval> getCrashWindows() {

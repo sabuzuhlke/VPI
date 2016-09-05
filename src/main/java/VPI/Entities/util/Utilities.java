@@ -38,6 +38,8 @@ public class Utilities {
                  if (pDate.contains("1900-01-01")) {
                      return "1900-01-01T00:00:00";
                  } else {
+                     if(pDate.contains("T")) return pDate;
+
                      String[] dateFormatter = pDate.split(" ");
                      String date = dateFormatter[0];
                      String time = dateFormatter[1];

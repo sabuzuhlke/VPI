@@ -28,7 +28,44 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CommonRepTests {
+    @Test
+    public void orgEqualsWorksCorrectly(){
+        Organisation vorg = new Organisation();
+        vorg.setVertecId(20369921L);
+        vorg.setPipedriveId(1505L);
+        vorg.setActive(true);
+        vorg.setSupervisingEmail("brewster.barclay@zuhlke.com");
+        vorg.setName("Cellnovo");
+        vorg.setWebsite("");
+        vorg.setCategory("CATEGORY PLACEHOLDER");
+        vorg.setBusinessDomain("BUSINESS DOMAIN PLACEHOLDER");
+        vorg.setFullAddress("Ethos Building\\nKings Road, Swansea, SA1 8AS, United Kingdom");
+        vorg.setBuildingName("");
+        vorg.setStreetNo("");
+        vorg.setStreet("Ethos Building\nKings Road");
+        vorg.setCity("Swansea");
+        vorg.setCountry("United Kingdom");
+        vorg.setZip("SA1 8AS");
 
+        Organisation porg = new Organisation();
+        porg.setVertecId(20369921L);
+        porg.setPipedriveId(1505L);
+        porg.setActive(true);
+        porg.setSupervisingEmail("brewster.barclay@zuhlke.com");
+        porg.setName("Cellnovo");
+        porg.setWebsite("");
+        porg.setCategory(null);
+        porg.setBusinessDomain(null);
+        porg.setFullAddress("Ethos Building\\nKings Road, Swansea, SA1 8AS, United Kingdom");
+        porg.setBuildingName("");
+        porg.setStreetNo("");
+        porg.setStreet("");
+        porg.setCity("");
+        porg.setCountry("United Kingdom");
+        porg.setZip("SA1 8AS");
+
+        assertTrue(vorg.equals(porg));
+    }
     @Test
     public void canConvertOrgToPDSend() {
         Organisation org = new Organisation();

@@ -40,6 +40,10 @@ public class OrganisationDifferences {
         calculateOrganisationDifferences(vertecState, pipedriveState, synchroniserState);
     }
 
+    //TODO: When updating organisations if the pipedrive ID of the Vertec and PD org are different, replace the corresponding
+    //TODO: entry in the orIdmap to contain the PID of the pipedrive version. (On DISK)!!!!!!!!!!!!!!!!!!!!
+
+    //TODO for update conflicts keep pipedrive version
     /**
      * Populate differences lists based on the states provided
      *
@@ -84,7 +88,6 @@ public class OrganisationDifferences {
 
     private void decideWhereToUpdate(Organisation vOrg, Organisation pOrg, SynchroniserState state) {
 
-        //TODO test
         Boolean vOrgModifiedSinceLastSync = modifiedSinceLastSync(state, vOrg);
         Boolean pOrgModifiedSinceLastSync = modifiedSinceLastSync(state, pOrg);
 

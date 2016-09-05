@@ -1,8 +1,10 @@
-package VPI.PDClasses;
+package VPI.PDClasses.Updates;
 
-/**
- * Created by gebo on 26/08/2016.
- */
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class PDUpdate {
     private String object;
     private String timestamp;
@@ -33,5 +35,19 @@ public class PDUpdate {
 
     public void setData(PDUpdateData data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString(){
+        String retStr = null;
+        ObjectMapper m = new ObjectMapper();
+        try{
+
+            retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        }
+        catch(Exception e){
+            System.out.println("Could not convert to JSON: " + e.toString());
+        }
+        return retStr;
     }
 }

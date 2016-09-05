@@ -9,6 +9,9 @@ import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationItemsResponse;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDService;
+import VPI.PDClasses.Updates.PDLogList;
+import VPI.PDClasses.Updates.PDUpdate;
+import VPI.PDClasses.Updates.PDUpdateLog;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import VPI.SynchroniserClasses.Synchroniser;
 import VPI.SynchroniserClasses.SynchroniserState;
@@ -21,10 +24,12 @@ import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.EmployeeList;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.org.apache.regexp.internal.RE;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +44,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -75,6 +81,7 @@ public class SynchroniserTest {
 
         when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
         when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
 
         synchroniser = new Synchroniser(pipedrive, vertec);
     }
@@ -113,7 +120,7 @@ public class SynchroniserTest {
 
         organisation = orgs.getOrganisationByVertecId(10001010101010L);
         System.out.println(organisation);
-        assertEquals("Gebo TEST ORG -- fake data does not exist on pipedrive or vertec", organisation.getName());
+        assertEquals("Gebo TEST ORG -- fake data does not actually exist on pipedrive or vertec", organisation.getName());
 
         assertEquals(0, orgs.organisationsWithoutVIDs.size());
 
@@ -262,11 +269,98 @@ public class SynchroniserTest {
         Set<Long> deletionconflicts = synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromVertecConflicts();
         System.out.println(deletionconflicts);
         assertEquals(2, deletionconflicts.size());
-        assertTrue(deletionconflicts.contains(1654L));
-        assertTrue(deletionconflicts.contains(1248L)); //TODO after fixing id 1248L remove it from test
+        assertTrue(deletionconflicts.contains(250L)); // will not actually be deleted, as problem has been fixed
+        assertTrue(deletionconflicts.contains(962L));
 
-        assertEquals(1, deletionconflicts.size());
+        assertEquals(2, deletionconflicts.size());
         assertTrue(deletionconflicts.contains(conflictPDId));
+
+    }
+
+    @Test
+    public void canDealWithPDOrgModifiedBySync(){
+
+        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
+
+        Organisation org = new Organisation();
+        org.setName("Test org without VID"); //imitates org with pid 3
+        org.setPipedriveId(3L);
+        org.setModified("2016-09-01 00:00:00");
+
+        Organisation org2 = new Organisation();
+        org2.setName("Test org With VID"); //imitates org with pid 22 orgChange on line 202
+        org2.setPipedriveId(22L);
+        org2.setVertecId(1L);
+        org2.setModified("2016-09-01 00:00:00"); //orgchange on line 278
+
+        Organisation org3 = new Organisation();
+        org3.setName("TestOrg without VID that should not be in any of the lists at the end of the test based on modifierID");
+        org3.setPipedriveId(25L);
+        org3.setModified("2016-09-01 00:00:00"); //orgchange on line 488
+
+        Organisation org4 = new Organisation(); //orgChange on line 532
+        org4.setName("TestOrg without VID that should not be in any of the lists at the end of the test based on modification date");
+        org4.setPipedriveId(31L);
+        org4.setModified("2016-03-09 00:00:00");
+
+        synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithVIDs = new HashMap<>();
+        synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
+
+        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org);
+        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org2);
+        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org3);
+        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org4);
+
+        assertEquals(1, synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithVIDs.size());
+        assertEquals(22L,
+                synchroniser
+                        .getPipedriveState()
+                        .getOrganisationState()
+                        .syncModifiedOrganisationsWithVIDs
+                        .get(1L)
+                        .getPipedriveId()
+                        .longValue());
+
+        assertEquals(1, synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.size());
+        assertEquals(3L,
+                synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.stream()
+                        .map(Organisation::getPipedriveId)
+        .collect(toList())
+                .get(0).longValue());
+    }
+
+    @Test
+    public void canDealWithVertecOrgModifiedBySynchroniser(){
+
+        VPI.VertecClasses.VertecOrganisations.Organisation org2 = new VPI.VertecClasses.VertecOrganisations.Organisation();
+        org2.setName("Test org With VID");
+        org2.setVertecId(2L);
+        org2.setModified("2016-09-01T00:00:00");
+        org2.setModifier(SynchroniserState.SYNCHRONISER_VERTEC_USERID);
+
+        VPI.VertecClasses.VertecOrganisations.Organisation org3 = new VPI.VertecClasses.VertecOrganisations.Organisation();
+        org3.setName("TestOrg that should not be in any of the lists at the end of the test based on modifierID");
+        org3.setVertecId(3L);
+        org3.setModified("2016-09-01T00:00:00");
+        org3.setModifier(5295L);
+
+        VPI.VertecClasses.VertecOrganisations.Organisation org4 = new VPI.VertecClasses.VertecOrganisations.Organisation();
+        org4.setName("TestOrg that should not be in any of the lists at the end of the test based on modification date");
+        org4.setVertecId(4L);
+        org4.setModified("2016-03-09T00:00:00");
+        org4.setModifier(SynchroniserState.SYNCHRONISER_VERTEC_USERID);
+
+        synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithVIDs = new HashMap<>();
+        synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
+
+        synchroniser.getVertecState().getOrganisationState().dealWithVertecOrgModifiedBySynchroniser(org2);
+        synchroniser.getVertecState().getOrganisationState().dealWithVertecOrgModifiedBySynchroniser(org3);
+        synchroniser.getVertecState().getOrganisationState().dealWithVertecOrgModifiedBySynchroniser(org4);
+
+        assertEquals(0, synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.size());
+        assertEquals(1, synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithVIDs.size());
+        assertEquals("Test org With VID", synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithVIDs.get(2L).getName());
+
 
     }
 
@@ -277,6 +371,8 @@ public class SynchroniserTest {
 
         when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
         when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(pipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
 
 //        System.out.println("No changes: ");
 //        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getNoChanges());
@@ -417,6 +513,29 @@ public class SynchroniserTest {
         return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
+    public static ResponseEntity<PDUpdateLog> getDummyPipedriveOrganisationUpdateLog(Long id) throws IOException {
+        ObjectMapper m = new ObjectMapper();
+        PDLogList loglist = m.readValue(new File("src/test/resources/pdOrganisationUpdateLog"), PDLogList.class);
+
+        for (PDUpdateLog log : loglist.getLogs()){
+            if(log.getOrgid() == id.longValue()) return new ResponseEntity<PDUpdateLog>(log, HttpStatus.OK);
+        }
+
+        return null;
+    }
+    public static Answer<ResponseEntity<PDUpdateLog>> getOrganisationUpdateLogAnswer(){
+
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+
+           ResponseEntity<PDUpdateLog> logs = getDummyPipedriveOrganisationUpdateLog((Long) args[0]);
+            return logs;
+        };
+
+    }
+
+
+
     public static Answer<ResponseEntity<JSONOrganisation>> getOrgResponseEntityAnswer() {
         return invocation -> {
             Object[] args = invocation.getArguments();
@@ -515,6 +634,9 @@ public class SynchroniserTest {
     }
 
 
+
+
+
     @Test @Ignore
     public void listOfNonTeamOrgs() throws IOException {
         when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
@@ -562,5 +684,12 @@ public class SynchroniserTest {
             orgmap.put(org.getVertecId(), org);
         }
     }
+    @Test
+    public void canGetDummyPipedriveOrganisationUpdateLog() throws IOException {
+        PDUpdateLog pul = getDummyPipedriveOrganisationUpdateLog(22L).getBody(); // example log in file
+        assertEquals(22L, pul.getOrgid().longValue());
+        System.out.println(pul);
+    }
+
 }
 

@@ -3,6 +3,7 @@ package CurrentTests;
 import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
 import VPI.VertecClasses.VertecOrganisations.JSONContact;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
+import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecService;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -270,6 +272,16 @@ public class VertecServiceTests {
                 .map(Employee::getEmail)
                 .collect(toList())
                 .contains("tim.cianchi@zuhlke.com"));
+    }
+
+    @Test
+    public void canGetModifierOforg(){
+        Long id = 28055040L; //TESTvertecOrg1
+
+        Organisation org = VS.getOrganisationCommonRep(id).getBody();
+        System.out.println(org.getModifier());
+        assertNotNull(org.getModifier());
+
     }
 
 

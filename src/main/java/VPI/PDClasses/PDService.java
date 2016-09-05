@@ -12,6 +12,7 @@ import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipResopnse;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipSend;
 import VPI.PDClasses.Organisations.*;
+import VPI.PDClasses.Updates.PDUpdateLog;
 import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import org.springframework.http.*;
@@ -50,7 +51,7 @@ public class PDService {
                 returnType);
     }
 
-    private <REQ, RES> ResponseEntity<RES> putToPipedrive(String uri, REQ toPut, Class<RES> returnType){
+    private <REQ, RES> ResponseEntity<RES> putToPipedrive(String uri, REQ toPut, Class<RES> returnType) {
         return restTemplate.exchange(
                 new RequestEntity<>(toPut, HttpMethod.PUT, URI.create(uri)),
                 returnType);
@@ -100,11 +101,11 @@ public class PDService {
 //
 //
 //    }
+
     /**
      * Deals
      */
 //------------------------------------------------------------------------------------------------------------------POST
-
     public ResponseEntity<PDDealResponse> postDeal(PDDealSend deal) {
         try {
             return postToPipedrive(server + "deals" + apiKey, deal, PDDealResponse.class);
@@ -139,11 +140,11 @@ public class PDService {
         ResponseEntity<PDDealItemsResponse> res = null;
         List<PDDealReceived> dealsReceived = new ArrayList<>();
 
-        while(moreItemsInCollection){
+        while (moreItemsInCollection) {
 
             String uri = server + "deals?start=" + start + "&limit=100000&" + apiKey.substring(1);
             res = getFromPipedrive(uri, PDDealItemsResponse.class);
-            if(res.getBody().getData() != null){
+            if (res.getBody().getData() != null) {
                 dealsReceived.addAll(res.getBody().getData());
                 moreItemsInCollection = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
 
@@ -215,7 +216,7 @@ public class PDService {
 
 //-------------------------------------------------------------------------------------------------------------------PUT
 
-    public ResponseEntity<PDOrganisationResponse> updateOrganisation(PDOrganisationSend org){
+    public ResponseEntity<PDOrganisationResponse> updateOrganisation(PDOrganisationSend org) {
         return putToPipedrive(server + "organizations/" + org.getId() + apiKey, org, PDOrganisationResponse.class);
     }
 
@@ -233,7 +234,7 @@ public class PDService {
         return getFromPipedrive(server + "organizations/" + id + apiKey, PDOrganisationResponse.class);
     }
 
-    public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations(){
+    public ResponseEntity<PDOrganisationItemsResponse> getAllOrganisations() {
         int start = 0;
 
         Boolean moreItems = true;
@@ -265,27 +266,27 @@ public class PDService {
 
 //----------------------------------------------------------------------------------------------------------------DELETE
 
-    public ResponseEntity<PDDeleteResponse> deleteOrganisation(Long id){
+    public ResponseEntity<PDDeleteResponse> deleteOrganisation(Long id) {
         return deleteFromPipedrive(server + "organizations/" + id + apiKey);
     }
 
     public List<Long> deleteOrganisationList(List<Long> idsToDelete) {
-        return deleteFromPipedriveInBulk(server + "organizations/" + apiKey,idsToDelete).getBody().getData()
+        return deleteFromPipedriveInBulk(server + "organizations/" + apiKey, idsToDelete).getBody().getData()
                 .getId().stream()
                 .map(Long::parseLong)
                 .collect(toList());
     }
 
-    public List<PDDealReceived> getAllDealsForOrganisation(Long orgId){
+    public List<PDDealReceived> getAllDealsForOrganisation(Long orgId) {
         int start = 0;
         int limit = 500;
         boolean moreInfo = true;
 
         List<PDDealReceived> deals = new ArrayList<>();
 
-        while(moreInfo){
-            ResponseEntity<PDDealItemsResponse> res = getFromPipedrive(server +  "organizations/" + orgId + "/deals" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDDealItemsResponse.class);
-            if(res.getStatusCode() == HttpStatus.OK){
+        while (moreInfo) {
+            ResponseEntity<PDDealItemsResponse> res = getFromPipedrive(server + "organizations/" + orgId + "/deals" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDDealItemsResponse.class);
+            if (res.getStatusCode() == HttpStatus.OK) {
                 moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
 
                 deals.addAll(res.
@@ -300,17 +301,15 @@ public class PDService {
     }
 
 
-
     /**
      * CONTACTS
      */
 //------------------------------------------------------------------------------------------------------------------POST
-
     public ResponseEntity<PDContactResponse> postContact(PDContactSend contact) {
         return postToPipedrive(server + "persons" + apiKey, contact, PDContactResponse.class);
     }
 
-    public Map<Long, Long> postContactList(List<PDContactSend> contacts){
+    public Map<Long, Long> postContactList(List<PDContactSend> contacts) {
         Map<Long, Long> mymap = new HashMap<>();
         List<Long> idsPosted = contacts.stream()
                 .map(this::postContact)
@@ -366,7 +365,7 @@ public class PDService {
         return deleteFromPipedrive(server + "persons/" + id + apiKey);
     }
 
-    public List<Long> deleteContactList(List<Long> idsToDelete){
+    public List<Long> deleteContactList(List<Long> idsToDelete) {
         return deleteFromPipedriveInBulk(server + "persons/" + apiKey, idsToDelete).getBody().getData().getId()
                 .stream()
                 .map(Long::parseLong)
@@ -375,11 +374,11 @@ public class PDService {
 
 //-------------------------------------------------------------------------------------------------------------------PUT
 
-    public ResponseEntity<PDContactResponse> updateContact(PDContactSend contact){
+    public ResponseEntity<PDContactResponse> updateContact(PDContactSend contact) {
         return putToPipedrive(server + "persons/" + contact.getId() + apiKey, contact, PDContactResponse.class);
     }
 
-    public Map<Long, Long> putContactList(List<PDContactSend> contacts){
+    public Map<Long, Long> putContactList(List<PDContactSend> contacts) {
         Map<Long, Long> map = new HashMap<>();
         contacts.stream()
                 .map(this::updateContact)
@@ -394,7 +393,6 @@ public class PDService {
      * Activites
      */
 //-------------------------------------------------------------------------------------------------------------------GET
-
     @SuppressWarnings("unused")
     public ResponseEntity<PDActivityResponse> getActivity(Long id) {
         return getFromPipedrive(server + "activities/" + id + apiKey, PDActivityResponse.class);
@@ -407,12 +405,12 @@ public class PDService {
 
         List<PDActivityReceived> activities = new ArrayList<>();
 
-        while(moreInfo){
-           ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server + "activities?user_id=" + id + "&start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
-            if(res.getStatusCode() == HttpStatus.OK){
+        while (moreInfo) {
+            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server + "activities?user_id=" + id + "&start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
+            if (res.getStatusCode() == HttpStatus.OK) {
                 moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
 
-                if(res.getBody().getData() == null) break;
+                if (res.getBody().getData() == null) break;
 
                 activities.addAll(res.getBody().getData());
                 start = res.getBody().getAdditional_data().getPagination().getLimit();
@@ -435,11 +433,10 @@ public class PDService {
 
         List<PDActivityReceived> activities = new ArrayList<>();
 
-        while(moreInfo){
-            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server +  "organizations/" + orgId + "/activities" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
-            if(res.getStatusCode() == HttpStatus.OK){
+        while (moreInfo) {
+            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server + "organizations/" + orgId + "/activities" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
+            if (res.getStatusCode() == HttpStatus.OK) {
                 moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
-
 
 
                 activities.addAll(res.
@@ -460,9 +457,9 @@ public class PDService {
 
         List<PDActivityReceived> activities = new ArrayList<>();
 
-        while(moreInfo){
-            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server +  "persons/" + contactId + "/activities" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
-            if(res.getStatusCode() == HttpStatus.OK){
+        while (moreInfo) {
+            ResponseEntity<PDActivityItemsResponse> res = getFromPipedrive(server + "persons/" + contactId + "/activities" + "?start=" + start + "&limit=" + limit + "&" + apiKey.substring(1), PDActivityItemsResponse.class);
+            if (res.getStatusCode() == HttpStatus.OK) {
                 moreInfo = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
 
                 activities.addAll(res.
@@ -484,10 +481,10 @@ public class PDService {
                     Boolean moreItemsInCollection = true;
                     ResponseEntity<PDActivityItemsResponse> res = null;
                     List<PDActivityReceived> dealsReceived = new ArrayList<>();
-                    while(moreItemsInCollection){
+                    while (moreItemsInCollection) {
                         String uri = server + "activities?user_id=" + id + "&start=" + start + "&limit=100000&" + apiKey.substring(1);
                         res = getFromPipedrive(uri, PDActivityItemsResponse.class);
-                        if(res.getBody().getData() != null){
+                        if (res.getBody().getData() != null) {
                             dealsReceived.addAll(res.getBody().getData());
                             moreItemsInCollection = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
                             start += 500;
@@ -513,7 +510,7 @@ public class PDService {
         try {
             return postToPipedrive(server + "activities" + apiKey, activity, PDActivityResponse.class);
         } catch (Exception e) {
-            System.out.println("Couldnt post activity: " +  e);
+            System.out.println("Couldnt post activity: " + e);
             System.out.println(activity.toPrettyJSON());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -566,9 +563,8 @@ public class PDService {
      * Users
      */
 //-------------------------------------------------------------------------------------------------------------------GET
-
     public ResponseEntity<PDUserItemsResponse> getAllUsers() {
-        return getFromPipedrive(server + "users"+ apiKey, PDUserItemsResponse.class);
+        return getFromPipedrive(server + "users" + apiKey, PDUserItemsResponse.class);
     }
 
 
@@ -576,25 +572,25 @@ public class PDService {
      * Followers
      */
 //------------------------------------------------------------------------------------------------------------------POST
-    public ResponseEntity<String> postFollowerToContact(PDFollower f){
+    public ResponseEntity<String> postFollowerToContact(PDFollower f) {
         //TODO: change res to accept new pojo instead of string (followers)
         try {
-            return postToPipedrive(server + "persons/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+            return postToPipedrive(server + "persons/" + f.getObjectID() + "/followers" + apiKey, f, String.class);
         } catch (Exception e) {
             System.out.println("Caught Exception posting follower: " + f.toPrettyJSON());
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
 
-    public ResponseEntity<String> postFollowerToOrganisation(PDFollower f){
+    public ResponseEntity<String> postFollowerToOrganisation(PDFollower f) {
         //TODO: change res to accept new pojo instead of string (followers)
-        return postToPipedrive(server + "organizations/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+        return postToPipedrive(server + "organizations/" + f.getObjectID() + "/followers" + apiKey, f, String.class);
     }
 
-    public ResponseEntity<String> postFollowerToDeal(PDFollower f){
+    public ResponseEntity<String> postFollowerToDeal(PDFollower f) {
         //TODO: change res to accept new pojo instead of string (followers)
         try {
-            return postToPipedrive(server + "deals/"+ f.getObjectID() + "/followers" + apiKey, f, String.class);
+            return postToPipedrive(server + "deals/" + f.getObjectID() + "/followers" + apiKey, f, String.class);
         } catch (Exception e) {
             System.out.println("Caught Exception posting follower: " + f.toPrettyJSON());
             return new ResponseEntity<>(HttpStatus.OK);
@@ -629,8 +625,45 @@ public class PDService {
     /**
      * UpdateLogs
      */
-    public ResponseEntity<PDUpdateLogs> getUpdateLogsFOrOrganisation(Long id){
-        return getFromPipedrive(server + "organizations/" + id + "/flow" + apiKey, PDUpdateLogs.class);
+    public ResponseEntity<PDUpdateLog> getUpdateLogsFOrOrganisation(Long id) {
+        ResponseEntity<PDUpdateLog> res = getFromPipedrive(server + "organizations/" + id + "/flow" + apiKey, PDUpdateLog.class);
+        res.getBody().setOrgid(id);
+        return  res;
+    }
+
+    public List<PDUpdateLog> getAllOrganisationUpdates() {
+
+        List<PDUpdateLog> logsRecieved = new ArrayList<>();
+
+        getAllOrganisations().getBody().getData().forEach(org -> {
+            int start = 0;
+
+            Boolean moreItems = true;
+
+            ResponseEntity<PDUpdateLog> res = null;
+
+
+            while (moreItems) {
+                res = getFromPipedrive(
+                        server + "organizations/" + org.getId() + "/flow" + apiKey,
+                        PDUpdateLog.class);
+
+                if (res.getBody().getData() != null) {
+                    res.getBody().setOrgid(org.getId());
+                    logsRecieved.add(res.getBody());
+                    moreItems = res.getBody().getAdditional_data().getPagination().getMore_items_in_collection();
+
+                    start += 500;
+                } else {
+                    moreItems = false;
+                }
+
+
+            }
+        });
+
+        return logsRecieved;
+
     }
 
 
@@ -638,7 +671,7 @@ public class PDService {
      * UTILITIES
      */
 //-----------------------------------------------------------------------------------------------------------------CLEAR
-    public void clearPD(/*List<Long> orgsToKeep, List<Long> contsToKeep, List<Long>  dealsToKeep*/){
+    public void clearPD(/*List<Long> orgsToKeep, List<Long> contsToKeep, List<Long>  dealsToKeep*/) {
 
         /**
          * ORganisations do not need to be cleared atm as they work correctly
@@ -672,9 +705,9 @@ public class PDService {
         System.out.println("Found " + dealsToDel.size() + " deals to delete");
 
         List<Long> activitiesToDel = getAllActivities().stream()
-                                        //.filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
-                                        .map(PDActivityReceived::getId)
-                                        .collect(toList());
+                //.filter(act -> VertecSynchroniser.extractVID(act.getNote()) != -1L)
+                .map(PDActivityReceived::getId)
+                .collect(toList());
         System.out.println("Found " + activitiesToDel.size() + " Activities to delete");
 
 
@@ -682,18 +715,18 @@ public class PDService {
 
         int i = orgsToDel.size();
         System.out.println("Deleting organisationState...");
-        while(i >= 100){
-            currentDelList  = new ArrayList<>();
+        while (i >= 100) {
+            currentDelList = new ArrayList<>();
 
-            for(int j = 0; j < 100; j++){
+            for (int j = 0; j < 100; j++) {
                 currentDelList.add(orgsToDel.get(i - j - 1));
             }
             deleteOrganisationList(currentDelList);
             i = i - 100;
         }
-        if(orgsToDel.size() > 0 ){
+        if (orgsToDel.size() > 0) {
             currentDelList = new ArrayList<>();
-            for(int j = 0; j < orgsToDel.size(); j++){
+            for (int j = 0; j < orgsToDel.size(); j++) {
                 currentDelList.add(orgsToDel.get(j));
             }
             deleteOrganisationList(orgsToDel);
@@ -702,18 +735,18 @@ public class PDService {
         System.out.println("Deleting contacts...");
 
         i = contsToDel.size();
-        while(i >= 100){
-            currentDelList  = new ArrayList<>();
+        while (i >= 100) {
+            currentDelList = new ArrayList<>();
 
-            for(int j = 0; j < 100; j++){
+            for (int j = 0; j < 100; j++) {
                 currentDelList.add(contsToDel.get(i - j - 1));
             }
             deleteContactList(currentDelList);
             i = i - 100;
         }
-        if(contsToDel.size() > 0 ){
+        if (contsToDel.size() > 0) {
             currentDelList = new ArrayList<>();
-            for(int j = 0; j < contsToDel.size(); j++){
+            for (int j = 0; j < contsToDel.size(); j++) {
                 currentDelList.add(contsToDel.get(j));
             }
             deleteContactList(contsToDel);
@@ -721,18 +754,18 @@ public class PDService {
 
         System.out.println("Deleting deals...");
         i = dealsToDel.size();
-        while(i >= 100){
-            currentDelList  = new ArrayList<>();
+        while (i >= 100) {
+            currentDelList = new ArrayList<>();
 
-            for(int j = 0; j < 100; j++){
+            for (int j = 0; j < 100; j++) {
                 currentDelList.add(dealsToDel.get(i - j - 1));
             }
             deleteDealList(currentDelList);
             i = i - 100;
         }
-        if(dealsToDel.size() > 0 ){
+        if (dealsToDel.size() > 0) {
             currentDelList = new ArrayList<>();
-            for(int j = 0; j < dealsToDel.size(); j++){
+            for (int j = 0; j < dealsToDel.size(); j++) {
                 currentDelList.add(dealsToDel.get(j));
             }
             deleteDealList(dealsToDel);
@@ -742,23 +775,25 @@ public class PDService {
         System.out.println("Deleting Activities...");
 
         i = activitiesToDel.size();
-        while(i >= 100){
-            currentDelList  = new ArrayList<>();
+        while (i >= 100) {
+            currentDelList = new ArrayList<>();
 
-            for(int j = 0; j < 100; j++){
+            for (int j = 0; j < 100; j++) {
                 currentDelList.add(activitiesToDel.get(i - j - 1));
             }
             deleteActivityList(currentDelList);
             i = i - 100;
         }
-        if(activitiesToDel.size() > 0 ){
+        if (activitiesToDel.size() > 0) {
             currentDelList = new ArrayList<>();
-            for(int j = 0; j < activitiesToDel.size(); j++){
+            for (int j = 0; j < activitiesToDel.size(); j++) {
                 currentDelList.add(activitiesToDel.get(j));
             }
             deleteActivityList(activitiesToDel);
         }
     }
+
+
 
 
 }

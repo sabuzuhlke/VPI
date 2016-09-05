@@ -97,7 +97,6 @@ public class Organisation implements Comparable<Organisation> {
         //TODO modified Date,
         this.modified = pdr.getUpdate_time(); //""2016-07-22 09:43:57""
         this.created = pdr.getCreationTime();
-
     }
 
     private String readPdOwnedOnVertecBy(String ownedBy) {
@@ -137,6 +136,9 @@ public class Organisation implements Comparable<Organisation> {
         //Pipedrive id is not affected
 
         boolean fullAddressModified = false;
+
+        //below line should repoint orgs that have been merged on pipedrive
+        this.pipedriveId = freshOrganisation.getPipedriveId() == null ? this.pipedriveId : freshOrganisation.getPipedriveId();
 
         this.ownedOnVertecBy = (freshOrganisation.ownedOnVertecBy != null && !freshOrganisation.ownedOnVertecBy.equals("")) ?
                 freshOrganisation.ownedOnVertecBy :
@@ -260,25 +262,49 @@ public class Organisation implements Comparable<Organisation> {
 
 
     public boolean equals(Organisation org) {
-        return org != null && vertecId == org.getVertecId().longValue()
-                && pipedriveId == org.getPipedriveId().longValue()
-                && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
-                && active == org.getActive()
-                && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
-                && supervisingEmail.equals(
-                org.getSupervisingEmail())
-                && name.equals(org.getName())
-                && website.equals(org.getWebsite())
-                && category.equals(org.getCategory())
-                && businessDomain.equals(org.getBusinessDomain())
-                && fullAddress.equals(org.getFullAddress())
-                && buildingName.equals(org.getBuildingName())
-                && streetNo.equals(org.getStreetNo())
-                && street.equals(org.getStreet())
-                && city.equals(org.getCity())
-                && country.equals(org.getCountry())
-                && zip.equals(org.getZip());
-        //creation and modification dates need not bee checked here
+        boolean retval = true;
+        if(org == null) return false;
+        if(vertecId == null || org.getVertecId() == null) return false;
+        else retval = retval && vertecId == org.getVertecId().longValue();
+
+        if(pipedriveId == null || org.getPipedriveId() == null) return false;
+        else retval = retval && pipedriveId == org.getPipedriveId().longValue();
+
+        if(active == null ^ org.getActive() == null) return false;
+        else if(active != null && org.getActive() != null) retval = retval && active == org.getActive();
+
+        if(name == null ^ org.getName() == null) return false;
+        else if(name != null && org.getName() != null) retval = retval && name.equals(org.getName());
+
+        if(website == null ^ org.getWebsite() == null) return false;
+        else if(website != null && org.getWebsite() != null) retval = retval && website.equals(org.getWebsite());
+
+        if(supervisingEmail == null ^ org.getSupervisingEmail() == null) return false;
+        else if(supervisingEmail != null && org.getSupervisingEmail() != null) retval = retval && supervisingEmail.equals(org.getSupervisingEmail());
+        if(fullAddress == null ^ org.getFullAddress() == null) return false;
+        else if(fullAddress != null && org.getFullAddress() != null) retval = retval && fullAddress.equals(org.getFullAddress());
+
+        return retval;
+
+//        return org != null && vertecId == org.getVertecId().longValue()
+//                && pipedriveId == org.getPipedriveId().longValue()
+//                && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
+//                && active == org.getActive()
+//                && ownedOnVertecBy.equals(org.getOwnedOnVertecBy())
+//                && supervisingEmail.equals(
+//                org.getSupervisingEmail())
+//                && name.equals(org.getName())
+//                && website.equals(org.getWebsite())
+//                //&& category.equals(org.getCategory()) //Not yet implemented
+//                //&& businessDomain.equals(org.getBusinessDomain()) //Not yet implemented
+//                && fullAddress.equals(org.getFullAddress());
+//               // && buildingName.equals(org.getBuildingName()) //Seperate adress fields are difficult to parse, but full address should always be the same
+//                //&& streetNo.equals(org.getStreetNo())
+//                //&& street.equals(org.getStreet())
+//                //&& city.equals(org.getCity())
+//                //&& country.equals(org.getCountry())
+//                //&& zip.equals(org.getZip());
+//        //creation and modification dates need not bee checked here
 
     }
 
@@ -445,6 +471,7 @@ public class Organisation implements Comparable<Organisation> {
     public void setvParentOrganisation(Long vParentOrganisation) {
         this.vParentOrganisation = vParentOrganisation;
     }
+
 
     @Override
     public String toString() {

@@ -1,7 +1,10 @@
 package VPI.Entities;
 
 
+import VPI.Entities.util.Utilities;
 import VPI.PDClasses.PDService;
+import VPI.PDClasses.Users.PDUser;
+import VPI.PDClasses.Users.PDUserItemsResponse;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.SynchroniserState;
 import VPI.VertecClasses.VertecService;
@@ -16,6 +19,9 @@ public class OrganisationState {
 
     //List of organisationState that do not have an Vertec_id (will only contain items from pipedriveService)
     public Set<Organisation> organisationsWithoutVIDs;
+
+    public Map<Long, Organisation> syncModifiedOrganisationsWithVIDs;
+    public Set<Organisation> syncModifiedOrganisationsWithoutVIDs;
 
     private SynchroniserState syncState;
     private PipedriveState pipedriveState;
@@ -42,6 +48,20 @@ public class OrganisationState {
         this.pipedriveState = pipedriveState;
         refreshFromVertec();
     }
+
+//    /**
+//     * Generic constructor, it will not be able to do anny communication to pd or vertec
+//     */
+//    public OrganisationState(SynchroniserState syncState){
+//        this.organisationsWithoutVIDs = new HashSet<>();
+//        this.organisationsWithVIDs = new HashMap<>();
+//
+//        this.syncState = syncState;
+//
+//        this.pipedriveService = null;
+//        this.vertecService = null;
+//        this. pipedriveState = null;
+//    }
 
     /**
      * This function will load in any Organisations, that are not owned by our team members, but have been posted to pipedrive
@@ -95,6 +115,12 @@ public class OrganisationState {
     public void refreshFromPipedrive() {
         organisationsWithVIDs = new HashMap<>();
         organisationsWithoutVIDs = new HashSet<>();
+
+        syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
+        syncModifiedOrganisationsWithVIDs = new HashMap<>();
+
+        PDUserItemsResponse users = pipedriveService.getAllUsers().getBody();
+
         pipedriveService.getAllOrganisations().getBody().getData()
                 .forEach(org -> {
                     Organisation organisation = new Organisation(org, syncState.getOrganisationIdMap());
@@ -103,10 +129,15 @@ public class OrganisationState {
                     } else {
                         organisationsWithVIDs.put(organisation.getVertecId(), organisation);
                     }
+                    dealWithPDOrgModifiedBySynchroniser(organisation);
+
                 });
     }
 
     public void refreshFromVertec() {
+        syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
+        syncModifiedOrganisationsWithVIDs = new HashMap<>();
+
         organisationsWithVIDs = new HashMap<>();
         organisationsWithoutVIDs = new HashSet<>();
         vertecService.getAllZUKOrganisations().getBody().getOrganisations()
@@ -123,11 +154,19 @@ public class OrganisationState {
                     } else {
                         organisationsWithVIDs.put(organisation.getVertecId(), organisation);
                     }
+                    dealWithVertecOrgModifiedBySynchroniser(org);
 
                 });
 
         organisationsWithVIDs.putAll(getOrganisationsBasedOnPipedrive(pipedriveState.organisationState, organisationsWithVIDs));
     }
+
+
+    /**
+     * returns all organisations that have been modified since the last run of the synchroniser
+     * by anyone except the synchroniser itself!
+     */
+
 
     public Organisation getOrganisationByVertecId(Long id) {
         return organisationsWithVIDs.get(id);
@@ -151,4 +190,52 @@ public class OrganisationState {
         return all;
     }
 
+    /**
+     * Thus funcion places all organisations that have been modified by the synchroniser in two seperate lists
+     * We will be able to make assertions based on whether those lists contain
+     */
+    public void dealWithPDOrgModifiedBySynchroniser(Organisation org) {
+
+        if (org == null) return;
+
+        if (!syncState.isModified(Utilities.formatToVertecDate(org.getModified()))) return;
+
+        Long modifierId = pipedriveService.getUpdateLogsFOrOrganisation(org.getPipedriveId())
+                .getBody()
+                .getLatestOrganisationChange()
+                .getUser_id();
+
+        if (modifierId == SynchroniserState.SYNCHRONISER_PD_USERID.longValue()) {
+            if (org.getVertecId() != null) {
+                syncModifiedOrganisationsWithVIDs.put(org.getVertecId(), org);
+            } else {
+                syncModifiedOrganisationsWithoutVIDs.add(org);
+            }
+        }
+
+    }
+
+    public void dealWithVertecOrgModifiedBySynchroniser(VPI.VertecClasses.VertecOrganisations.Organisation org) {
+        if (org == null) return;
+
+        if (!syncState.isModified(Utilities.formatToVertecDate(org.getModified()))) return;
+
+        if (org.getModifier() != SynchroniserState.SYNCHRONISER_VERTEC_USERID.longValue()) return;
+
+        Organisation organisation =
+                new Organisation(
+                        org,
+                        syncState.getOrganisationIdMap().get(org.getVertecId()),
+                        syncState.getVertecOwnerMap().get(org.getOwnerId())
+                );
+
+        if (organisation.getVertecId() != null) {
+            syncModifiedOrganisationsWithVIDs.put(organisation.getVertecId(), organisation);
+        } else {
+            syncModifiedOrganisationsWithoutVIDs.add(organisation);
+        }
+    }
+
 }
+
+

@@ -26,6 +26,7 @@ public class Organisation {
     private String zip;
 
     private Long parentOrganisation;
+    private Long modifier;
 
     private String modified;
     private String created;
@@ -170,6 +171,15 @@ public class Organisation {
     public void setCreated(String created) {
         this.created = created;
     }
+
+    public Long getModifier() {
+        return modifier;
+    }
+
+    public void setModifier(Long modifier) {
+        this.modifier = modifier;
+    }
+
     @Override
     public String toString(){
         String retStr = null;

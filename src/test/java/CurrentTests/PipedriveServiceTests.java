@@ -1,8 +1,6 @@
 package CurrentTests;
 
 import VPI.*;
-import VPI.Entities.Organisation;
-import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
@@ -18,9 +16,11 @@ import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.Organisations.PDOrganisationItemsResponse;
 import VPI.PDClasses.Organisations.PDOrganisationResponse;
+import VPI.PDClasses.Updates.PDUpdate;
+import VPI.PDClasses.Updates.PDUpdateData;
+import VPI.PDClasses.Updates.PDUpdateLog;
+import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
-import VPI.VertecClasses.VertecService;
-import VPI.VertecClasses.VertecTeam.Employee;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -34,10 +34,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static VPI.Entities.util.Utilities.*;
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -1338,13 +1341,13 @@ public class PipedriveServiceTests {
     @Test
     public void canGetUpdateLogsofOrg(){
         Long orgid = 1071L;
-        PDUpdateLogs ul = PS.getUpdateLogsFOrOrganisation(orgid).getBody();
+        PDUpdateLog ul = PS.getUpdateLogsFOrOrganisation(orgid).getBody();
 
-        PDUpdate pu = ul.getPDUpdates().get(0);
-        PDUpdate putwo = ul.getPDUpdates().get(1);
+        PDUpdate pu = ul.getData().get(0);
+        PDUpdate putwo = ul.getData().get(1);
 
-        assertTrue(LocalDateTime.parse(pu.getTimestamp()).isAfter(LocalDateTime.parse(putwo.getTimestamp()))
-                || LocalDateTime.parse(pu.getTimestamp()).isEqual(LocalDateTime.parse(putwo.getTimestamp())));
+        assertTrue(LocalDateTime.parse(formatToVertecDate(pu.getTimestamp())).isAfter(LocalDateTime.parse(formatToVertecDate(putwo.getTimestamp())))
+                || LocalDateTime.parse(formatToVertecDate(pu.getTimestamp())).isEqual(LocalDateTime.parse(formatToVertecDate(putwo.getTimestamp()))));
 
         assertNotNull(pu.getObject());
 
@@ -1354,5 +1357,30 @@ public class PipedriveServiceTests {
         assertNotNull(pud.getLog_time());
         assertNotNull(pud.getUser_id());
 
+    }
+
+    @Test
+    public void canGetAllOrganisationUpdates() throws IOException {
+        List<PDUpdateLog> logs = PS.getAllOrganisationUpdates();
+
+        System.out.println(logs);
+
+        String filename = "pdOrganisationUpdateLog";
+
+        new File(filename).createNewFile();
+
+        FileWriter file = new FileWriter(filename);
+        file.write("{\n \"logs\" : [");
+
+        logs.forEach(log -> {
+            try {
+                file.write(log.toString());
+            } catch (IOException e) {
+                System.out.println("Writing log to file failed");
+            }
+        });
+
+        file.write("]}");
+        file.close();
     }
 }
