@@ -234,6 +234,8 @@ public class OrganisationDifferences {
         //TODO add posted Organisations to orgIdMap!!!!
     }
 
+
+
     //=================================================Helper functions=====================================================
     private boolean modifiedSinceLastSync(SynchroniserState synchroniserState, Organisation org) {
         LocalDateTime orgMod = LocalDateTime.parse(
@@ -321,4 +323,6 @@ public class OrganisationDifferences {
     public void setDeletionFromVertecConflicts(Set<Long> deletionFromVertecConflicts) {
         this.deletionFromVertecConflicts = deletionFromVertecConflicts;
     }
+
+
 }

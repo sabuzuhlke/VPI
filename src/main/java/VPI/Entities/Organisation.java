@@ -2,6 +2,7 @@ package VPI.Entities;
 
 import VPI.Entities.util.Utilities;
 import VPI.Keys.ProductionKeys;
+import VPI.Keys.DevelopmentKeys;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
@@ -101,8 +102,8 @@ public class Organisation implements Comparable<Organisation> {
 
     private String readPdOwnedOnVertecBy(String ownedBy) {
         if (ownedBy == null) return "No Owner";
-        else if (ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM)) return "Sales Team";
-        else if (ownedBy.equals(ProductionKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
+        else if (ownedBy.equals(DevelopmentKeys.OWNED_BY_SALES_TEAM )) return "Sales Team";
+        else if (ownedBy.equals(DevelopmentKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
         else return "unrecognised";
     }
 
@@ -240,6 +241,15 @@ public class Organisation implements Comparable<Organisation> {
         org.setCity(city);
         org.setCountry(country);
         org.setZip(zip);
+
+        //the following is supposed to deal with the fact, that we are unable to split a full address into its parts
+        if(fullAddress != null
+                && buildingName == null
+                && street == null
+                && streetNo == null
+                && city == null
+                && country == null
+                && zip == null) org.setBuildingName(fullAddress);
 
         org.setParentOrganisation(vParentOrganisation);
         org.setCreated(Utilities.formatToVertecDate(created));

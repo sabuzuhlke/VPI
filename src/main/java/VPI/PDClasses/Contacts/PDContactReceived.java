@@ -33,11 +33,11 @@ public class PDContactReceived {
     @JsonProperty("update_time")
     private String modifiedTime;
     //Custom fields
-    @JsonProperty( ProductionKeys.contactVID)//"097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
+    @JsonProperty( DevelopmentKeys.contactVID)//"097010f4aaf7a80b625fbdc935776b7eda8ee7d9")//"174a3d80c1a33b8d645448ae75c9c9aec00d4d8f")
     private Long v_id;
-    @JsonProperty( ProductionKeys.contactOwnedBy)//"c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
+    @JsonProperty( DevelopmentKeys.contactOwnedBy)//"c6502da83d3caff3be297fd2082f49c883f08374")//"2dee7a68d8d02226be8f5d95eb5c26aebd4012c0")
     private String ownedBy;
-    @JsonProperty( ProductionKeys.contactPosition)//"2045a0bc69aa638567d8b75bbcb5bb5063246456")
+    @JsonProperty( DevelopmentKeys.contactPosition)//"2045a0bc69aa638567d8b75bbcb5bb5063246456")
     private String position;
 
     /**

@@ -1,6 +1,7 @@
 package CurrentTests;
 
 import VPI.*;
+import VPI.Keys.DevelopmentKeys;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivityResponse;
@@ -190,25 +191,25 @@ public class PipedriveServiceTests {
     public void canUpdateDeal() {
 
         PDDealSend deal = new PDDealSend();
-        deal.setAdd_time("2005-07-05 12:21:12");
+        deal.setAdd_time("2005-07-06 12:21:12");
         deal.setVisible_to(3);
         deal.setCost(1000L);
         deal.setCurrency("GBP");
-        deal.setLead_type("New Lead");
+        deal.setLead_type("0");
         deal.setLost_reason("No reason");
-        deal.setOrg_id(44265L);
-        deal.setPerson_id(40390L);
-        deal.setUser_id(1363416L);
+        deal.setOrg_id(1L);
+        //deal.setPerson_id(40390L);
+        deal.setUser_id(1692590L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(1);
+        deal.setStage_id(DevelopmentKeys.STAGE_ID_EXPLORATORY);
         deal.setStatus("open");
-        deal.setTitle("TEST DEAL");
+        deal.setTitle("TEST DEAL2");
         deal.setValue("10000");
         deal.setZuhlke_office("London");
 
         ResponseEntity<PDDealResponse> postedDeal = PS.postDeal(deal);
-        assertTrue(postedDeal.getBody().getData().getTitle().equals("TEST DEAL"));
+        assertTrue(postedDeal.getBody().getData().getTitle().equals("TEST DEAL2"));
 
         System.out.println(postedDeal);
         deal.setId(postedDeal.getBody().getData().getId());

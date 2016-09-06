@@ -1,15 +1,13 @@
 package VPI.VertecClasses;
 
-import VPI.Entities.Contact;
+import VPI.Entities.*;
 import VPI.Entities.util.ContactList;
 import VPI.Keys.TestVertecKeys;
 import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
-import VPI.VertecClasses.VertecOrganisations.OrganisationList;
+import VPI.VertecClasses.VertecOrganisations.*;
 import VPI.MyCredentials;
 import VPI.VertecClasses.VertecActivities.ZUKActivities;
-import VPI.VertecClasses.VertecOrganisations.JSONContact;
-import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
-import VPI.VertecClasses.VertecOrganisations.ZUKOrganisations;
+import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecProjects.ZUKProjects;
 import VPI.VertecClasses.VertecTeam.Employee;
@@ -67,6 +65,43 @@ public class VertecService {
             System.out.println(new RequestEntity<>(headers, HttpMethod.GET, URI.create(uri)));
             throw e;
         }
+    }
+    <RES> ResponseEntity<RES> putToVertec(String uri, Class<RES> responseType) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+        try{
+
+            return restTemplate.exchange(
+                    new RequestEntity<>(headers, HttpMethod.PUT, URI.create(uri)),
+                    responseType);
+        } catch (Exception e){
+            System.out.println(e);
+            throw e;
+        }
+    }
+
+    <RES, REQ> ResponseEntity<RES> putToVertec(REQ payload, String uri,  Class<RES> responseType){
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+        return restTemplate.exchange(
+                new RequestEntity<>(payload, headers, HttpMethod.PUT, URI.create(uri)),
+                responseType);
+    }
+
+    <RES> ResponseEntity<RES> deleteFromVertec(String uri, Class<RES> responseType) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+        return restTemplate.exchange(
+                new RequestEntity<>(headers, HttpMethod.DELETE, URI.create(uri)),
+                responseType);
+    }
+
+    <REQ, RES> ResponseEntity<RES> postToVertec(REQ payload, String uri, Class<RES> responseType){
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+        return restTemplate.exchange(
+                new RequestEntity<>(payload, headers, HttpMethod.POST, URI.create(uri)),
+                responseType);
     }
 
     /**
@@ -162,5 +197,14 @@ public class VertecService {
     public List<Employee> getSalesTeam() {
 
         return getFromVertec("https://" + server + "/employees/pipedrive", EmployeeList.class).getBody().getEmployees();
+    }
+
+    public Long createOrganisation(Organisation organisation){
+        //TODO TeSt
+        return postToVertec(organisation, "https://" + server + "/organisation", Long.class).getBody();
+    }
+
+    public boolean updateOrganisation(Long vId, Organisation organisation){
+        return putToVertec(organisation, "https://" + server + "/organisation/" + vId, String.class).getBody().contains("Success");
     }
 }

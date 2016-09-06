@@ -284,5 +284,23 @@ public class VertecServiceTests {
 
     }
 
+//    @Test
+//    public void canCreateOrganisation(){
+//        VPI.Entities.Organisation org = new VPI.Entities.Organisation();
+//        org.setName("VertecService creation test");
+//        org.se
+//    }
+
+    @Test
+    public void canUpdateOrganisation(){
+        VPI.Entities.Organisation org = new VPI.Entities.Organisation();
+        org.setName("VertecService update Test Org");
+        org.setVertecId(28055040L); // Organisation on test instance of Vertec
+        org.setFullAddress("f, u , ll, add, ress, 2233");
+        org.setvParentOrganisation(28055326L); // another test organisation
+
+        assertTrue(VS.updateOrganisation(org.getVertecId(), org.toVertecRep(5295L)));
+    }
+
 
 }

@@ -534,6 +534,15 @@ public class SynchroniserTest {
 
     }
 
+    //m
+    public static Answer<Long> getResForCreateOrganisationOnVertec(){
+        return invocation -> {
+            Object[] args = invocation.getArguments();
+            Organisation org = (Organisation) args[0];
+            return 1L;
+        };
+    }
+
 
 
     public static Answer<ResponseEntity<JSONOrganisation>> getOrgResponseEntityAnswer() {

@@ -54,6 +54,14 @@ public class Synchroniser {
     private void extraractDifferencesAndApplyForOrganisatiozns() {
 
     }
+
+//    public void updateConflictiongOrganisationsOnVertec(){
+//        this.getStateDifference().getOrganisationDifferences().getUpdateConflicts().stream()
+//                .filter(org -> org.getPipedriveId() != null) //Organisation has to have a PID to be posted
+//                .map(org -> {
+//                    Long id = this.getVertecState().vertec.
+//                })
+//    }
     //=================================HELPER FUNCTIONS==========================================================
 
     public VertecState getVertecState() {
