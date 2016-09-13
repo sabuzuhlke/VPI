@@ -2,15 +2,17 @@ package CurrentTests;
 
 import VPI.Entities.Organisation;
 import VPI.Entities.OrganisationState;
+import VPI.Keys.DevelopmentKeys;
+import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.HierarchyClasses.LinkedOrg;
 import VPI.PDClasses.HierarchyClasses.PDRelationshipReceived;
 import VPI.PDClasses.Organisations.PDOrganisationItemsResponse;
+import VPI.PDClasses.Organisations.PDOrganisationReceived;
 import VPI.PDClasses.Organisations.PDOrganisationSend;
 import VPI.PDClasses.PDService;
 import VPI.PDClasses.Updates.PDLogList;
-import VPI.PDClasses.Updates.PDUpdate;
 import VPI.PDClasses.Updates.PDUpdateLog;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import VPI.SynchroniserClasses.Synchroniser;
@@ -24,18 +26,21 @@ import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.EmployeeList;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.org.apache.regexp.internal.RE;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.SystemProfileValueSource;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,32 +63,55 @@ import static org.junit.Assert.assertTrue;
  */
 public class SynchroniserTest {
     private Synchroniser synchroniser;
+    private Synchroniser TESTsynchroniser;
 
     private VertecService vertec;
+    private VertecService TESTvertec;
     private PDService pipedrive;
+    private PDService TESTpipedrive;
 
 
     @Before
     public void setUp() throws IOException {
-        MockitoAnnotations.initMocks(this);
-        pipedrive = mock(PDService.class);
-        vertec = mock(VertecService.class);
-
-
-        when(pipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
-        when(vertec.getTeamDetails()).thenReturn(getOldDummyTeamResponse()); // for initialisaton of importer
-
-        when(vertec.getSalesTeam()).thenReturn(getDummyVertecTeamResponse().getBody().getEmployees());
-
-
-        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
-        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
-
-        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
-        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
-        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
-
-        synchroniser = new Synchroniser(pipedrive, vertec);
+//        MockitoAnnotations.initMocks(this);
+//        pipedrive = mock(PDService.class);
+//        vertec = mock(VertecService.class);
+//
+//
+//        when(pipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
+//        when(vertec.getTeamDetails()).thenReturn(getOldDummyTeamResponse()); // for initialisaton of importer
+//
+//        when(vertec.getSalesTeam()).thenReturn(getDummyVertecTeamResponse().getBody().getEmployees());
+//
+//
+//        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+//        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+//
+//        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+//        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+//        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
+//
+//        synchroniser = new Synchroniser(pipedrive, vertec);
+//
+//        MockitoAnnotations.initMocks(this);
+//        TESTpipedrive = mock(PDService.class);
+//        TESTvertec = mock(VertecService.class);
+//
+//
+//        when(TESTpipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
+//        when(TESTvertec.getTeamDetails()).thenReturn(getOldDummyTeamResponse()); // for initialisaton of importer
+//
+//        when(TESTvertec.getSalesTeam()).thenReturn(getDummyVertecTeamResponse().getBody().getEmployees());
+//
+//
+//        when(TESTpipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
+//        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+//
+//        when(TESTvertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+//        when(TESTvertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+//        doAnswer(getOrganisationUpdateLogAnswer()).when(TESTpipedrive).getUpdateLogsFOrOrganisation(anyLong());
+//
+//        TESTsynchroniser = new Synchroniser(TESTpipedrive, TESTvertec);
     }
 
     @Test
@@ -210,8 +238,6 @@ public class SynchroniserTest {
         Long orgtoConflictDelPID = 1184L;
 
 
-
-
         when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
         when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
 
@@ -278,7 +304,7 @@ public class SynchroniserTest {
     }
 
     @Test
-    public void canDealWithPDOrgModifiedBySync(){
+    public void canDealWithPDOrgModifiedBySync() {
 
         doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
 
@@ -325,12 +351,12 @@ public class SynchroniserTest {
         assertEquals(3L,
                 synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.stream()
                         .map(Organisation::getPipedriveId)
-        .collect(toList())
-                .get(0).longValue());
+                        .collect(toList())
+                        .get(0).longValue());
     }
 
     @Test
-    public void canDealWithVertecOrgModifiedBySynchroniser(){
+    public void canDealWithVertecOrgModifiedBySynchroniser() {
 
         VPI.VertecClasses.VertecOrganisations.Organisation org2 = new VPI.VertecClasses.VertecOrganisations.Organisation();
         org2.setName("Test org With VID");
@@ -366,7 +392,7 @@ public class SynchroniserTest {
 
     @Test
     public void canDecideWhereToUpdate() throws IOException {
-        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
         when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
 
         when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
@@ -386,7 +412,7 @@ public class SynchroniserTest {
             System.out.println(org.toJSONString());
         });
         System.out.println("\n\n=================================================\n\n");
-        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().size()+ " organisations will be deleted from vertec");
+        System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().size() + " organisations will be deleted from vertec");
         synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().forEach(org -> {
             System.out.println(synchroniser.getVertecState().getOrganisationState().organisationsWithVIDs.get(org).toJSONString());
         });
@@ -415,7 +441,6 @@ public class SynchroniserTest {
         System.out.println("\n\n=================================================\n\n");
         System.out.println(synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts().size() + " organisations have been deleted on vertec but have been updated on pipedrive, so they are 'deletion conflicts' (This is fake example for testing)");
         System.out.println("Vertec IDs: " + synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts());
-
 
 
         System.out.println("\n\n=================================================\n\n");
@@ -455,7 +480,7 @@ public class SynchroniserTest {
     }
 
     @Test
-    public void dateIsComparedOnTimeAsWell(){
+    public void dateIsComparedOnTimeAsWell() {
         String d1 = "2016-07-06T16:25:23";
         String d2 = "2016-07-06T18:00:00";
 
@@ -466,6 +491,232 @@ public class SynchroniserTest {
         assertFalse(ldt1.isAfter(ldt2));
 
     }
+
+    @Test
+    @Ignore
+    public void upDateConflictingOrgs() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(pipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+
+        updateOrganisationsOnVertec(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts());
+        System.out.println("Would have updated " + synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts().size() + "orgs");
+    }
+
+    @Test
+    @Ignore
+    public void upDateVertecOrgs() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(pipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+
+        updateOrganisationsOnVertec(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnVertec());
+        System.out.println(" updated " + synchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnVertec().size() + "orgs");
+    }
+
+    //only here to apply changes
+    public void updateOrganisationsOnVertec(Set<Organisation> updateConflicts) {
+        VertecService VS = new VertecService("localhost:9999");
+        updateConflicts.stream()
+                .filter(org -> org.getPipedriveId() != null) //Organisation has to have a PID to be posted
+                .filter(org -> org.getVertecId() != null)
+                .forEach(org -> {
+                    System.out.println("updating org " + org.getVertecId() + " to " + org.getPipedriveId());
+                    try {
+
+                        boolean put = VS.updateOrganisation(org.getVertecId(), org.toVertecRep(synchroniser.getSynchroniserState().getVertecOwnerMap().get(org.getSupervisingEmail())));
+                    } catch (HttpClientErrorException e) {
+                        if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                            System.out.println("NOT FOUND " + org.getVertecId());
+                        } else {
+                            throw e;
+                        }
+                    }
+
+                });
+    }
+
+    @Test
+    @Ignore
+    public void createOrganisationsOnVertec() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(pipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+
+        createVertecOrganisations();
+        System.out.println(" created " + synchroniser.getStateDifference().getOrganisationDifferences().getCreateOnVertec().size() + "orgs");
+    }
+
+    //simply here for testin
+    @SuppressWarnings("all")
+    public Map<Long, Long> createVertecOrganisations() {
+        VertecService vertec = new VertecService("localhost:9999");
+        Map<Long, Long> orgIdMap = new HashMap<>();
+        List<Long> errorPIDs = new ArrayList<>();
+        Map<Long, Long> incompletedCreations = new HashMap<>();
+        synchroniser.getStateDifference().getOrganisationDifferences().getCreateOnVertec().stream()
+                .filter(org -> org.getPipedriveId() != null)
+                .forEach(org -> {
+                    System.out.println("Creating org:\n" + org);
+                    ResponseEntity<Long> res = vertec.createOrganisation(org.toVertecRep(synchroniser.getSynchroniserState().getVertecOwnerMap().get(org.getSupervisingEmail())));
+
+                    if (res.getStatusCode().equals(HttpStatus.ACCEPTED) || res.getStatusCode().equals(HttpStatus.CREATED)) {
+                        orgIdMap.put(res.getBody(), org.getPipedriveId());
+                        if (res.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+                            System.out.println("Some problem has occured with org Vid:" + res.getBody() + ", PDid: " + org.getPipedriveId());
+                            incompletedCreations.put(res.getBody(), org.getPipedriveId());
+                        }
+                    } else {
+                        System.out.println("Error returned: " + res);
+                        errorPIDs.add(org.getPipedriveId());
+                    }
+
+                });
+        System.out.println("Successful: =========================================");
+        System.out.println(orgIdMap);
+        System.out.println("Incomplete: =========================================");
+        System.out.println(incompletedCreations);
+        System.out.println("Erroneous: =========================================");
+        System.out.println(errorPIDs);
+        return orgIdMap;
+    }
+
+    @Test
+    @Ignore
+    public void DeleteVertecOrgs() throws IOException {
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(pipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+        List<Long> idsDel = deleteVertecOrganisations();
+
+        System.out.println("deleted: " + idsDel);
+    }
+
+    public List<Long> deleteVertecOrganisations() {
+
+        VertecService vertec = new VertecService("localhost:9999");
+        List<Long> idsDeleted = new ArrayList<>();
+        synchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromVertec()
+                .forEach(id -> idsDeleted.add(vertec.deleteOrganisation(id)));
+        System.out.println("Deleted: " + idsDeleted);
+        return idsDeleted;
+    }
+
+    @Test
+    @Ignore
+    public void createPDOrganisations() throws IOException {
+        when(TESTpipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
+        when(TESTpipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(TESTvertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(TESTvertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(TESTpipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+
+        System.out.println(TESTsynchroniser.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().size() + " organisations will be posted to pipedrive");
+        TESTsynchroniser.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().forEach(org -> {
+            System.out.println(org.toJSONString());
+        });
+
+        Map<Long, Long> orgidmanp = createPipedriveOrganisations();
+
+    }
+
+
+
+    public Map<Long, Long> createPipedriveOrganisations() {
+        Map<Long, Long> orgIdMap = new HashMap<>();
+
+        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        TESTsynchroniser.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().stream()
+                .filter(org -> org.getPipedriveId() == null)
+                .filter(org -> org.getVertecId() != null)
+                .forEach(org -> {
+
+                    Long pId = pipedrive.postOrganisation(org.toPDSend(TESTsynchroniser
+                            .getSynchroniserState()
+                            .getPipedriveOwnerMap()
+                            .get(org.getSupervisingEmail())))
+                            .getBody().getData().getId();
+                    orgIdMap.put(org.getVertecId(), pId);
+                });
+        System.out.println("Posted:\n" + orgIdMap);
+        System.out.println("In total : " + orgIdMap.size());
+        return orgIdMap;
+    }
+
+    @Test @Ignore
+    public void runUpdatePDOrganisations() throws IOException {
+
+        when(TESTpipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
+        when(TESTpipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(TESTvertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(TESTvertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(TESTpipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+        System.out.println("Would update this many orgs: " + TESTsynchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive().size());
+        TESTsynchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive();
+        updatePdOrganisations();
+    }
+
+    public void updatePdOrganisations(){
+        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        TESTsynchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive().stream()
+                .filter(org -> org.getPipedriveId() != null)
+                .filter(org -> org.getVertecId() != null)
+                .forEach(org -> {
+                    pipedrive.updateOrganisation(org.toPDSend(TESTsynchroniser.getSynchroniserState().getPipedriveOwnerMap().get(org.getSupervisingEmail())));
+                    TESTsynchroniser.getSynchroniserState().getOrganisationIdMap().replace(org.getVertecId(), org.getPipedriveId());
+                });
+    }
+
+    @Test @Ignore
+    public void runDeletePDOrganisations() throws IOException {
+
+        when(TESTpipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
+        when(TESTpipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(TESTvertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(TESTvertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+
+        when(TESTpipedrive.getUpdateLogsFOrOrganisation(anyLong())).thenAnswer(getOrganisationUpdateLogAnswer());
+        System.out.println("Would delete this many orgs: " + TESTsynchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive().size());
+        System.out.println("Would delete these many orgs: " + TESTsynchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive());
+        TESTsynchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive();
+
+        deletePipedriveOrganisations();
+
+    }
+    public List<Long> deletePipedriveOrganisations(){
+        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        List<Long> idsToDel = new ArrayList<>();
+        TESTsynchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive().stream()
+                .filter(org -> org.getPipedriveId() != null)
+                .forEach(org -> {
+                    pipedrive.deleteOrganisation(org.getPipedriveId());
+                    idsToDel.add(org.getPipedriveId());
+
+                });
+        return idsToDel;
+    }
+
 
     //=================================MOCKITO DUMMY RESPONSES==========================================================
 
@@ -501,6 +752,12 @@ public class SynchroniserTest {
         return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
+    public static ResponseEntity<PDOrganisationItemsResponse> getDummyPipedriveOrganisationsResponseTESTPIPE() throws IOException {
+        ObjectMapper m = new ObjectMapper();
+        PDOrganisationItemsResponse body = m.readValue(new File("src/test/resources/AllPipedriveOrganisationsTESTPIPE.json"), PDOrganisationItemsResponse.class);
+        return new ResponseEntity<>(body, HttpStatus.OK);
+    }
+
     public static ResponseEntity<ZUKProjects> getDummyProjectsResponse() throws IOException {
         ObjectMapper m = new ObjectMapper();
         ZUKProjects body = m.readValue(new File("src/test/resources/VRAPI projects.json"), ZUKProjects.class);
@@ -517,32 +774,32 @@ public class SynchroniserTest {
         ObjectMapper m = new ObjectMapper();
         PDLogList loglist = m.readValue(new File("src/test/resources/pdOrganisationUpdateLog"), PDLogList.class);
 
-        for (PDUpdateLog log : loglist.getLogs()){
-            if(log.getOrgid() == id.longValue()) return new ResponseEntity<PDUpdateLog>(log, HttpStatus.OK);
+        for (PDUpdateLog log : loglist.getLogs()) {
+            if (log.getOrgid() == id.longValue()) return new ResponseEntity<PDUpdateLog>(log, HttpStatus.OK);
         }
 
         return null;
     }
-    public static Answer<ResponseEntity<PDUpdateLog>> getOrganisationUpdateLogAnswer(){
+
+    public static Answer<ResponseEntity<PDUpdateLog>> getOrganisationUpdateLogAnswer() {
 
         return invocation -> {
             Object[] args = invocation.getArguments();
 
-           ResponseEntity<PDUpdateLog> logs = getDummyPipedriveOrganisationUpdateLog((Long) args[0]);
+            ResponseEntity<PDUpdateLog> logs = getDummyPipedriveOrganisationUpdateLog((Long) args[0]);
             return logs;
         };
 
     }
 
     //m
-    public static Answer<Long> getResForCreateOrganisationOnVertec(){
+    public static Answer<Long> getResForCreateOrganisationOnVertec() {
         return invocation -> {
             Object[] args = invocation.getArguments();
             Organisation org = (Organisation) args[0];
             return 1L;
         };
     }
-
 
 
     public static Answer<ResponseEntity<JSONOrganisation>> getOrgResponseEntityAnswer() {
@@ -643,10 +900,8 @@ public class SynchroniserTest {
     }
 
 
-
-
-
-    @Test @Ignore
+    @Test
+    @Ignore
     public void listOfNonTeamOrgs() throws IOException {
         when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
         when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
@@ -673,7 +928,7 @@ public class SynchroniserTest {
 
         System.out.println(unimportedIds);
 
-    VertecService vertecService = new VertecService("localhost:9999");
+        VertecService vertecService = new VertecService("localhost:9999");
         SynchroniserState syncState = synchroniser.getSynchroniserState();
         //get them all from vertec
         List<Organisation> vertecOrgsFromPipedrive = vertecService.getOrganisationList(unimportedIds)
@@ -685,7 +940,7 @@ public class SynchroniserTest {
                 .map(org -> new Organisation(org,
                         //To set the pipedriveID of the created organisation we'll have to access the organisationState we got from pipedrive
                         organisationsFromPipedrive.organisationsWithVIDs.get(org.getVertecId()).getPipedriveId(),
-                        syncState.getVertecOwnerMap().get(org.getOwnerId())))
+                        syncState.getIdToEmailVertecOwnerMap().get(org.getOwnerId())))
                 .collect(Collectors.toList());
 
         //return in appropriate format
@@ -693,11 +948,110 @@ public class SynchroniserTest {
             orgmap.put(org.getVertecId(), org);
         }
     }
+
     @Test
     public void canGetDummyPipedriveOrganisationUpdateLog() throws IOException {
         PDUpdateLog pul = getDummyPipedriveOrganisationUpdateLog(22L).getBody(); // example log in file
         assertEquals(22L, pul.getOrgid().longValue());
         System.out.println(pul);
+    }
+
+
+    //Test to post our test orgs to pipedrive (semi import sorta thing)
+    @Test
+    @Ignore
+    public void willPostProdctionORgsToTestPipedrive() throws IOException {
+        List<PDOrganisationSend> orgs = getDummyPipedriveOrganisationsResponseTESTPIPE().getBody().getData().stream()
+                .map(o -> {
+                    Organisation org = new Organisation(o, null);
+
+                    return org;
+                })
+                .map(or -> {
+                    System.out.println(or);
+
+                    long origUserid = synchroniser.getSynchroniserState().getPipedriveOwnerMap().get(or.getSupervisingEmail());
+                    System.out.println("Orginal owner: " + origUserid);
+
+                    Long testUserID = synchroniser.getSynchroniserState().buildPipedriveProductionToTestUserIdMap().get(origUserid);
+                    System.out.println("TEst owner: " + testUserID);
+
+
+
+                    PDOrganisationSend ps =  or.toPDSend(synchroniser.getSynchroniserState().getPipedriveOwnerMap().get(or.getSupervisingEmail()));
+                    System.out.println(ps.toString());
+                    return ps;
+                })
+                .map(o -> {
+                    o.setId(null);
+                    //System.out.println(o.toString());
+                    return o;
+                })
+                .collect(toList());
+
+        Map<Long,Long> orgidmap = new HashMap<>();
+
+        PDService p = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        orgs.forEach(org -> {
+           Long id = p.postOrganisation(org).getBody().getData().getId();
+            if(org.getV_id() != null){
+
+            orgidmap.put(org.getV_id(), id);
+            }
+        });
+
+        saveMap("TestPDOrgIDMap", orgidmap);
+
+    }
+
+    public <T> void saveMap(String filename, Map<T, Long> map) {
+        if (map.isEmpty()) {
+            System.out.println("Could not write map to file as map was empty");
+            return;
+        }
+        Set<T> keys = map.keySet();
+        try {
+
+            PrintWriter writer = new PrintWriter(filename, "UTF-8");
+            keys.forEach(key -> writer.println(key + "," + map.get(key)));
+
+            writer.close();
+        } catch (Exception e) {
+            System.out.println("Could not write map to file: " + map);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void setTestDataUpdateTimesToReflectProducationData() throws IOException {
+        ResponseEntity<PDOrganisationItemsResponse> r = getDummyPipedriveOrganisationsResponseTESTPIPE();
+        List<PDOrganisationReceived> testorgs = r.getBody().getData();
+        List<PDOrganisationReceived> realorgs = getDummyPipedriveOrganisationsResponse().getBody().getData();
+
+        int index = 0;
+        for (PDOrganisationReceived to: testorgs) {
+            to.setUpdate_time(realorgs.get(index).getUpdate_time());
+            index++;
+        }
+
+        r.getBody().setData(testorgs);
+
+        boolean fi = new File("AllPipedriveOrganisationsTESTPIPEWithProductionUpdateTimes.json").createNewFile();
+
+        try {
+            FileWriter file = new FileWriter("AllPipedriveOrganisationsTESTPIPEWithProductionUpdateTimes.json");
+            file.write(r.getBody().toString());
+            file.close();
+        } catch (Exception e) {
+            System.out.println("Failed to output to file");
+        }
+
+    }
+
+
+    @Test @Ignore
+    public void runTestOnProductionButPrintNotPropagate() throws IOException {
+        Synchroniser s = new Synchroniser(new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key), new VertecService("localhost:9999"));
     }
 
 }

@@ -91,6 +91,7 @@ public class OrganisationDifferences {
         Boolean vOrgModifiedSinceLastSync = modifiedSinceLastSync(state, vOrg);
         Boolean pOrgModifiedSinceLastSync = modifiedSinceLastSync(state, pOrg);
 
+
         //Case 0: No Changes
         //either if both Organisations every single field equals, or none of them have been modified since the last sync
         if (vOrg.equals(pOrg) || (!vOrgModifiedSinceLastSync && !pOrgModifiedSinceLastSync)) {
@@ -148,7 +149,7 @@ public class OrganisationDifferences {
         //get all organisations from vertecState that have been deleted since the last sync and are owned by the sales team
         List<Organisation> deletedVertecOrgs = vertecState.organisationState.getAllOrganisations().stream()
                 .filter(org -> !org.getActive()) //are inactive now
-                .filter(org -> modifiedSinceLastSync(synchroniserState, org))// have been modified since last synch
+                .filter(org -> modifiedSinceLastSync(synchroniserState, org)) // have been modified since last synch
                 .collect(Collectors.toList());
 
         OrganisationState pipedriveOrgs = pipedriveState.organisationState;

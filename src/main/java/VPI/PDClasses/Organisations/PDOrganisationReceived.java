@@ -33,15 +33,15 @@ public class PDOrganisationReceived {
     @JsonProperty("add_time")
     private String creationTime;
     //Custom fields
-    @JsonProperty( DevelopmentKeys.orgVID)//"1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
+    @JsonProperty( ProductionKeys.orgVID)//"1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
     private Long v_id;
-    @JsonProperty( DevelopmentKeys.orgOwnedBy)//"bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
+    @JsonProperty( ProductionKeys.orgOwnedBy)//"bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
     private String ownedBy;
-    @JsonProperty( DevelopmentKeys.orgWebsite)//"87a1835b5151d1bbbe00591f64b7c623f8c4fc30")//"4d320823bca5075a18070cfce737c0d96cc2191b")
+    @JsonProperty( ProductionKeys.orgWebsite)//"87a1835b5151d1bbbe00591f64b7c623f8c4fc30")//"4d320823bca5075a18070cfce737c0d96cc2191b")
     private String website;
-    @JsonProperty( DevelopmentKeys.orgCategory)//"e8d01005d38edc750c79d07adc5694090854a34d")
+    @JsonProperty( ProductionKeys.orgCategory)//"e8d01005d38edc750c79d07adc5694090854a34d")
     private String category;
-    @JsonProperty( DevelopmentKeys.orgBusinessDomain)//"08dcf8f5324898efbf5f886f1dfc3a220bdddf83")
+    @JsonProperty( ProductionKeys.orgBusinessDomain)//"08dcf8f5324898efbf5f886f1dfc3a220bdddf83")
     private String businessDomain;
 
     /**

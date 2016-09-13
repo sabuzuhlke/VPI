@@ -31,7 +31,7 @@ public class PDService {
 
     public PDService(String server, String apiKey) {
         this.restTemplate = new RestTemplate();
-        this.apiKey = DevelopmentKeys.key; //= apiKey;
+        this.apiKey = ProductionKeys.key; //= apiKey;
         this.server = server;
     }
 
@@ -46,29 +46,33 @@ public class PDService {
     }
 
     private <REQ, RES> ResponseEntity<RES> postToPipedrive(String uri, REQ toPost, Class<RES> returnType) {
-        return restTemplate.exchange(
-                new RequestEntity<>(toPost, HttpMethod.POST, URI.create(uri)),
-                returnType);
+//        return restTemplate.exchange(
+//                new RequestEntity<>(toPost, HttpMethod.POST, URI.create(uri)),
+//                returnType);
+        return null;
     }
 
     private <REQ, RES> ResponseEntity<RES> putToPipedrive(String uri, REQ toPut, Class<RES> returnType) {
-        return restTemplate.exchange(
-                new RequestEntity<>(toPut, HttpMethod.PUT, URI.create(uri)),
-                returnType);
+//        return restTemplate.exchange(
+//                new RequestEntity<>(toPut, HttpMethod.PUT, URI.create(uri)),
+//                returnType);
+        return null;
     }
 
     private ResponseEntity<PDDeleteResponse> deleteFromPipedrive(String uri) {
-        return restTemplate.exchange(
-                new RequestEntity<>(HttpMethod.DELETE, URI.create(uri)),
-                PDDeleteResponse.class);
+//        return restTemplate.exchange(
+//                new RequestEntity<>(HttpMethod.DELETE, URI.create(uri)),
+//                PDDeleteResponse.class);
+        return null;
     }
 
     private ResponseEntity<PDBulkDeleteResponse> deleteFromPipedriveInBulk(String uri, Collection<Long> idsToDelete) {
-        PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
-        idsForReq.setIds(idsToDelete);
-        return restTemplate.exchange(
-                new RequestEntity<Object>(idsForReq, HttpMethod.DELETE, URI.create(uri)),
-                PDBulkDeleteResponse.class);
+//        PDBulkDeleteResponse.PDBulkDeletedIdsReq idsForReq = new PDBulkDeleteResponse().new PDBulkDeletedIdsReq();
+//        idsForReq.setIds(idsToDelete);
+//        return restTemplate.exchange(
+//                new RequestEntity<Object>(idsForReq, HttpMethod.DELETE, URI.create(uri)),
+//                PDBulkDeleteResponse.class);
+        return null;
     }
 
 //    public <RES> ResponseEntity<RES> getAllFromPipedrive(String entity, Class<RES> returnType) {

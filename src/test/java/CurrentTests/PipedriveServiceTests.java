@@ -1,6 +1,7 @@
 package CurrentTests;
 
 import VPI.*;
+import VPI.Keys.ProductionKeys;
 import VPI.Keys.DevelopmentKeys;
 import VPI.PDClasses.*;
 import VPI.PDClasses.Activities.PDActivityReceived;
@@ -202,7 +203,7 @@ public class PipedriveServiceTests {
         deal.setUser_id(1692590L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(DevelopmentKeys.STAGE_ID_EXPLORATORY);
+        deal.setStage_id(ProductionKeys.STAGE_ID_EXPLORATORY);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL2");
         deal.setValue("10000");

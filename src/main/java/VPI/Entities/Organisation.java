@@ -9,8 +9,12 @@ import VPI.PDClasses.Organisations.PDOrganisationSend;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class Organisation implements Comparable<Organisation> {
 
@@ -85,7 +89,6 @@ public class Organisation implements Comparable<Organisation> {
         this.ownedOnVertecBy = readPdOwnedOnVertecBy(pdr.getOwnedBy());
         this.name = pdr.getName();
         this.fullAddress = pdr.getAddress();
-        ;
 
         if (relationship != null) {
 
@@ -102,8 +105,8 @@ public class Organisation implements Comparable<Organisation> {
 
     private String readPdOwnedOnVertecBy(String ownedBy) {
         if (ownedBy == null) return "No Owner";
-        else if (ownedBy.equals(DevelopmentKeys.OWNED_BY_SALES_TEAM )) return "Sales Team";
-        else if (ownedBy.equals(DevelopmentKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
+        else if (ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM )) return "Sales Team";
+        else if (ownedBy.equals(ProductionKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
         else return "unrecognised";
     }
 
@@ -117,6 +120,7 @@ public class Organisation implements Comparable<Organisation> {
         pds.setCreationTime(this.created);
         pds.setName(this.name);
         pds.setOwnedBy(this.ownedOnVertecBy);
+        pds.setV_id(this.vertecId);
 
         pds.setActive_flag(this.active);
         pds.setId(this.pipedriveId);
@@ -127,6 +131,21 @@ public class Organisation implements Comparable<Organisation> {
 
         return pds;
     }
+
+//    public static BidiMap<String, String> getPdTestEmailMap(){
+//        BidiMap<String, String> emailMap = new DualHashBidiMap<>();
+//        emailMap.put("ss@notreal.com", "sabine.strauss@zuhlke.com");
+//        emailMap.put("bb@notreal.com", "brewster.barclay@zuhlke.com");
+//        emailMap.put("we@notreal.com", "wolfgang.emmerich@zuhlke.com");
+//        emailMap.put("mh@notreal.com", "mike.hogg@zuhlke.com");
+//        emailMap.put("nm@notreal.com", "neil.moorcroft@zuhlke.com");
+//        emailMap.put("kb@notreal.com", "keith.braithwaite@zuhlke.com");
+//        emailMap.put("bt@notreal.com", "bryan.thal@zuhlke.com");
+//        emailMap.put("jc@notreal.com", "justin.cowling@zuhlke.com");
+//        emailMap.put("tc@notreal.com", "tim.cianchi@zuhlke.com");
+//        emailMap.put("ac@notreal.com", "adam.cole@zuhlke.com");
+//        return emailMap;
+//    }
 
     /**
      * Fresh ORganisation will contain values updated on their respective system that need to put into this organisation
@@ -167,24 +186,25 @@ public class Organisation implements Comparable<Organisation> {
 
         if (fullAddressModified) {
 
-            this.buildingName = (freshOrganisation.buildingName != null ) ?
-                    freshOrganisation.buildingName :
-                    "";
-            this.streetNo = (freshOrganisation.streetNo != null ) ?
-                    freshOrganisation.streetNo :
-                    "";
-            this.street = (freshOrganisation.street != null) ?
-                    freshOrganisation.street :
-                    "";
-            this.city = (freshOrganisation.city != null ) ?
-                    freshOrganisation.city :
-                    "";
-            this.country = (freshOrganisation.country != null ) ?
-                    freshOrganisation.country :
-                    "";
-            this.zip = (freshOrganisation.zip != null ) ?
-                    freshOrganisation.zip :
-                    "";
+            this.buildingName = (Objects.equals(freshOrganisation.buildingName, buildingName)) ?
+                    "" :
+                    freshOrganisation.buildingName ;
+
+            this.streetNo = (Objects.equals(freshOrganisation.streetNo, streetNo)) ?
+                    "" :
+                    freshOrganisation.streetNo;
+            this.street = (Objects.equals(freshOrganisation.street, street)) ?
+                    "" :
+                    freshOrganisation.street;
+            this.city = (Objects.equals(freshOrganisation.city, city)) ?
+                    "" :
+                    freshOrganisation.city;
+            this.country = (Objects.equals(freshOrganisation.country, country)) ?
+                    "" :
+                    freshOrganisation.country;
+            this.zip = (Objects.equals(freshOrganisation.zip, zip)) ?
+                    "" :
+                    freshOrganisation.zip;
         }
     }
 
@@ -206,7 +226,7 @@ public class Organisation implements Comparable<Organisation> {
         this.city = organisation.getCity();
         this.country = organisation.getCountry();
         this.zip = organisation.getZip();
-        this.fullAddress = Utilities.formatVertecAddress(organisation);
+        this.fullAddress = organisation.getFullAddress();
 
         this.vParentOrganisation = organisation.getParentOrganisation();
 
@@ -229,27 +249,21 @@ public class Organisation implements Comparable<Organisation> {
 
         org.setVertecId(vertecId);
         org.setOwnedOnVertecBy(ownedOnVertecBy);
-        org.setActive(active);
+        org.setActive(active == null ? false : active);
         org.setOwnerId(ownerId);
-        org.setName(name);
-        org.setWebsite(website);
-        org.setCategory(category);
-        org.setBusinessDomain(businessDomain);
-        org.setBuildingName(buildingName);
-        org.setStreet(street);
-        org.setStreet_no(streetNo);
-        org.setCity(city);
-        org.setCountry(country);
-        org.setZip(zip);
+        org.setName(name == null ? "" : name);
+        org.setWebsite(website == null ? ""  : website);
+        org.setCategory(category == null ? "" : category);
+        org.setBusinessDomain(businessDomain == null ? "" : businessDomain);
+        org.setBuildingName(buildingName == null ? "" : buildingName);
+        org.setStreet(street == null ? "" : street);
+        org.setStreet_no(streetNo == null ? "" : streetNo);
+        org.setCity(city == null ? "" : city);
+        org.setZip(zip == null ? "" : zip);
+        org.setCountry(country == null ? "" : country);
+        org.setFullAddress(fullAddress);
 
-        //the following is supposed to deal with the fact, that we are unable to split a full address into its parts
-        if(fullAddress != null
-                && buildingName == null
-                && street == null
-                && streetNo == null
-                && city == null
-                && country == null
-                && zip == null) org.setBuildingName(fullAddress);
+
 
         org.setParentOrganisation(vParentOrganisation);
         org.setCreated(Utilities.formatToVertecDate(created));
@@ -274,6 +288,7 @@ public class Organisation implements Comparable<Organisation> {
     public boolean equals(Organisation org) {
         boolean retval = true;
         if(org == null) return false;
+
         if(vertecId == null || org.getVertecId() == null) return false;
         else retval = retval && vertecId == org.getVertecId().longValue();
 
@@ -291,8 +306,10 @@ public class Organisation implements Comparable<Organisation> {
 
         if(supervisingEmail == null ^ org.getSupervisingEmail() == null) return false;
         else if(supervisingEmail != null && org.getSupervisingEmail() != null) retval = retval && supervisingEmail.equals(org.getSupervisingEmail());
+
+
         if(fullAddress == null ^ org.getFullAddress() == null) return false;
-        else if(fullAddress != null && org.getFullAddress() != null) retval = retval && fullAddress.equals(org.getFullAddress());
+        else if(this.getFullAddress() != null && org.getFullAddress() != null) retval = retval && this.getFullAddress().equals(org.getFullAddress());
 
         return retval;
 
@@ -317,6 +334,8 @@ public class Organisation implements Comparable<Organisation> {
 //        //creation and modification dates need not bee checked here
 
     }
+
+
 
     @Override
     public int compareTo(Organisation org) {
@@ -467,7 +486,37 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     public String getFullAddress() {
-        return fullAddress;
+        if(this.fullAddress != null && !this.fullAddress.isEmpty()) return fullAddress;
+        else{
+            return buildFullAddress(this,true);
+        }
+
+    }
+
+    static public String buildFullAddress(Organisation org, boolean setFullAdress){
+        String address = "";
+        if(org.getBuildingName() != null && !org.getBuildingName().isEmpty()){
+            address += org.getBuildingName() + ", ";
+        }
+
+        if (org.getStreetNo() != null && !org.getStreetNo().isEmpty()) {
+            address += org.getStreetNo() + " ";
+        }
+        if (org.getStreet() != null && !org.getStreet().isEmpty()) {
+            address += org.getStreet() + ", ";
+        }
+
+        if (org.getCity() != null && !org.getCity().isEmpty()) {
+            address += org.getCity() + ", ";
+        }
+        if (org.getZip() != null && !org.getZip().isEmpty()) {
+            address += org.getZip() + ", ";
+        }
+        if (org.getCountry() != null && !org.getCountry().isEmpty()) {
+            address += org.getCountry();
+        }
+        if(setFullAdress) org.setFullAddress(address);
+        return address;
     }
 
     public void setFullAddress(String fullAddress) {

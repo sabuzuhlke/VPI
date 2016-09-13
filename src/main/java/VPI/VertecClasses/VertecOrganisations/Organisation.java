@@ -24,6 +24,7 @@ public class Organisation {
     private String city;
     private String country;
     private String zip;
+    private String fullAddress;
 
     private Long parentOrganisation;
     private Long modifier;
@@ -178,6 +179,44 @@ public class Organisation {
 
     public void setModifier(Long modifier) {
         this.modifier = modifier;
+    }
+
+    public String getFullAddress() {
+        if(this.fullAddress != null && !this.fullAddress.isEmpty()) return fullAddress;
+        else{
+            return buildFullAddress(this,true);
+        }
+
+    }
+
+    static public String buildFullAddress(Organisation org, boolean setFullAdress){
+        String address = "";
+        if(org.getBuildingName() != null && !org.getBuildingName().isEmpty()){
+            address += org.getBuildingName() + ", ";
+        }
+
+        if (org.getStreet_no() != null && !org.getStreet_no().isEmpty()) {
+            address += org.getStreet_no() + " ";
+        }
+        if (org.getStreet() != null && !org.getStreet().isEmpty()) {
+            address += org.getStreet() + ", ";
+        }
+
+        if (org.getCity() != null && !org.getCity().isEmpty()) {
+            address += org.getCity() + ", ";
+        }
+        if (org.getZip() != null && !org.getZip().isEmpty()) {
+            address += org.getZip() + ", ";
+        }
+        if (org.getCountry() != null && !org.getCountry().isEmpty()) {
+            address += org.getCountry();
+        }
+        if(setFullAdress) org.setFullAddress(address);
+        return address;
+    }
+
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
@@ -21,14 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 public class VertecServiceTests {
 
     private VertecService VS;
+    private  Long TESTVertecOrganisation1 = 28055040L;
 
     @Before
     public void setUp() {
@@ -298,8 +298,40 @@ public class VertecServiceTests {
         org.setVertecId(28055040L); // Organisation on test instance of Vertec
         org.setFullAddress("f, u , ll, add, ress, 2233");
         org.setvParentOrganisation(28055326L); // another test organisation
+        org.setActive(true);
 
         assertTrue(VS.updateOrganisation(org.getVertecId(), org.toVertecRep(5295L)));
+    }
+
+    @Test
+    public void canCreateOrganisation() {
+        VPI.Entities.Organisation org = new VPI.Entities.Organisation();
+        org.setName("VertecService create test && special characters present");
+        org.setFullAddress("f&, u , ll, add, ress, 2233");
+        org.setvParentOrganisation(28055326L); // another test organisation
+        org.setActive(true);
+
+        ResponseEntity<Long> res = VS.createOrganisation(org.toVertecRep(5295L));
+        assertEquals(HttpStatus.CREATED, res.getStatusCode());
+
+        System.out.println( VS.getOrganisationCommonRep(res.getBody()).getBody().toString());
+
+
+    }
+
+    @Test
+    public void canDeleteAndActivateOrganisation(){
+        VS.activateOrganisation(TESTVertecOrganisation1);
+
+        Organisation org = VS.getOrganisationCommonRep(TESTVertecOrganisation1).getBody();
+        assertTrue(org.getActive());
+
+        VS.deleteOrganisation(TESTVertecOrganisation1);
+        org = VS.getOrganisationCommonRep(TESTVertecOrganisation1).getBody();
+        assertFalse(org.getActive());
+
+
+        VS.activateOrganisation(TESTVertecOrganisation1);
     }
 
 

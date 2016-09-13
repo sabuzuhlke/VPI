@@ -27,7 +27,7 @@ public class SynchroniserStateTests {
     private SynchroniserState ss;
     private VertecService vertec;
     private PDService pipedrive;
-    public static String PATH_TO_TESTFILES = "/Users/gebo/IdeaProjects/VPI/src/test/resources/faultToleranceFiles/";
+    public static String PATH_TO_TESTFILES = "src/test/resources/faultToleranceFiles/";
 
     @Before
     public void setUp() throws IOException {

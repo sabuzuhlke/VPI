@@ -2,6 +2,8 @@ package CurrentTests;
 
 import VPI.Application;
 import VPI.Importer;
+import VPI.Keys.DevelopmentKeys;
+import VPI.Keys.ProductionKeys;
 import VPI.MyCredentials;
 import VPI.PDClasses.Deals.PDDealSend;
 import VPI.PDClasses.PDService;
@@ -34,14 +36,14 @@ public class ImportZUK {
 
     @Before
     public void setUp() {
-        this.sync = new VertecSynchroniser();
+        //this.sync = new VertecSynchroniser();
         MyCredentials creds = new MyCredentials();
 
         //set up Pipedrive and Vertec services
         this.PDS = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
-        this.VS = new VertecService("localhost:9999");
+        //this.VS = new VertecService("localhost:9999");
 
-        this.importer = new Importer(PDS, VS);
+        //this.importer = new Importer(PDS, VS);
     }
 
 //    @Test
@@ -100,9 +102,9 @@ public class ImportZUK {
 
     @Test @Ignore("Just do")
     public void clearPD(){
-        VertecSynchroniser VS = new VertecSynchroniser();
-        MyCredentials creds = new MyCredentials();
-        PDService PD = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+        //VertecSynchroniser VS = new VertecSynchroniser();
+        //MyCredentials creds = new MyCredentials();
+        PDService PD = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
 
         PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
     }

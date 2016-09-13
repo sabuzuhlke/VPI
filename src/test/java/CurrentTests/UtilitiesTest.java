@@ -1,5 +1,7 @@
 package CurrentTests;
 
+import VPI.Entities.util.SyncLog;
+import VPI.Entities.util.SyncLogList;
 import VPI.Entities.util.Utilities;
 import org.junit.Test;
 
@@ -21,5 +23,12 @@ public class UtilitiesTest {
     @Test
     public void canGetCurrentTime(){
         System.out.println(Utilities.getCurrentTime());
+    }
+
+    @Test
+    public void canWriteLogToFile() throws IOException {
+        SyncLogList ll = new SyncLogList("logs/test");
+        ll.add("TEST", "TEST", "NAME", 2L, 12L);
+        ll.save();
     }
 }

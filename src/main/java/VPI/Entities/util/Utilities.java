@@ -256,6 +256,22 @@ public class Utilities {
         file.write("");
         file.close();
     }
+
+     static public <T1, T2> void saveMap(Map<T1, T2> map, String filePath) throws IOException {
+
+         new File(filePath).createNewFile();
+         FileWriter file = new FileWriter(filePath);
+
+         map.keySet().forEach(key -> {
+             try {
+                 file.write(key.toString() + "," + map.get(key).toString());
+             } catch (IOException e) {
+                throw new RuntimeException(e);
+             }
+         });
+
+         file.close();
+    }
 }
 
 

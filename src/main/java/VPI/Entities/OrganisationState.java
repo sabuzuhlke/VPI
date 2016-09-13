@@ -3,7 +3,6 @@ package VPI.Entities;
 
 import VPI.Entities.util.Utilities;
 import VPI.PDClasses.PDService;
-import VPI.PDClasses.Users.PDUser;
 import VPI.PDClasses.Users.PDUserItemsResponse;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.SynchroniserState;
@@ -82,7 +81,7 @@ public class OrganisationState {
                     } else {
                         organisationsWithVIDs.put(organisation.getVertecId(), organisation);
                     }
-                    dealWithPDOrgModifiedBySynchroniser(organisation);
+                    dealWithPDOrgModifiedBySynchroniser(organisation); //TODO uncomment when using any other data than TESTPIPE
 
                 });
     }
@@ -100,14 +99,14 @@ public class OrganisationState {
                             new Organisation(
                                     org,
                                     syncState.getOrganisationIdMap().get(org.getVertecId()),
-                                    syncState.getVertecOwnerMap().get(org.getOwnerId())
+                                    syncState.getIdToEmailVertecOwnerMap().get(org.getOwnerId())
                             );
                     if (organisation.getVertecId() == null) {
                         organisationsWithoutVIDs.add(organisation);
                     } else {
                         organisationsWithVIDs.put(organisation.getVertecId(), organisation);
                     }
-                    dealWithVertecOrgModifiedBySynchroniser(org);
+                    dealWithVertecOrgModifiedBySynchroniser(org); //TODO uncomment when using any other data than TESTPIPE
 
                 });
 
@@ -152,7 +151,7 @@ public class OrganisationState {
                 .map(org -> new Organisation(org,
                         //To set the pipedriveID of the created organisation we'll have to access the organisationState we got from pipedrive
                         organisationsFromPipedrive.organisationsWithVIDs.get(org.getVertecId()).getPipedriveId(),
-                        syncState.getVertecOwnerMap().get(org.getOwnerId())))
+                        syncState.getIdToEmailVertecOwnerMap().get(org.getOwnerId())))
                 .collect(Collectors.toList());
 
         //return in appropriate format
@@ -227,7 +226,7 @@ public class OrganisationState {
                 new Organisation(
                         org,
                         syncState.getOrganisationIdMap().get(org.getVertecId()),
-                        syncState.getVertecOwnerMap().get(org.getOwnerId())
+                        syncState.getIdToEmailVertecOwnerMap().get(org.getOwnerId())
                 );
 
         if (organisation.getVertecId() != null) {

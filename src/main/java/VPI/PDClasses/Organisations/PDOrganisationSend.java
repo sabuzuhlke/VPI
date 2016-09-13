@@ -5,6 +5,7 @@ import VPI.Keys.DevelopmentKeys;
 import VPI.Keys.ProductionKeys;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PDOrganisationSend {
 
@@ -12,13 +13,13 @@ public class PDOrganisationSend {
     private Integer visible_to;
 
     private String address;
-
-    private String address_subpremise;
-    private String address_street_number;
-    private String address_route;
-    private String address_locality;
-    private String address_country;
-    private String address_postal_code;
+//
+//    private String address_subpremise;
+//    private String address_street_number;
+//    private String address_route;
+//    private String address_locality;
+//    private String address_country;
+//    private String address_postal_code;
 
 
     private Boolean active_flag;
@@ -26,15 +27,15 @@ public class PDOrganisationSend {
     private Long owner_id;
     @JsonProperty("add_time")
     private String creationTime;
-    @JsonProperty( DevelopmentKeys.orgVID)//"1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
+    @JsonProperty(ProductionKeys.orgVID)//"1fdff908db3cffe4c92b93353cfd56219745619e")//"2388ef6b01b0ff49893c6f954ebfb162a70b12d2")
     private Long v_id;
-    @JsonProperty( DevelopmentKeys.orgOwnedBy)//"bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
+    @JsonProperty(ProductionKeys.orgOwnedBy)//"bf75945461cae2a672c4404b85b1bc8a4d5c1ba9")//"276ed9c14c8766ac63ab668678b779a9b813658b")
     private String ownedBy;
-    @JsonProperty( DevelopmentKeys.orgWebsite)//"87a1835b5151d1bbbe00591f64b7c623f8c4fc30")//"4d320823bca5075a18070cfce737c0d96cc2191b")
+    @JsonProperty(ProductionKeys.orgWebsite)//"87a1835b5151d1bbbe00591f64b7c623f8c4fc30")//"4d320823bca5075a18070cfce737c0d96cc2191b")
     private String website;
-    @JsonProperty( DevelopmentKeys.orgCategory)//"e8d01005d38edc750c79d07adc5694090854a34d")
+    @JsonProperty(ProductionKeys.orgCategory)//"e8d01005d38edc750c79d07adc5694090854a34d")
     private String category;
-    @JsonProperty( DevelopmentKeys.orgBusinessDomain)//"08dcf8f5324898efbf5f886f1dfc3a220bdddf83")
+    @JsonProperty(ProductionKeys.orgBusinessDomain)//"08dcf8f5324898efbf5f886f1dfc3a220bdddf83")
     private String businessDomain;
 
     /**
@@ -200,53 +201,53 @@ public class PDOrganisationSend {
 //        this.website = website;
 //    }
 
-    public String getAddress_subpremise() {
-        return address_subpremise;
-    }
-
-    public void setAddress_subpremise(String address_subpremise) {
-        this.address_subpremise = address_subpremise;
-    }
-
-    public String getAddress_street_number() {
-        return address_street_number;
-    }
-
-    public void setAddress_street_number(String address__street_number) {
-        this.address_street_number = address__street_number;
-    }
-
-    public String getAddress_route() {
-        return address_route;
-    }
-
-    public void setAddress_route(String address_route) {
-        this.address_route = address_route;
-    }
-
-    public String getAddress_locality() {
-        return address_locality;
-    }
-
-    public void setAddress_locality(String address_locality) {
-        this.address_locality = address_locality;
-    }
-
-    public String getAddress_country() {
-        return address_country;
-    }
-
-    public void setAddress_country(String address_country) {
-        this.address_country = address_country;
-    }
-
-    public String getAddress_postal_code() {
-        return address_postal_code;
-    }
-
-    public void setAddress_postal_code(String address_postal_code) {
-        this.address_postal_code = address_postal_code;
-    }
+//    public String getAddress_subpremise() {
+//        return address_subpremise;
+//    }
+//
+//    public void setAddress_subpremise(String address_subpremise) {
+//        this.address_subpremise = address_subpremise;
+//    }
+//
+//    public String getAddress_street_number() {
+//        return address_street_number;
+//    }
+//
+//    public void setAddress_street_number(String address__street_number) {
+//        this.address_street_number = address__street_number;
+//    }
+//
+//    public String getAddress_route() {
+//        return address_route;
+//    }
+//
+//    public void setAddress_route(String address_route) {
+//        this.address_route = address_route;
+//    }
+//
+//    public String getAddress_locality() {
+//        return address_locality;
+//    }
+//
+//    public void setAddress_locality(String address_locality) {
+//        this.address_locality = address_locality;
+//    }
+//
+//    public String getAddress_country() {
+//        return address_country;
+//    }
+//
+//    public void setAddress_country(String address_country) {
+//        this.address_country = address_country;
+//    }
+//
+//    public String getAddress_postal_code() {
+//        return address_postal_code;
+//    }
+//
+//    public void setAddress_postal_code(String address_postal_code) {
+//        this.address_postal_code = address_postal_code;
+//    }
 
     public String getCategory() {
         return category;
@@ -266,8 +267,16 @@ public class PDOrganisationSend {
 
     @Override
     public String toString() {
-        return "Company: ID: " + id + " Name: " + name  + " visible to: " + visible_to + ", Address: " + address + " Active: " + active_flag;
-    }
+            String retStr = null;
+            ObjectMapper m = new ObjectMapper();
+            try{
+                retStr = m.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            }
+            catch(Exception e){
+                System.out.println("Could not display Follower Relation as a pretty string: " + e.toString());
+            }
+            return retStr;
+            }
 
     /**
      * Only used in testing, should remove and replace with different constructor

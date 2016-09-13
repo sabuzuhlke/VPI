@@ -2,6 +2,8 @@ package VPI.SynchroniserClasses;
 
 import VPI.DefaultHashMap;
 import VPI.Entities.util.Utilities;
+import VPI.Keys.DevelopmentKeys;
+import VPI.Keys.ProductionKeys;
 import VPI.PDClasses.PDService;
 import VPI.PDClasses.Users.PDUser;
 import VPI.VertecClasses.VertecService;
@@ -11,10 +13,7 @@ import org.apache.tomcat.jni.Time;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -48,9 +47,11 @@ public class SynchroniserState {
     private Set<TimeInterval> crashWindows;
 
     //Map of Pipedrive UserId -> User email
-    private Map<Long, String> pipedriveOwnerMap;
+    private Map<String, Long> pipedriveOwnerMap;
     //Map of Vertec UserId -> User email
-    private Map<Long, String> vertecOwnerMap;
+    private Map<String, Long> vertecOwnerMap;
+
+    //Map of vertecuserID to pdUserId
 
     //Organisation items
 
@@ -63,8 +64,8 @@ public class SynchroniserState {
 
     public SynchroniserState(VertecService vertec, PDService pipedrive) throws IOException {
         this.organisationIdMap = loadOrganisationIdMap();
-        this.pipedriveOwnerMap = constructReverseMap(constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive)));
-        this.vertecOwnerMap = constructReverseMap(constructVertecUserEmailToIdMap(vertec.getSalesTeam()));
+        this.pipedriveOwnerMap = constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive));
+        this.vertecOwnerMap = constructVertecUserEmailToIdMap(vertec.getSalesTeam());
         this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
         this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
         this.crashWindows = new HashSet<>();
@@ -78,8 +79,8 @@ public class SynchroniserState {
     public SynchroniserState(VertecService vertec, PDService pipedrive, String filepath) throws IOException {
         this.PATH_TO_FAULT_TOLERANCE_FILES = filepath;
         this.organisationIdMap = loadOrganisationIdMap();
-        this.pipedriveOwnerMap = constructReverseMap(constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive)));
-        this.vertecOwnerMap = constructReverseMap(constructVertecUserEmailToIdMap(vertec.getSalesTeam()));
+        this.pipedriveOwnerMap = constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive));
+        this.vertecOwnerMap = constructVertecUserEmailToIdMap(vertec.getSalesTeam());
         this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
         this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
         this.crashWindows = new HashSet<>();
@@ -90,7 +91,7 @@ public class SynchroniserState {
      * Loads latest organisation Id Map from file
      */
     private DualHashBidiMap<Long, Long> loadOrganisationIdMap() throws IOException {
-        return Utilities.loadIdMap("productionMaps/productionOrganisationMap");
+        return Utilities.loadIdMap(ProductionKeys.MAPSPATH + "/productionOrganisationMap");
     }
 
     /**
@@ -106,12 +107,31 @@ public class SynchroniserState {
      */
     public Map<Long, String> constructReverseMap(Map<String, Long> normalMap) {
         //TODO: 'constructReverseMap' check defualt value is correct person
-        Map<Long, String> reverseMap = new DefaultHashMap<>("sabine.strauss§@zuhlke.com");
+        Map<Long, String> reverseMap = new DefaultHashMap<>("sabine.strauss@zuhlke.com");
         for (String email : normalMap.keySet()) {
             reverseMap.put(normalMap.get(email), email);
         }
+
+
+        reverseMap.put(5726L, "wolfgang.emmerich@zuhlke.com"); //Vertec id of David Levin
+        reverseMap.put(18010762L, "sabine.strauss@zuhlke.com"); //Vertec id of allana poleon
+        reverseMap.put(21741030L, "sabine.strauss@zuhlke.com"); //Vertec id of kathryn fletcher
+        reverseMap.put(504419L, "sabine.strauss@zuhlke.com"); //Vertec id of maria burley
+        reverseMap.put(18635504L, "sabine.strauss@zuhlke.com"); //Vertec id of hayley syms
+        reverseMap.put(10301189L, "justin.cowling@zuhlke.com"); //Vertec id of julia volland
+        reverseMap.put(1795374L, "justin.cowling@zuhlke.com"); //Vertec id of rod cobain
+        reverseMap.put(8904906L, "justin.cowling@zuhlke.com"); //Vertec id of afzar haider
+        reverseMap.put(15948308L, "justin.cowling@zuhlke.com"); //Vertec id of peter mcmanus
+        reverseMap.put(24807265L, "sabine.strauss@zuhlke.com"); //Vertec id of ileana Meehan
+        reverseMap.put(16400137L, "sabine.strauss@zuhlke.com"); //Peter Brown
+        reverseMap.put(17739496L, "sabine.strauss@zuhlke.com"); //Steve Freeman
+        reverseMap.put(22501574L, "sabine.strauss@zuhlke.com"); //John Seston
+        reverseMap.put(24907657L, "sabine.strauss@zuhlke.com"); //Ina
+
         return reverseMap;
     }
+
+    
 
     /**
      * Uses list of Vertec Employees to build map of Employee email -> Employee Id
@@ -168,6 +188,62 @@ public class SynchroniserState {
         return teamIdMap;
     }
 
+    /**
+     * This is from importer
+     */
+    @SuppressWarnings("all") //TODO: replace with actual solution
+    private Map<String, Long> constructTestTeamMap() {
+        Map<String, Long> map = new DefaultHashMap<>(1424149L);
+
+        map.put("wolfgang.emmerich@zuhlke.com", 1363410L); //Wolfgang
+        map.put("tim.cianchi@zuhlke.com", 1363402L); //Tim
+        map.put("neil.moorcroft@zuhlke.com", 1363429L); //Neil
+        map.put("mike.hogg@zuhlke.com", 1363424L); //Mike
+        map.put("justin.cowling@zuhlke.com", 1363416L); //Justin
+        map.put("brewster.barclay@zuhlke.com", 1363403L); //Brewster
+        map.put("keith.braithwaite@zuhlke.com", 1363488L); //Keith
+        map.put("peter.brown@zuhlke.com", 1415840L); //Peter Brown
+        map.put("steve.freeman@zuhlke.com", 1415845L); //Steve Freeman
+        map.put("john.seston@zuhlke.com", 1424149L); //John Seston
+        map.put("sabine.streuss@zuhlke.com", 1424149L); //Sabine
+        map.put("sabine.strauss@zuhlke.com", 1424149L); //Sabine
+        map.put("ileana.meehan@zuhlke.com", 1424149L); //Ileana
+        map.put("ina.hristova@zuhlke.com", 1424149L); //Ina
+        map.put("adam.cole@zuhlke.com", 1709153L); //adam
+        map.put("bryan.thal@zuhlke.com", 1532142L); //bryan
+        map.put(null, 1363410L);
+
+        return map;
+    }
+
+    public Map<Long, Long> buildPipedriveProductionToTestUserIdMap() {
+
+        Map<Long, Long> map = new HashMap<>();
+
+        map.put(1199544L, 1363410L);//wolf
+        map.put(1533398L, 1363402L);//tim
+        map.put(1214871L, 1363429L);//neil
+        map.put(1214873L, 1363424L);//mike
+        map.put(1160176L, 1363416L);//just
+        map.put(1199532L, 1363403L);//brew
+        map.put(1211554L, 1363488L);//keith
+        //peter brown has no companys
+        //steve freeman has no companies
+        map.put(1533390L, 1424149L);
+        map.put(1272849L, 1709153L);
+        //bryan, ina, iliean have none
+        return map;
+
+    }
+
+    public Map<String, Long> getPipedriveOwnerMap() {
+        return pipedriveOwnerMap;
+    }
+
+    public void setPipedriveOwnerMap(Map<String, Long> pipedriveOwnerMap) {
+        this.pipedriveOwnerMap = pipedriveOwnerMap;
+    }
+
 
     //============================================ Helper Functions ====================================================
 
@@ -175,7 +251,11 @@ public class SynchroniserState {
         return organisationIdMap;
     }
 
-    public Map<Long, String> getVertecOwnerMap() {
+    public Map<Long, String> getIdToEmailVertecOwnerMap() {
+        return constructReverseMap(vertecOwnerMap);
+    }
+
+    public Map<String, Long> getVertecOwnerMap() {
         return vertecOwnerMap;
     }
 
@@ -325,6 +405,16 @@ public class SynchroniserState {
 
     public Set<TimeInterval> getCrashWindows() {
         return crashWindows;
+    }
+
+    public void updateMapWith(Map<Long, Long> vertecIdsToPipedriveIds) {
+        organisationIdMap.putAll(vertecIdsToPipedriveIds);
+    }
+
+    public void saveDeletedListToFile(List<Long> deletedIds, String vertecOrPipedrive) {
+
+
+
     }
 
     public class TimeInterval {
