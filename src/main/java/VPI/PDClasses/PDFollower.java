@@ -3,6 +3,9 @@ package VPI.PDClasses;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Followers on pipedrive are kept track of via these objects
+ */
 public class PDFollower {
 
     @JsonProperty("id")

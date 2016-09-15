@@ -23,6 +23,7 @@ public class Organisation implements Comparable<Organisation> {
     private String ownedOnVertecBy;
     private Boolean active;
 
+    //This field references the owner of the organisation
     private String supervisingEmail; //will have to be set outside conversion as converter needs access to teamid map
 
     private String name;
@@ -71,7 +72,6 @@ public class Organisation implements Comparable<Organisation> {
         this.website = pdr.getWebsite();
         this.category = pdr.getCategory();
         this.businessDomain = pdr.getBusinessDomain();
-        //TODO modified Date,
         this.modified = pdr.getUpdate_time(); //""2016-07-22 09:43:57""
         this.created = pdr.getCreationTime();
 
@@ -98,11 +98,14 @@ public class Organisation implements Comparable<Organisation> {
         this.website = pdr.getWebsite();
         this.category = pdr.getCategory();
         this.businessDomain = pdr.getBusinessDomain();
-        //TODO modified Date,
         this.modified = pdr.getUpdate_time(); //""2016-07-22 09:43:57""
         this.created = pdr.getCreationTime();
     }
 
+    /**
+     * owned on vertec by is kept track of as a number on pipedrive.
+     * This number is different for each Pipedrive company account
+     */
     private String readPdOwnedOnVertecBy(String ownedBy) {
         if (ownedBy == null) return "No Owner";
         else if (ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM )) return "Sales Team";
@@ -111,6 +114,7 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     /**
+     * Convert to object, that can be sent via PDService
      * @param ownerId has to be gotten from Map using supervisingEmail
      */
     public PDOrganisationSend toPDSend(Long ownerId) {
@@ -209,6 +213,7 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     /**
+     * Construct from organisation received from vertec
      * @param ownerEmail has to be got from a map using the ownerId of the vertec organisation
      */
     public Organisation(VPI.VertecClasses.VertecOrganisations.Organisation organisation, Long pipedriveId, String ownerEmail) {
@@ -242,6 +247,7 @@ public class Organisation implements Comparable<Organisation> {
 
 
     /**
+     * Convert to format VertecService can deal with
      * @param ownerId has to be got from map using supervisingEmail
      */
     public VPI.VertecClasses.VertecOrganisations.Organisation toVertecRep(Long ownerId) {
@@ -272,6 +278,10 @@ public class Organisation implements Comparable<Organisation> {
         return org;
     }
 
+    /**
+     * pretty printer
+     * @return
+     */
     public String toJSONString() {
         String retStr = null;
         ObjectMapper m = new ObjectMapper();
@@ -284,7 +294,15 @@ public class Organisation implements Comparable<Organisation> {
         return retStr;
     }
 
-
+    /**
+     * Compares two organisations.
+     * Addresses are tricky as Pipedrive used a supplied full address to query a google maps api, tha splits
+     * the address into parts. Sometimes this is incomplete, or split up in a wrong way. However the full address
+     * field returned from pipedrive is always correct.
+     * From Vertec we get the full address in two ways
+     * one, by concatenating the sub-address fields. These come from organisations previously entered into vertec
+     * two, when we post to vertec, we store the full address in the street address field, as splitting it up reliably is not possible
+     */
     public boolean equals(Organisation org) {
         boolean retval = true;
         if(org == null) return false;
@@ -493,6 +511,12 @@ public class Organisation implements Comparable<Organisation> {
 
     }
 
+    /**
+     * This function builds the full address from its parts as mentioned above
+     * @param org
+     * @param setFullAdress
+     * @return
+     */
     static public String buildFullAddress(Organisation org, boolean setFullAdress){
         String address = "";
         if(org.getBuildingName() != null && !org.getBuildingName().isEmpty()){

@@ -3,7 +3,10 @@ package VPI.Entities.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Created by gebo on 12/09/2016.
+ * This class represents an update made to either Vertec or Pipedrive
+ * Type: type of the request: e.g PUT, POST, DELETE etc.
+ * objectType: Organisation, Activity, etc.
+ * Name: name of the opbject
  */
 public class SyncLog {
     private String type;

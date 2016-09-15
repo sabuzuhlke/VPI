@@ -14,7 +14,21 @@ import java.util.*;
 
 import static VPI.Entities.util.Utilities.loadIdMap;
 import static java.util.stream.Collectors.*;
+/**
+ * this class deals with contacts that have been merged on pipedrive and that need to be merged on vertec as well
+ * It determines which contacts have been merged on pipedrive, and propagates all merges to Vertec that it can determine.
+ * All merges it cannot resolve are shown in a list, and can be merged manually on VRAPI.
+ * 
+ * The Idea behind recognising which contacts have been merged on pipedrive is the following:
+ * All cotacts we have posted to pipedrive before (stored in the prodictionContacIdMap) and that are not there anymore
+ * are either deleted or or have been merged. From there we try find contacts from vertec which share an email address
+ * with the deleted contact. If there is only one who does, that is the contact the other one has been merged into.
+ * We can only match a small proprtion of contacts can be matched on email. The rest will have to be matched manually.
+ */
 
+/**
+ * This class may need to be ran from time-to-time, as Duplicates might be created in Vertec.
+ */
 public class ContactMerger {
     public PDService PS;
     public VertecService VS;
@@ -35,7 +49,6 @@ public class ContactMerger {
     }
 
     public void doMerge() throws IOException {
-        //get all contacts from vertec --> sure about this?
         //load idmap of contacts previously posted to vertec
         Map<Long,Long> contactsPostedToPD = loadIdMap("productionMaps/productionContactMap");
         //get all contacts from pipedrive
@@ -59,15 +72,15 @@ public class ContactMerger {
         System.out.println("Number of missing contacts: " + missingIds.size());
 
 
-
+        //Get all missing contacts from Vertec
         List<Contact> missingContacts = VS.getContactList(missingIds);
+
         //for each missing contact try to find out whom it has been merged into. Best way probably would be to start with e-mail addresses
-        // , then with activities /Projects and organisationState won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./
+        // , then with activities /Projects and organisationState won't provide a definitive mapping on their own (multiple contacts at a company), but might be useful for deciding between uncertain matches./ <--- Projects etc are not used as they would only solve a negligible amount of contacts
          findMatches(missingContacts, pipedriveContacts);// <merged, surviving>
 
         System.out.println("Unique match found for contacts: " + merges.size());
         for(Long id : merges.keySet()){
-            //VS.mergeTwoContacts(id,mergedContacts.get(id));
             List<Contact> mergeNsurvive = VS.getContactList(Arrays.asList(id, merges.get(id)));
             Contact mergedC = mergeNsurvive.get(0);
             Contact survivingC = mergeNsurvive.get(1);
@@ -91,6 +104,10 @@ public class ContactMerger {
         }
     }
 
+    /**
+     * This function determines, which contacts have been merged by matching them on their phone numbers and email addresses
+     * It is possible for an email/phone to match multiple contacts, that is usually due to them having common company mail/phones
+     */
     public void findMatches(List<Contact> vertecContacts, List<Contact> pipedriveContacts) {
         List<Activity> pa = PS.getAllActivities().stream()
                 .map(a -> new Activity(a, null, null, null, null, null, null))
@@ -103,10 +120,11 @@ public class ContactMerger {
             ActivitiesForAddressEntry va = VS.getActivitiesForAddressEntry(vc.getVertecId()).getBody(); //get activities for vertec contact
 
             pipedriveContacts.forEach(pc -> {
+            //Match on emails
                 pc.getEmails().stream()
                         .filter(email -> email.getValue() != null && ! email.getValue().isEmpty())
                         .forEach(email -> {
-
+                            //deal with multiple matches
                             if (email.getValue().equals(vc.getEmails().get(0).getValue())) {
                                 if (countMap.containsKey(vc.getVertecId())) {
                                     countMap.get(vc.getVertecId()).add(pc.getVertecId());
@@ -118,6 +136,7 @@ public class ContactMerger {
                             }
                         });
 
+                //match on phone numbers
                 pc.getPhones().stream()
                         .filter(Phone -> Phone.getValue() != null && ! Phone.getValue().isEmpty())
                         .forEach(Phone -> {
@@ -134,7 +153,7 @@ public class ContactMerger {
                         });
 
                 if (! countMap.keySet().contains(vc.getVertecId())) {
-
+                    //Match on Activities linked to contact
                     va.getActivities().forEach(av -> {
 
                         pa.stream()
@@ -183,6 +202,9 @@ public class ContactMerger {
 
     }
 
+    /**
+     * This function is used in tests to find out the behaviour of the data, when matched on emails
+     */
     public HashMap<Long, Long> findMergesByEmail(List<Contact> vertecContacts, List<Contact> pipedriveContacts) {
 
 
@@ -236,7 +258,9 @@ public class ContactMerger {
 
         return map;
     }
-
+    /**
+     * This function is used in tests to find out the behaviour of the data, when matched on activities
+     */
     public List<Long> findMergesByActivity(ActivitiesForAddressEntry afc, List<Activity> pdActivities, int logCounter){
         System.out.println("------NEW PAIR TO MATCH----------");
         HashMap<Long,Long> matches = new HashMap<>();

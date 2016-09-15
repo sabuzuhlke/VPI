@@ -34,6 +34,38 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+/**
+ * This class imports all relevant data from Vertec to Pipedrive
+ * All organisations are pushed to Pipedrive, as there is no information on which corresponding organisations could be matched.
+ * Contacts are matched baed on e-mail addresses, and where a match is found, the VID is PUT to the corresponding entry
+ * - if no match is found, the contact is POSTed to PD
+ * Deals are matched up on their project-code and phase-code
+ * Activities are simply POSTed
+ */
+
+/**
+ * CONTEXT
+ * When beginning this project, both Pipedrive and Vertec had preexisting data on them that represented the same objects.
+ * /e.g. an entry for the organisation AIMIA was already present on both sides/. In order to be able to synchronise these pairs
+ * a link needs to be established between them. We decided that the vertec ids of the objects are going to form this link.
+ * Since Pipedrives data model can be extended, we decided to keep track of the Vertec ids(VID) on Pipedrive.
+ * For this first, all relevant data is downloaded from both sides, then the corresponding pairs are matched up, and sent back
+ * to pipedrive, containing the VID. Objects coming from Vertec that could not be matched up, are created on Pipedrive, alse
+ * containing a VID.
+ * Project-phases could easily be matched, on a combination of their project code and phase code. Activities did not need to be
+ * matched, so all of them are POSTed to Pipedrive.
+ * Some of the Contacts could be matched up on e-mail addresses, however a large proportion could not. These were POSTed to
+ * Pipedrive, essentially creating duplicates. They have to be manually matched and merged on Pipedrive using their Merge tool.
+ * None of the organisation could be matched due to irregular names, addresses, lists of contacts and associated projects.
+ * All organisations are POSTed to Pipedrive, where the duplicates have to be resolved just as above.
+ *
+ * As the Importer has already been run, and most of the data has already been resolved, it should not be necessary to run it again.
+ *
+ */
+
+/**
+ * This class uses the JSON containers for objects received from Vertec, and the PDxxxSend/Received for objects from Pipedrive
+ */
 public class Importer {
 
     //Services to access both APIs
@@ -206,6 +238,11 @@ public class Importer {
 
     }
 
+    /**
+     * Get all ZUK owned organisations from vertec, with all their contacts attached
+     * Dangling contacts are contacts that do not belong to any of the above organisation
+     * but are owned by ZUK
+     */
     public void importOrganisationsAndContactsFromVertec() {
         this.vertecOrganisations = vertec.getZUKOrganisations().getBody();
         vertecOrganisations.getOrganisationList().stream()
@@ -221,6 +258,9 @@ public class Importer {
                 .forEach(id -> contactIdMap.put(id, -1L));
     }
 
+    /**
+     * Get all deals(project-phases) from Vertec
+     */
     public void importDealsFromVertec() {
         this.vertecProjects = vertec.getZUKProjects().getBody();
         getVertecProjectList().stream()
@@ -236,11 +276,17 @@ public class Importer {
                 .map(JSONPhase::getV_id)
                 .forEach(vertecID -> dealIdMap.put(vertecID, -1L));
     }
-
+/**
+ * Get all Activities from Vertec
+ */
     public void importActivitiesFromVertec() {
         this.vertecActivities = vertec.getZUKActivities().getBody();
     }
 
+    /**
+     * Get all organisations, that are not owned by ZUK, but are referenced by other organisations, contacts, projects or activities
+     * along with their contacts
+     */
     public void importMissingOrganistationsFromVertec() {
         extractListOfMissingOrganisationIds().forEach(id -> {
             try {
@@ -256,6 +302,7 @@ public class Importer {
                 //checks for missing parent organisation and retrieves from vertec, then checck parent of newly imported org
                 Long parentID = org.getParentOrganisationId();
                 Boolean parentOrgNeeded = parentID != null && !organisationIdMap.containsKey(parentID);
+                //There are n layers of parent-daughter relationships between organisations
                 while (parentOrgNeeded) {
                     JSONOrganisation orgParent = vertec.getOrganisation(parentID).getBody();
                     orgParent.setOwnedByTeam(false);
@@ -275,6 +322,10 @@ public class Importer {
         });
     }
 
+    /**
+     * Get all active contacts of a missing organisation
+     * @param org
+     */
     public void dealWithContactsofMissingOrg(JSONOrganisation org) {
         org.getContacts().stream()
                 .filter(JSONContact::getActive)
@@ -293,8 +344,13 @@ public class Importer {
                 });
     }
 
+    /**
+     * Identifies organisations, that are not owned by ZUK, but are referenced by other organisations, contacts, projects or activities
+     * @return
+     */
     public Set<Long> extractListOfMissingOrganisationIds() {
         //build list of ids from dangling contacts
+        //all dangling contacts must work somewhere, so import the organisations they work at
         Set<Long> idsOfMissingOrganisations = vertecOrganisations.getDanglingContacts().stream()
                 .map(JSONContact::getOrganisation)
                 .filter(organisationID -> organisationID != null && organisationIdMap.get(organisationID) == null)
@@ -308,7 +364,7 @@ public class Importer {
                     idsOfMissingOrganisations.add(org.getParentOrganisationId());
                 });
 
-        //add ids from deals
+        //store all organisations that are referenced by projects
         getVertecProjectList().stream()
                 .filter(project -> (project.getCustomerRef() != null || project.getClientRef() != null))
                 .forEach(project -> {
@@ -322,6 +378,7 @@ public class Importer {
                     }
                 });
 
+        //get all organisations referenced by activities
         getVertecActivityList().stream()
                 .filter(activity -> activity.getCustomer_link() != null)
                 .forEach(activity -> {
@@ -334,6 +391,9 @@ public class Importer {
         return idsOfMissingOrganisations;
     }
 
+    /**
+     * Same deal as with organisations above
+     */
     public void importMissingContactsFromVertec() {
         extractListOfMissingContactIds().forEach(id -> {
             try {
@@ -354,6 +414,9 @@ public class Importer {
         });
     }
 
+    /**
+     * Same deal as with organisations above
+     */
     public Set<Long> extractListOfMissingContactIds() {
         Set<Long> idsOfMissingContacts = new HashSet<>();
 
@@ -383,6 +446,9 @@ public class Importer {
         return idsOfMissingContacts;
     }
 
+    /**
+     * Get all contacts from Pipedrive
+     */
     public void importContactsFromPipedrive() {
         this.pipedriveContacts = pipedrive.getAllContacts().getBody().getData();
         for (PDContactReceived pr : this.pipedriveContacts) {
@@ -391,22 +457,35 @@ public class Importer {
             }
         }
     }
-
+    /**
+     * Get all deals from Pipedrive
+     */
     public void importDealsFromPipedrive() {
         this.pipedriveDeals = pipedrive.getAllDeals().getBody();
     }
 
+    /**
+     * Add all organisations to be posted to pipedrive
+     */
     public void populateOrganisationPostList() {
         this.organisationPostList = getVertecOrganisationList().stream()
                 .map(this::convertToPDSend)
                 .collect(toList());
     }
 
+    /**
+     * Bring organisation into a format that can be sent to PD
+     * @param jsonOrganisation
+     * @return
+     */
     public PDOrganisationSend convertToPDSend(JSONOrganisation jsonOrganisation) {
         Long ownerId = teamIdMap.get(jsonOrganisation.getOwner());
         return new PDOrganisationSend(jsonOrganisation, ownerId);
     }
 
+    /**
+     * POST all organisations
+     */
     public void postOrganisationPostList() {
         List<Long> postedIds = pipedrive.postOrganisationList(organisationPostList);
         if (postedIds.size() == organisationPostList.size()) {
@@ -417,6 +496,10 @@ public class Importer {
         }
     }
 
+    /**
+     * prepare Organsiation relationships to be sent to Pipedrive
+     * @return
+     */
     public List<PDRelationshipSend> builOrganisationHierarchies() {
         return getVertecOrganisationList().stream()
                 .filter(org -> org.getParentOrganisationId() != null)
@@ -424,10 +507,16 @@ public class Importer {
                 .collect(toList());
     }
 
+    /**
+     * POST all organisation relationships
+     */
     public void postOrganisationHierarchies(List<PDRelationshipSend> relationships) {
         relationships.forEach(pipedrive::postOrganisationRelationship);
     }
 
+    /**
+     * Match contacts based on email addresses -- not all contacts can be matched this way
+     */
     public void populateContactPostAndPutLists() {
         Map<Long, Boolean> matchedMap = new HashMap<>();
         Map<String, Integer> emailCountMap = new HashMap<>();
@@ -488,6 +577,12 @@ public class Importer {
 //        System.out.println("Put:" + putcount + ", Post:" + postcount);
     }
 
+    /**
+     * We need to give priority to the fields of the matched contact, that has been modified most recently
+     * @param jc
+     * @param pc
+     * @return
+     */
     private PDContactSend createPDContactSend(JSONContact jc, PDContactReceived pc) {
         //TODO: if names coming back empty then handle null names
         if (vertecDateMoreRecentThanPdDate(jc.getModified(), pc.getModifiedTime())) {
@@ -573,6 +668,12 @@ public class Importer {
         return ps;
     }
 
+    /**
+     * Set phone numbers of contact
+     * @param jc
+     * @param pc
+     * @param ps
+     */
     private void setPhone(JSONContact jc, PDContactReceived pc, PDContactSend ps) {
 
         ps.setPhone(pc.getPhone());
@@ -619,6 +720,9 @@ public class Importer {
         contactIdMap.putAll(pipedrive.putContactList(contactPutList));
     }
 
+    /**
+     * Get all followers of projects and contacts from Vertec, and prepare them to be sent off to PD
+     */
     public void populateFollowerPostList() {
         contactFollowerPostList = getVertecContactList().stream()
                 .map(contact -> {
@@ -657,6 +761,9 @@ public class Importer {
         dealFollowerPostList.forEach(pipedrive::postFollowerToDeal);
     }
 
+    /**
+     * Match deals from PD and Vertec, and prepare them to be sent
+     */
     public void populateDealPostAndPutList() {
         for (JSONProject project : getVertecProjectList()) {
             for (JSONPhase phase : project.getPhases()) {
@@ -704,6 +811,9 @@ public class Importer {
         return deal;
     }
 
+/**
+ * We need to give priority to the fields of the matched contact, that has been modified most recently
+ */
     //create a Deal object from a Vertec project/phase and matching pipedrive entrym this is added to PUT list
     private PDDealSend createDealObject(JSONProject project, JSONPhase phase, PDDealReceived temp) {
         if (vertecDateMoreRecentThanPdDate(phase.getModifiedDate(), temp.getUpdate_time())) {
@@ -842,7 +952,12 @@ public class Importer {
 
     }
 
-    @SuppressWarnings("all")
+    /**
+     * On pipedrive each deal is placed in a stage of the sales pipeline
+     * This function determined from the vertec data, which stage the deal should be placed in
+     * @param deal
+     * @param phase
+     */
     private void setStageId(PDDealSend deal, JSONPhase phase) {
 
         //TODO: change to correct stage_ids once in production -- get rid of magic numbers ( load all stages from pd)
@@ -930,6 +1045,9 @@ public class Importer {
         dealIdMap.putAll(pipedrive.updateDealList(dealPutList));
     }
 
+    /**
+     * Prepare all activities, that can be linked to at least one organisation, contact or project to be created on PD
+     */
     public void populateActivityPostList() {
         getVertecActivityList().forEach(activity -> {
             Long contact_id = contactIdMap.get(activity.getCustomer_link());
@@ -1009,7 +1127,9 @@ public class Importer {
         this.vertecOrganisations = vertecOrganisations;
     }
 
-    @SuppressWarnings("all") //TODO: replace with actual solution
+    /**
+     * Used by tests
+     */
     private void constructTestTeamMap() {
         Map<String, Long> map = new DefaultHashMap<>(1363410L);
 

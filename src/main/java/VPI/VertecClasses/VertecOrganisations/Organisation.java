@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * THIS CLASS IS RECEIVED FROM VERTEC
- * Dates are represented in the vertec format /Date separated by a 'T' from day-time
+ * Dates are represented in the vertec format /Date separated by a 'T' from day-time/
  */
 public class Organisation {
 

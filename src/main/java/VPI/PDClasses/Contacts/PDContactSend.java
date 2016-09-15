@@ -1,6 +1,5 @@
 package VPI.PDClasses.Contacts;
 
-import VPI.InsightClasses.VContact;
 import VPI.Entities.util.ContactDetail;
 import VPI.Keys.DevelopmentKeys;
 import VPI.Keys.ProductionKeys;
@@ -227,16 +226,6 @@ public class PDContactSend {
         this.active_flag = true;
     }
 
-    /**
-     * Only used in old 'Insight' code
-     */
-    public PDContactSend(VContact vc) {
-        this.name = vc.getName();
-        this.email = vc.getEmailDetail();
-        this.phone = vc.getPhoneDetail();
-        this.visible_to = 3;
-        this.active_flag = true;
-    }
 
     /**
      * Only used in old code for adding to putlist

@@ -3,6 +3,12 @@ package VPI.PDClasses;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * This is a field of all responses received from Pipedrive. From the information contained in that response
+ * we are only using the below three to determine, whether all relevant data has been returned for our request.
+ * If it has not (more_items_in_collection = true) we request again, modifying the start and limit fields
+ * of the previous request.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PDAdditionalData {
 

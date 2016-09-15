@@ -1,6 +1,5 @@
 package VPI.PDClasses.Organisations;
 
-import VPI.InsightClasses.VOrganisation;
 import VPI.Keys.DevelopmentKeys;
 import VPI.Keys.ProductionKeys;
 import VPI.VertecClasses.VertecOrganisations.JSONOrganisation;
@@ -302,16 +301,6 @@ public class PDOrganisationSend {
         this.creationTime = o.getCreationTime();
     }
 
-    /**
-     * Only used in old code
-     */
-    public PDOrganisationSend(VOrganisation c) {
-        this.name = c.getName();
-        this.visible_to = 3;
-        this.active_flag = true;
-        this.address = c.getFormattedAddress();
-        this.v_id = c.getId();
-    }
 
     public String getWebsite() {
         return website;

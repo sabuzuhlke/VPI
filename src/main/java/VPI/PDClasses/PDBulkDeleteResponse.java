@@ -3,6 +3,10 @@ package VPI.PDClasses;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Response for deleting a list of IDs
+ */
+
 class PDBulkDeleteResponse extends PDResponse {
 
     private PDBulkDeletedIds data;

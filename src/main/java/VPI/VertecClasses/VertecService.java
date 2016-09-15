@@ -28,6 +28,9 @@ import java.util.List;
 
 import static VPI.Entities.util.Utilities.*;
 
+/**
+ * This class handles all communication with VRAPI
+ */
 public class VertecService {
     private RestTemplate restTemplate;
     private String server;
@@ -96,12 +99,11 @@ public class VertecService {
     }
 
     <RES> ResponseEntity<RES> deleteFromVertec(String uri, Class<RES> responseType) {
-//        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-//        headers.add("Authorization", username + ':' + pwd);
-//        return restTemplate.exchange(
-//                new RequestEntity<>(headers, HttpMethod.DELETE, URI.create(uri)),
-//                responseType);
-        return null;
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", username + ':' + pwd);
+        return restTemplate.exchange(
+                new RequestEntity<>(headers, HttpMethod.DELETE, URI.create(uri)),
+                responseType);
     }
 
     <REQ, RES> ResponseEntity<RES> postToVertec(REQ payload, String uri, Class<RES> responseType) {
@@ -174,6 +176,11 @@ public class VertecService {
         return getFromVertec("https://" + server + "/organisations/" + idsAsString(ids), OrganisationList.class);
     }
 
+    /**
+     * Both organisations and contacts extend addressentries on vertec
+     * @param id
+     * @return
+     */
     public ResponseEntity<ActivitiesForAddressEntry> getActivitiesForAddressEntry(Long id) {
         return getFromVertec("https://" + server + "/organisation/" + id + "/activities", ActivitiesForAddressEntry.class);
     }
@@ -209,7 +216,6 @@ public class VertecService {
     }
 
     public ResponseEntity<Long> createOrganisation(Organisation organisation) {
-        //TODO TeSt
         return postToVertec(organisation, "https://" + server + "/organisation", Long.class);
     }
 

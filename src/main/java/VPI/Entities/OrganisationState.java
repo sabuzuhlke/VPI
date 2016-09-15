@@ -11,6 +11,10 @@ import VPI.VertecClasses.VertecService;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class represents the state of organisations on pipedrive or on vertec
+ */
+
 public class OrganisationState {
 
     //Map of vertecId -> Organisation
@@ -63,6 +67,9 @@ public class OrganisationState {
 //    }
 
 
+    /**
+     * Download all organisations from pipedrive
+     */
 
     public void refreshFromPipedrive() {
         organisationsWithVIDs = new HashMap<>();
@@ -81,11 +88,14 @@ public class OrganisationState {
                     } else {
                         organisationsWithVIDs.put(organisation.getVertecId(), organisation);
                     }
-                    dealWithPDOrgModifiedBySynchroniser(organisation); //TODO uncomment when using any other data than TESTPIPE
+                    //dealWithPDOrgModifiedBySynchroniser(organisation);
 
                 });
     }
 
+    /**
+     * Download all organisations from vertec
+     */
     public void refreshFromVertec() {
         syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
         syncModifiedOrganisationsWithVIDs = new HashMap<>();
@@ -106,7 +116,7 @@ public class OrganisationState {
                     } else {
                         organisationsWithVIDs.put(organisation.getVertecId(), organisation);
                     }
-                    dealWithVertecOrgModifiedBySynchroniser(org); //TODO uncomment when using any other data than TESTPIPE
+                   // dealWithVertecOrgModifiedBySynchroniser(org);
 
                 });
 
@@ -163,10 +173,7 @@ public class OrganisationState {
     }
 
 
-    /**
-     * returns all organisations that have been modified since the last run of the synchroniser
-     * by anyone except the synchroniser itself!
-     */
+
 
     public Organisation getOrganisationByVertecId(Long id) {
         return organisationsWithVIDs.get(id);
@@ -191,8 +198,8 @@ public class OrganisationState {
     }
 
     /**
-     * Thus funcion places all organisations that have been modified by the synchroniser in two seperate lists
-     * We will be able to make assertions based on whether those lists contain
+     * This funcion places all organisations that have been modified by the synchroniser in two seperate lists
+     * We ill be able to make assertions based on whether those lists contain
      */
     public void dealWithPDOrgModifiedBySynchroniser(Organisation org) {
 
@@ -214,7 +221,10 @@ public class OrganisationState {
         }
 
     }
-
+    /**
+     * This funcion places all organisations that have been modified by the synchroniser in two seperate lists
+     * We will be able to make assertions based on whether those lists contain
+     */
     public void dealWithVertecOrgModifiedBySynchroniser(VPI.VertecClasses.VertecOrganisations.Organisation org) {
         if (org == null) return;
 

@@ -2,6 +2,10 @@ package VPI.PDClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * All objects on pipedrive have an Owner (user) associated with them. That owner is returned in this format.
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PDOwner {
 

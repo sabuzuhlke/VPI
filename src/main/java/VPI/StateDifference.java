@@ -5,6 +5,9 @@ import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.SynchroniserState;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
 
+/**
+ * Used to contain the updates that need to be made to both, vertec and Pipedrive
+ */
 public class StateDifference {
 
     private OrganisationDifferences organisationDifferences;

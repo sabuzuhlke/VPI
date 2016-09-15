@@ -16,7 +16,7 @@ public class ContactDetail {
     }
 
     /**
-     * Used to hold email or phone information for a contact in pipedrive
+     * Used to hold email or phone information for a contact in pipedrive and vertec
      * @param value is email/phone string representation
      * @param primary is boolean denoting if value is main contact deatil for person
      */

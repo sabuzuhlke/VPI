@@ -19,6 +19,28 @@ import java.util.Map;
 
 import static VPI.Entities.util.Utilities.saveMap;
 
+    /**
+     * This class handles the automatic propagation of updates between the the Pipedrive API and VRAPI.
+     * It assumes that both Vertec and Pipedrive contain correct information(e.g. all data has been de-duplicated).
+     * Should that not be the case, the behaviour is not guaranteed to be correct, and it might propagate mistakes
+     * from one side to the other.
+     * It also assumes, that links have been established between all corresponding data. If not, then it is going
+     * to create new entries for both parts of the unlinked data.
+     *
+     * The Synchroniser loads in all data on construction, and resolves what needs to be done to with each object, based
+     * on the last modified dates. The downloaded data is kept in the respective 'State' objects. And the actions that
+     * need to be taken in the 'stateDifference' object. The former are responsible for the download, while the latter
+     * is responsible for data resolution.
+     *
+     * The 'SynchroniserState' object holds mappings between objects on Vertec and Pipedrive. Currently, users and
+     * organisations.
+     *
+     * The Synchroniser is only to apply changes made since its previous completion. Should the application crash, while
+     * making updates, we would loose track of the updates we have already made, and they might get propagated back.
+     * A useful solution would be to log all updates made by the system (these are written to disk, if an error occurs
+     * and when the synchronisation completes). This is currently implemented. However, the system
+     * does not use this log as of yet in any way. Also this does not deal with e.g. a power outage.
+     */
 public class Synchroniser {
 
     private VertecState vertecState;
@@ -30,6 +52,10 @@ public class Synchroniser {
     private SyncLogList vertecLog;
     private SyncLogList pipedriveLog;
 
+
+    /**
+     * Construction will run synchronisation
+     */
     public Synchroniser(PDService pipedrive, VertecService vertec) throws IOException {
 
         this.vertecLog = new SyncLogList("logs/VertecLog");
@@ -64,7 +90,7 @@ public class Synchroniser {
     public void extractDifferencesAndApply() throws IOException {
 
         printIntentions();
-        //extraractDifferencesAndApplyForOrganisatiozns();
+       //extraractDifferencesAndApplyForOrganisatiozns();
         saveLogs();
     }
 
@@ -72,17 +98,17 @@ public class Synchroniser {
 
         try {
 
-            updateConflictiongOrganisationsOnVertec(); //update maps inline
-            updatePdOrganisations(); //update maps inline
-            updateVertecOrganisations(); //update maps inline
-            Map<Long, Long> orgsCreatedOnVertec = createVertecOrganisations();
-            Map<Long, Long> orgsCreatedOnPipedrive = createPipedriveOrganisations();
+//            updateConflictiongOrganisationsOnVertec(); //update maps inline
+//            updatePdOrganisations(); //update maps inline
+//            updateVertecOrganisations(); //update maps inline
+//            Map<Long, Long> orgsCreatedOnVertec = createVertecOrganisations();
+//            Map<Long, Long> orgsCreatedOnPipedrive = createPipedriveOrganisations();
             List<Long> orgsDeletedFromVertec = deleteVertecOrganisations();
-            List<Long> orgsDeletedFromPipedrive = deletePipedriveOrganisations();
+            //List<Long> orgsDeletedFromPipedrive = deletePipedriveOrganisations();
 
-            synchroniserState.updateMapWith(orgsCreatedOnVertec);
-            synchroniserState.updateMapWith(orgsCreatedOnPipedrive);
-            synchroniserState.saveDeletedListToFile(orgsDeletedFromPipedrive, "pipedrive");
+//            synchroniserState.updateMapWith(orgsCreatedOnVertec);
+//            synchroniserState.updateMapWith(orgsCreatedOnPipedrive);
+//            synchroniserState.saveDeletedListToFile(orgsDeletedFromPipedrive, "pipedrive");
             synchroniserState.saveDeletedListToFile(orgsDeletedFromVertec, "vertec");
             saveMap(synchroniserState.getOrganisationIdMap(), "TESTorgIdMap");
 
@@ -154,6 +180,24 @@ public class Synchroniser {
             });
         });
 
+        System.out.println("\n\n=====================JUSTIN============================\n\n");
+        this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
+            if(org.getSupervisingEmail().equals("justin.cowling@zuhlke.com"))
+            System.out.println(org.getName() + " pipedrive ID " + org.getPipedriveId());
+        });
+
+        System.out.println("\n\n=====================BREWSTER============================\n\n");
+        this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
+            if(org.getSupervisingEmail().equals("brewster.barclay@zuhlke.com"))
+                System.out.println(org.getName() + " pipedrive ID " + org.getPipedriveId());
+        });
+
+        System.out.println("\n\n=====================Everything else============================\n\n");
+        this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
+        if(! org.getSupervisingEmail().equals("brewster.barclay@zuhlke.com") && ! org.getSupervisingEmail().equals("justin.cowling@zuhlke.com"))
+                System.out.println(org.getName() + " pipedrive ID " + org.getPipedriveId());
+        });
+
 
 //        System.out.println("\n\n=================================================\n\n");
 //        System.out.println("These organisations recieved no updates");
@@ -188,6 +232,10 @@ public class Synchroniser {
                 });
     }
 
+    /**
+     * The Vertec IDs of newly created vertec organisations needs to be probagated back to Pipedrive
+     * @return
+     */
     public Map<Long, Long> createVertecOrganisations() {
         Map<Long, Long> orgIdMap = new HashMap<>();
         List<Long> errorPIDs = new ArrayList<>();

@@ -12,8 +12,15 @@ import org.apache.commons.collections4.bidimap.*;
 
 import static java.io.File.*;
 
+/**
+ * A collection of helper functions
+ */
+
 public class Utilities {
 
+    /**
+     * Formats a yyyy-mm-ddThh:mm:ss type date to yyyy-mm-dd hh:mm:ss
+     */
      static  public String formatVertecDate(String vDate){
          try{
              if(vDate != null){
@@ -31,7 +38,10 @@ public class Utilities {
          }
          return null;
      }
-     
+
+    /**
+     * Formats a yyyy-mm-dd hh:mm:ss type date to yyyy-mm-ddThh:mm:ss
+     */
      static public String formatToVertecDate(String pDate){
          try{
              if(pDate != null){
@@ -52,8 +62,11 @@ public class Utilities {
          System.out.println(pDate);
          return null;
      }
-     
 
+    /**
+     * Creates a full address from parts in a vertec organisation
+     * : "buildingName, streetNO street, City, ZIP, Country"
+     */
     static public String formatVertecAddress(VPI.VertecClasses.VertecOrganisations.Organisation org){
          String address = "";
          if(org.getBuildingName() != null && !org.getBuildingName().isEmpty()){
@@ -104,6 +117,14 @@ public class Utilities {
          return address;
      }
 
+    /**
+     * Activities contain a note field. Since it is not possible to extend the object model for activities on pipedrive
+     * therefore their vertec ID is appended to the note field in the following format
+     * : "V_ID[number]#
+     */
+    /**
+     * Following function gets rid of the VID so the original note remains
+     */
      static public String extractNoteFromNoteWithVID(String note) {
          if (extractVID(note) == -1) {
              return note;
@@ -113,6 +134,9 @@ public class Utilities {
          }
      }
 
+    /**
+     * Extracts the VID
+     */
      static public  Long extractVID(String note) {
          if (note.contains("V_ID:")) {
              String[] vIdAndRest = note.split("#");
@@ -125,6 +149,9 @@ public class Utilities {
          return -1L;
      }
 
+    /**
+     * Note field of Activity on pipedrive does not support tab and uses html encoding for some special charachters, e.g. newline
+     */
      //TODO add the reverse of this function
      public static String reformatToHtml(String s) { //makes content of note field legible on pipedrive
          String[] parts = s.split("\n");
@@ -192,6 +219,21 @@ public class Utilities {
             ids.add(Long.parseLong(line));
         }
         return ids;
+    }
+
+    static public void saveList(String filename, List<Long> list, boolean append) throws IOException {
+        Boolean b = new File(filename).createNewFile();
+        FileWriter fw = new FileWriter(filename, append);
+
+        list.forEach(element -> {
+            try {
+                fw.write(element + "\n");
+            } catch (IOException e) {
+                throw new RuntimeException("Error writing list element to file: " + element);
+            }
+        });
+
+        fw.close();
     }
 
    static  public String idsAsString(List<Long> ids) {

@@ -47,6 +47,17 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * As the communication with Vertec and Pipedrive takes too long, we used a Mocking framework(Mockito) to load in files
+ * from disk, thus eliminating the need to go through network layers to run these tests. Those files are located under
+ * /test/resources.
+ * Unfortunately, while developing the Synchroniser, we have modified the resources, so some assertions might not hold
+ * in the below tests even if the functionality of the code is correct.
+ *
+ * Some of the @Test-s are pieces of code that we used to Investigate the Interfaces and the data, and are not actually tests.
+ * These have been annotated with @Ignore, and do not run when the suite is ran.
+ *
+ */
 public class ImporterTest {
 
     private Importer importer;
@@ -1631,7 +1642,7 @@ return false;
 
 
 
-    @Test
+    @Test @Ignore
     public void findActivitiesLinkedToOrganisations() throws IOException {
         final ZUKActivities activitiesResponse = getDummyActivitiesResponse().getBody();
         final ZUKOrganisations zukOrgs = getDummyOrganisationsResponse().getBody();

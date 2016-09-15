@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class stores data that represents what needs to change on Vertec and Pipderice
+ */
+
 public class OrganisationDifferences {
 
     private Set<Organisation> createOnVertec; //
@@ -40,10 +44,6 @@ public class OrganisationDifferences {
         calculateOrganisationDifferences(vertecState, pipedriveState, synchroniserState);
     }
 
-    //TODO: When updating organisations if the pipedrive ID of the Vertec and PD org are different, replace the corresponding
-    //TODO: entry in the orIdmap to contain the PID of the pipedrive version. (On DISK)!!!!!!!!!!!!!!!!!!!!
-
-    //TODO for update conflicts keep pipedrive version
     /**
      * Populate differences lists based on the states provided
      *
@@ -99,18 +99,21 @@ public class OrganisationDifferences {
             return;
         }
         //Case 1: CONFLICT
+        //if both organisations have been changed since the last sync
         if (vOrgModifiedSinceLastSync && pOrgModifiedSinceLastSync) {
             updateConflicts.add(pOrg);
             updateConflictsReciprocal.add((vOrg));
             return;
         }
         //Case 2: update Pipedrive
+        //if org on vertec has changed, but hasn't changed on pd
         if (vOrgModifiedSinceLastSync && !pOrgModifiedSinceLastSync) {
             updateOnPipedrive.add(updatePipedriveFromVertec(pOrg, vOrg));
             return;
         }
 
         //Case 3: update on Vertec
+        //if org changed on pd, but not on vertec
         if (pOrgModifiedSinceLastSync && !vOrgModifiedSinceLastSync) {
             updateOnVertec.add(updateVertecFromPipedrive(vOrg, pOrg));
             return;
@@ -160,10 +163,6 @@ public class OrganisationDifferences {
             if (pOrg == null) return;
             if (modifiedSinceLastSync(synchroniserState, pOrg)) {
                 deletionFromPipedriveConflicts.put(vOrg, pOrg);
-            } else if (synchroniserState.modificationMadeByCrashingSync(pOrg.getModified())) {
-                //if org would be deleted from vertec, but pipedrive has been modified within the crashWindow, then that means that
-                //it was a deletion conflict and we have already dealt with it
-                return;
             } else {
                 deleteFromPipedrive.add(vOrg);
             }

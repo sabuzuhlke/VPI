@@ -23,6 +23,11 @@ public class PDOrganisationItemsResponse extends PDResponse {
         this.data = data;
     }
 
+    /**
+     * When asking for all Organisations only 500 results are returned with each response, and the additional data field sais,
+     * whether there are more organisations on PD that were not returned.
+     */
+
     public PDAdditionalData getAdditional_data() {
         return additional_data;
     }

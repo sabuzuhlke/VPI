@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by gebo on 12/09/2016.
+ * A list of updates, created for each run of the synchroniser
+ * A seperate list will be created for Vertec and PD
  */
 public class SyncLogList {
 

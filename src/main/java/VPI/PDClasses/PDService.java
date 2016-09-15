@@ -23,11 +23,14 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * This class handles all communication with Pipedrive, using Springs restTemplate
+ */
 public class PDService {
 
     private RestTemplate restTemplate;
-    private String server;
-    private String apiKey;
+    private String server; //URL o pipedrive
+    private String apiKey; //Each user has a unique api-key, that determines which company's data is to be accessed
 
     public PDService(String server, String apiKey) {
         this.restTemplate = new RestTemplate();
@@ -137,6 +140,11 @@ public class PDService {
         return getFromPipedrive(server + "deals/" + dealId + apiKey, PDDealResponse.class);
     }
 
+    /**
+     * As only 500 deals are returned with each response, we need to ask as long as 'more_items_in_collection' becomes false
+     * this is true for getting all objects of any type on PD
+     * @return all deals on Pipedrive
+     */
     public ResponseEntity<PDDealItemsResponse> getAllDeals() {
         int start = 0;
         Boolean moreItemsInCollection = true;
@@ -264,7 +272,6 @@ public class PDService {
 
         }
         res.getBody().setData(orgsRecieved);
-        System.out.println(res.getBody());
         return res;
     }
 
@@ -604,6 +611,7 @@ public class PDService {
 
     /**
      * Organisation relationships
+     * These are parent-daughter relationships between organisations
      */
 //------------------------------------------------------------------------------------------------------------------POST
     public ResponseEntity<String> postOrganisationRelationship(PDRelationshipSend relationship) {
@@ -675,23 +683,22 @@ public class PDService {
      * UTILITIES
      */
 //-----------------------------------------------------------------------------------------------------------------CLEAR
+
+    /**
+     * This function wipes all data from Pipedrive!!
+     */
     public void clearPD(/*List<Long> orgsToKeep, List<Long> contsToKeep, List<Long>  dealsToKeep*/) {
 
-        /**
-         * ORganisations do not need to be cleared atm as they work correctly
-         */
 
         List<Long> orgsToDel = getAllOrganisations().getBody().getData()
                 .stream()
-                //.filter(res -> res.getV_id() != null)
+                //.filter(res -> res.getV_id() != null) //Uncommenting these lines will result in deleting only objects, that are in Vertec as well.
                 //.filter(org -> !orgsToKeep.contains(org.getId()))
                 .map(PDOrganisationReceived::getId)
                 .collect(toList());
         System.out.println("Found " + orgsToDel.size() + " organisationState to delete");
 
-        /**
-         * Keep contacts as they were already matched up and wed loose a lot of data
-         */
+
         List<Long> contsToDel = getAllContacts().getBody().getData()
                 .stream()
                 //.filter(res -> res.getV_id() != null )

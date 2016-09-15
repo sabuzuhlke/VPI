@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toSet;
 
 /**
  * Class for storing all maps of vertec_id <-> pipederive_id, posted previously
+ * Also provides a mapping of the users across the systems
  */
 public class SynchroniserState {
 
@@ -55,7 +56,7 @@ public class SynchroniserState {
 
     //Organisation items
 
-    //Map of Vertec_Id <-> Pipedrive_Id for organisationState we have posted to pipedrive
+    //Map of Vertec_d <-> Pipedrive_Id for organisationState we have posted to pipedrive
     private DualHashBidiMap<Long, Long> organisationIdMap;
 
     //List of Vertec Ids that we imported from vertec but are not owned by ZUK sales team members
@@ -104,6 +105,7 @@ public class SynchroniserState {
 
     /**
      *Function to create the reverse of a map, used to create common representation of entities by storing email of owner rather than vertec and pipedrive ids
+     * Needed so we can access the map by values instead of keys
      */
     public Map<Long, String> constructReverseMap(Map<String, Long> normalMap) {
         //TODO: 'constructReverseMap' check defualt value is correct person
@@ -168,7 +170,7 @@ public class SynchroniserState {
     /**
      * Matches vertec employee emails to pipedrive user emails and creates map entry for user email -> pipedriveId
      */
-    public Map<String, Long> constructPipedriveUserEmailToIdMap(Set<String> v_emails, List<PDUser> pd_users) {//TODO: write test for this and complete
+    public Map<String, Long> constructPipedriveUserEmailToIdMap(Set<String> v_emails, List<PDUser> pd_users) {
         Map<String, Long> teamIdMap = new DefaultHashMap<>(1533390L);
         for (String v_email : v_emails) {
             Boolean mapped = false;
@@ -189,9 +191,8 @@ public class SynchroniserState {
     }
 
     /**
-     * This is from importer
+     * This is from importer used in tests- real map is dynamically constructed from the web interfaces
      */
-    @SuppressWarnings("all") //TODO: replace with actual solution
     private Map<String, Long> constructTestTeamMap() {
         Map<String, Long> map = new DefaultHashMap<>(1424149L);
 
@@ -411,9 +412,9 @@ public class SynchroniserState {
         organisationIdMap.putAll(vertecIdsToPipedriveIds);
     }
 
-    public void saveDeletedListToFile(List<Long> deletedIds, String vertecOrPipedrive) {
+    public void saveDeletedListToFile(List<Long> deletedIds, String vertecOrPipedrive) throws IOException {
 
-
+        Utilities.saveList(vertecOrPipedrive + "DeletedIDsList", deletedIds, true);
 
     }
 

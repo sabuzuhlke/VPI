@@ -4,6 +4,9 @@ import VPI.Entities.OrganisationState;
 import VPI.PDClasses.PDService;
 import VPI.SynchroniserClasses.SynchroniserState;
 
+/**
+ * This class contains all data downloaded from pipedrive at the start of Synchronisation
+ */
 public class PipedriveState {
 
     public PDService pipedrive;
