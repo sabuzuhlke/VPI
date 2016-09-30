@@ -22,8 +22,10 @@ import static java.util.stream.Collectors.*;
 
 /**
  * This class serves the same purpose as the Contact merger, but for organisations.
- * The method of determining missing organisations is the same, however we do not match any organisations automatically
- * as there are no suitable fields to match on
+ * The method of determining missing organisations is the same, however we only match any organisations automatically
+ * on activities as there are no other suitable fields to match on (Projects, would provide only a marginal increase in hits)
+ *
+ * TODO needs modification, so it takes into account all deleted organisations(list is being maintained in SynchroniserState)
  */
 
 public class OrganisationMerger {

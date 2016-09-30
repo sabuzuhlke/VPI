@@ -1,6 +1,6 @@
 package VPI.SynchroniserClasses.PipedriveStateClasses;
 
-import VPI.Entities.OrganisationState;
+import VPI.SynchroniserClasses.OrganisationState;
 import VPI.PDClasses.PDService;
 import VPI.SynchroniserClasses.SynchroniserState;
 

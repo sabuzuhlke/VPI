@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * This is the entry point to the program, at the moment it doesn't do anything, but later will shedule a synchronisation
+ * every day
+ */
 @SpringBootApplication
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Application implements CommandLineRunner {
@@ -40,7 +44,7 @@ public class Application implements CommandLineRunner {
                 }
             };
             //schedules task to run every hour
-            timer.schedule(t, 0L, 1000*60*60);
+            timer.schedule(t, 0L, 1000*60*60*24);
 
         } catch (Exception e) {
             GlobalClass.log.info("HELP HELP IVE HIT AN EXCEPTION" + e.toString());

@@ -306,7 +306,7 @@ public class Utilities {
 
          map.keySet().forEach(key -> {
              try {
-                 file.write(key.toString() + "," + map.get(key).toString());
+                 file.write(key.toString() + "," + map.get(key).toString() + "\n");
              } catch (IOException e) {
                 throw new RuntimeException(e);
              }

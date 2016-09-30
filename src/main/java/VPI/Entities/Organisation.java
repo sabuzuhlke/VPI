@@ -16,6 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * This Class is designed to bridge the representation gap between Pipedrive and Vertec Organisations.
+ * Hence it contains all relevant fields, so that processing of organisations is made simpler
+ * All orgasniations got from Vertec and Pipedrive are converted to this format, before being processed
+ */
 public class Organisation implements Comparable<Organisation> {
 
     private Long vertecId;
@@ -42,7 +47,7 @@ public class Organisation implements Comparable<Organisation> {
     private String modified;
     private String created;
 
-    private Long vParentOrganisation;
+    private Long vParentOrganisation; //Vertec ID of parent Organisation
 
     public Organisation() {
     }
@@ -108,8 +113,8 @@ public class Organisation implements Comparable<Organisation> {
      */
     private String readPdOwnedOnVertecBy(String ownedBy) {
         if (ownedBy == null) return "No Owner";
-        else if (ownedBy.equals(ProductionKeys.OWNED_BY_SALES_TEAM )) return "Sales Team";
-        else if (ownedBy.equals(ProductionKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
+        else if (ownedBy.equals(DevelopmentKeys.OWNED_BY_SALES_TEAM )) return "Sales Team";
+        else if (ownedBy.equals(DevelopmentKeys.OWNED_BY_NOT_ZUK)) return "Not ZUK";
         else return "unrecognised";
     }
 
@@ -152,8 +157,8 @@ public class Organisation implements Comparable<Organisation> {
 //    }
 
     /**
-     * Fresh ORganisation will contain values updated on their respective system that need to put into this organisation
-     * This will be posted to pipedrive as an update
+     * This function updates all fields of an organisation, to the values of the freshOrgansiation wherever necessary.
+     * @param freshOrganisation is an organisation, that has been modified more recenty, then this
      */
     public void updateOrganisationWithFreshValues(Organisation freshOrganisation) {
         //Vertec Id will be the same for both
@@ -162,7 +167,9 @@ public class Organisation implements Comparable<Organisation> {
         boolean fullAddressModified = false;
 
         //below line should repoint orgs that have been merged on pipedrive
+
         this.pipedriveId = freshOrganisation.getPipedriveId() == null ? this.pipedriveId : freshOrganisation.getPipedriveId();
+        //this.pipedriveId = freshOrganisation.getVertecId() == null ? this.vertecId : freshOrganisation.getVertecId();
 
         this.ownedOnVertecBy = (freshOrganisation.ownedOnVertecBy != null && !freshOrganisation.ownedOnVertecBy.equals("")) ?
                 freshOrganisation.ownedOnVertecBy :
@@ -171,6 +178,10 @@ public class Organisation implements Comparable<Organisation> {
         this.supervisingEmail = (freshOrganisation.supervisingEmail != null && !freshOrganisation.supervisingEmail.equals("")) ?
                 freshOrganisation.supervisingEmail :
                 this.supervisingEmail;
+        //for the test PDinstance
+        if(emailMapForPDTestInstance().getKey(freshOrganisation.getSupervisingEmail()) != null){
+            this.setSupervisingEmail(emailMapForPDTestInstance().getKey(freshOrganisation.getSupervisingEmail()));
+        }
         this.name = (freshOrganisation.name != null && !freshOrganisation.name.equals("")) ?
                 freshOrganisation.name :
                 this.name;
@@ -296,12 +307,15 @@ public class Organisation implements Comparable<Organisation> {
 
     /**
      * Compares two organisations.
-     * Addresses are tricky as Pipedrive used a supplied full address to query a google maps api, tha splits
+     * Addresses are tricky as Pipedrive used a supplied full address to query a google maps api, that splits
      * the address into parts. Sometimes this is incomplete, or split up in a wrong way. However the full address
      * field returned from pipedrive is always correct.
      * From Vertec we get the full address in two ways
      * one, by concatenating the sub-address fields. These come from organisations previously entered into vertec
      * two, when we post to vertec, we store the full address in the street address field, as splitting it up reliably is not possible
+     *
+     * The dilemma here is that on Vertec we want to keep all sub address fields as accurate as possible, however the ones
+     * got from Pipedrive are not always complete. So if the full-Address dud not change, we keep the subAddress fields in Vertec
      */
     public boolean equals(Organisation org) {
         boolean retval = true;
@@ -323,7 +337,8 @@ public class Organisation implements Comparable<Organisation> {
         else if(website != null && org.getWebsite() != null) retval = retval && website.equals(org.getWebsite());
 
         if(supervisingEmail == null ^ org.getSupervisingEmail() == null) return false;
-        else if(supervisingEmail != null && org.getSupervisingEmail() != null) retval = retval && supervisingEmail.equals(org.getSupervisingEmail());
+        else if(supervisingEmail != null && org.getSupervisingEmail() != null) retval = retval && (supervisingEmail.equals(org.getSupervisingEmail())
+                                                                                        || emailMapForPDTestInstance().get(supervisingEmail).equals(org.getSupervisingEmail()));
 
 
         if(fullAddress == null ^ org.getFullAddress() == null) return false;
@@ -353,7 +368,28 @@ public class Organisation implements Comparable<Organisation> {
 
     }
 
+    private BidiMap<String, String> emailMapForPDTestInstance(){
+        BidiMap<String, String> map = new DualHashBidiMap<>();
+        map.put("wolfgang.emmerich@zuhlke.com", "we@notreal.com"); //Wolfgang
+        map.put("tim.cianchi@zuhlke.com", "tc@notreal.com"); //Tim
+        map.put("neil.moorcroft@zuhlke.com", "nm@notreal.com"); //Neil
+        map.put("mike.hogg@zuhlke.com", "mh@notreal.com"); //Mike
+        map.put("justin.cowling@zuhlke.com", "jc@notreal.com"); //Justin
+        map.put("brewster.barclay@zuhlke.com", "bb@notreal.com"); //Brewster
+        map.put("keith.braithwaite@zuhlke.com", "kb@notreal.com"); //Keith
+        map.put("peter.brown@zuhlke.com", "pb@notreal.com"); //Peter Brown
+        map.put("steve.freeman@zuhlke.com", "sf@notreal.com"); //Steve Freeman
+        map.put("john.seston@zuhlke.com", "js@notreal.com"); //John Seston
+        map.put("sabine.streuss@zuhlke.com", "ss@notreal.com"); //Sabine
+        map.put("sabine.strauss@zuhlke.com", "ss@notreal.com"); //Sabine
+        map.put("ileana.meehan@zuhlke.com", "im@notreal.com"); //Ileana
+        map.put("ina.hristova@zuhlke.com", "ih@notreal.com"); //Ina
+        map.put("adam.cole@zuhlke.com", "ac@notreal.com"); //adam
+        map.put("bryan.thal@zuhlke.com", "by@notreal.com"); //bryan
+        map.put(null, "");
 
+        return map;
+    }
 
     @Override
     public int compareTo(Organisation org) {
@@ -512,9 +548,9 @@ public class Organisation implements Comparable<Organisation> {
     }
 
     /**
-     * This function builds the full address from its parts as mentioned above
-     * @param org
-     * @param setFullAdress
+     * This function builds the full address from its parts, for purposes mentioned above
+     * @param org target organisation
+     * @param setFullAdress FALSE if function should be read-only, TRUE if it should modify the fullAddress
      * @return
      */
     static public String buildFullAddress(Organisation org, boolean setFullAdress){

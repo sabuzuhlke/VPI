@@ -75,6 +75,6 @@ public class SyncLog {
 
     @Override
     public String toString() {
-        return timeStamp + ", " + type + ", " + objetType + ", " + name + ", " + vertecId + ", " + pipedriveId + "\n";
+        return timeStamp + " :: " + type + " :: " + objetType + " :: " + name + " :: " + vertecId + " :: " + pipedriveId + "\n";
     }
 }

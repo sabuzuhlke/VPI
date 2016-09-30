@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ *  * TODO all of these update classes anre unnecessary, DELETE
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PDUpdateLog extends PDResponse {
     private List<PDUpdate> data;

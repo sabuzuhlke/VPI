@@ -24,6 +24,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
+/**
+ * This test class does not contain any actial tests. It is instead used to run the Importer or to Clear a pipedrive
+ * instance. WARNING: before running clearPD ensure that the setUp() function uses the DevelopmentKeys, else you
+ * will WIPE the PRODUCTION instance!!
+ */
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -40,7 +45,7 @@ public class ImportZUK {
         MyCredentials creds = new MyCredentials();
 
         //set up Pipedrive and Vertec services
-        this.PDS = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+        this.PDS = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
         //this.VS = new VertecService("localhost:9999");
 
         //this.importer = new Importer(PDS, VS);
@@ -102,11 +107,9 @@ public class ImportZUK {
 
     @Test @Ignore("Just do")
     public void clearPD(){
-        //VertecSynchroniser VS = new VertecSynchroniser();
-        //MyCredentials creds = new MyCredentials();
-        PDService PD = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        //PDService PD = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
 
-        PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
+        //PD.clearPD(/*new ArrayList<>(), new ArrayList<>(), new ArrayList<>()*/);
     }
 
     @Test @Ignore("takes too long, way too long")

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-
+/**
+ *  * TODO all of these update classes anre unnecessary, DELETE
+ */
 public class PDUpdateData {
     private Long id;
     private Long item_id;

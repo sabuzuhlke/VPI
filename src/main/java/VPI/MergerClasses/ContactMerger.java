@@ -17,25 +17,29 @@ import static java.util.stream.Collectors.*;
 /**
  * this class deals with contacts that have been merged on pipedrive and that need to be merged on vertec as well
  * It determines which contacts have been merged on pipedrive, and propagates all merges to Vertec that it can determine.
- * All merges it cannot resolve are shown in a list, and can be merged manually on VRAPI.
+ * All contacts, that have been merged or deleted, but are not resolved are shown in a list, and can be merged manually on VRAPI.
  * 
  * The Idea behind recognising which contacts have been merged on pipedrive is the following:
  * All cotacts we have posted to pipedrive before (stored in the prodictionContacIdMap) and that are not there anymore
  * are either deleted or or have been merged. From there we try find contacts from vertec which share an email address
- * with the deleted contact. If there is only one who does, that is the contact the other one has been merged into.
- * We can only match a small proprtion of contacts can be matched on email. The rest will have to be matched manually.
+ * with the deleted contact. The same is done with activities and phone numbers. If there is only one who does,
+ * that is the contact the other one has been merged into.
+ * We can only match a small proprtion of contacts on email. The rest will have to be matched manually.
  */
 
 /**
- * This class may need to be ran from time-to-time, as Duplicates might be created in Vertec.
+ * This class may need to be ran from time-to-time, as Duplicates might be created in Vertec at any point in time.
  */
 public class ContactMerger {
     public PDService PS;
     public VertecService VS;
 
-    //List of Pairs where fst is VertecId of missing org, sndis VertecId of potential match (emails matched)
+    //List of Pairs where 1st is VertecId of missing org, 2nd is VertecId of potential match (emails matched)
+    //ergo a list of ids with multiple matches
     public List<List<Long>> uncertainMerges;
+    //List of ids for which no pairs have been found
     public List<Long> noMergesFound;
+    //List of uniquely identified matches
     public Map<Long, Long> merges;
 
     public ContactMerger(PDService PS, VertecService VS){

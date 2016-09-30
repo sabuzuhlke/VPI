@@ -1,4 +1,7 @@
 package VPI;
+/**
+ * DEPRECATED!!
+ */
 
 import VPI.PDClasses.Activities.PDActivityReceived;
 import VPI.PDClasses.Activities.PDActivitySend;

@@ -34,7 +34,7 @@ public class PDService {
 
     public PDService(String server, String apiKey) {
         this.restTemplate = new RestTemplate();
-        this.apiKey = ProductionKeys.key; //= apiKey;
+        this.apiKey = DevelopmentKeys.key; //= apiKey;
         this.server = server;
     }
 
@@ -254,6 +254,7 @@ public class PDService {
         ResponseEntity<PDOrganisationItemsResponse> res = null;
         List<PDOrganisationReceived> orgsRecieved = new ArrayList<>();
 
+        //While loop ensures, that all Organisation are got, as only 500 are returned at a time
         while (moreItems) {
             res = getFromPipedrive(
                     server + "organizations?start=" + start + "&limit=100000&" + apiKey.substring(1),

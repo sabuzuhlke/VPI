@@ -1,9 +1,9 @@
 package CurrentTests;
 
 import VPI.Entities.Organisation;
-import VPI.Entities.OrganisationState;
-import VPI.Keys.DevelopmentKeys;
 import VPI.Keys.ProductionKeys;
+import VPI.SynchroniserClasses.OrganisationState;
+import VPI.Keys.DevelopmentKeys;
 import VPI.PDClasses.Contacts.PDContactListReceived;
 import VPI.PDClasses.Deals.PDDealItemsResponse;
 import VPI.PDClasses.HierarchyClasses.LinkedOrg;
@@ -26,7 +26,6 @@ import VPI.VertecClasses.VertecService;
 import VPI.VertecClasses.VertecTeam.EmployeeList;
 import VPI.VertecClasses.VertecTeam.ZUKTeam;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,7 +33,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.SystemProfileValueSource;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -59,7 +57,16 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * These tests require the ProductionKeys to be used to pass.
- * As the Dummy Pipedrive Responses have been taken from the Production instance
+ *
+ * We have obtained some mock data, from the dev and the production instances of Pipedrive, and some from the production
+ * instance of Vertec. The tests use these instead of communicating with the actual interfaces, as that would take a considerable time.
+ * There is detailed documentation on how this works on http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html
+ *
+ * Make sure to use the correct sets of data, when running the tests
+ *
+ *
+ * All tests annotated with @Ignore, are used to run snippets of code, rather then being actual tests. Make sure you
+ * know what they are doing before running them.
  */
 public class SynchroniserTest {
     private Synchroniser synchroniser;
@@ -73,45 +80,27 @@ public class SynchroniserTest {
 
     @Before
     public void setUp() throws IOException {
-//        MockitoAnnotations.initMocks(this);
-//        pipedrive = mock(PDService.class);
-//        vertec = mock(VertecService.class);
-//
-//
-//        when(pipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
-//        when(vertec.getTeamDetails()).thenReturn(getOldDummyTeamResponse()); // for initialisaton of importer
-//
-//        when(vertec.getSalesTeam()).thenReturn(getDummyVertecTeamResponse().getBody().getEmployees());
-//
-//
-//        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
-//        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
-//
-//        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
-//        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
-//        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
-//
-//        synchroniser = new Synchroniser(pipedrive, vertec);
-//
-//        MockitoAnnotations.initMocks(this);
-//        TESTpipedrive = mock(PDService.class);
-//        TESTvertec = mock(VertecService.class);
-//
-//
-//        when(TESTpipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
-//        when(TESTvertec.getTeamDetails()).thenReturn(getOldDummyTeamResponse()); // for initialisaton of importer
-//
-//        when(TESTvertec.getSalesTeam()).thenReturn(getDummyVertecTeamResponse().getBody().getEmployees());
-//
-//
-//        when(TESTpipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
-//        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
-//
-//        when(TESTvertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
-//        when(TESTvertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
-//        doAnswer(getOrganisationUpdateLogAnswer()).when(TESTpipedrive).getUpdateLogsFOrOrganisation(anyLong());
-//
-//        TESTsynchroniser = new Synchroniser(TESTpipedrive, TESTvertec);
+        MockitoAnnotations.initMocks(this);
+        pipedrive = mock(PDService.class);
+        vertec = mock(VertecService.class);
+
+
+        //These functions ensure, that the correct data sets are loaded up when requested
+        when(pipedrive.getAllUsers()).thenReturn(getDummyUsersResponse());
+        when(vertec.getTeamDetails()).thenReturn(getOldDummyTeamResponse()); // for initialisation of importer
+
+        when(vertec.getSalesTeam()).thenReturn(getDummyVertecTeamResponse().getBody().getEmployees());
+
+
+        when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponse());
+        when(pipedrive.getRelationships(anyLong())).thenAnswer(getPDRelationshipAnswer());
+
+        when(vertec.getAllZUKOrganisations()).thenReturn(getDummyVertecOrganisationsResponse());
+        when(vertec.getOrganisationList(anyList())).thenReturn(getDummyVertecOrganisationsFromPipedriveResponse());
+        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
+
+        synchroniser = new Synchroniser(pipedrive, vertec);
+
     }
 
     @Test
@@ -251,18 +240,13 @@ public class SynchroniserTest {
                 .collect(toList());
 
 
-        Map<Organisation, Organisation> conflicts = synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts();
+        Set<Organisation> conflicts = synchroniser.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts();
         System.out.println(idsToDel);
 
         assertEquals("Would delete more orgs than necessary", 1, idsToDel.size());
         assertEquals("More delete conflicts than actually", 1, conflicts.size());
 
         assertEquals("Would del wrong org", orgToDelFromPD, idsToDel.get(0));
-        assertEquals("wrong orgdel conflict", orgtoConflictDel, conflicts.keySet().stream()
-                .map(Organisation::getVertecId)
-                .collect(toList())
-                .get(0)
-        );
 
 
     }
@@ -303,93 +287,13 @@ public class SynchroniserTest {
 
     }
 
-    @Test
-    public void canDealWithPDOrgModifiedBySync() {
-
-        doAnswer(getOrganisationUpdateLogAnswer()).when(pipedrive).getUpdateLogsFOrOrganisation(anyLong());
-
-        Organisation org = new Organisation();
-        org.setName("Test org without VID"); //imitates org with pid 3
-        org.setPipedriveId(3L);
-        org.setModified("2016-09-01 00:00:00");
-
-        Organisation org2 = new Organisation();
-        org2.setName("Test org With VID"); //imitates org with pid 22 orgChange on line 202
-        org2.setPipedriveId(22L);
-        org2.setVertecId(1L);
-        org2.setModified("2016-09-01 00:00:00"); //orgchange on line 278
-
-        Organisation org3 = new Organisation();
-        org3.setName("TestOrg without VID that should not be in any of the lists at the end of the test based on modifierID");
-        org3.setPipedriveId(25L);
-        org3.setModified("2016-09-01 00:00:00"); //orgchange on line 488
-
-        Organisation org4 = new Organisation(); //orgChange on line 532
-        org4.setName("TestOrg without VID that should not be in any of the lists at the end of the test based on modification date");
-        org4.setPipedriveId(31L);
-        org4.setModified("2016-03-09 00:00:00");
-
-        synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithVIDs = new HashMap<>();
-        synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
-
-        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org);
-        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org2);
-        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org3);
-        synchroniser.getPipedriveState().getOrganisationState().dealWithPDOrgModifiedBySynchroniser(org4);
-
-        assertEquals(1, synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithVIDs.size());
-        assertEquals(22L,
-                synchroniser
-                        .getPipedriveState()
-                        .getOrganisationState()
-                        .syncModifiedOrganisationsWithVIDs
-                        .get(1L)
-                        .getPipedriveId()
-                        .longValue());
-
-        assertEquals(1, synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.size());
-        assertEquals(3L,
-                synchroniser.getPipedriveState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.stream()
-                        .map(Organisation::getPipedriveId)
-                        .collect(toList())
-                        .get(0).longValue());
-    }
-
-    @Test
-    public void canDealWithVertecOrgModifiedBySynchroniser() {
-
-        VPI.VertecClasses.VertecOrganisations.Organisation org2 = new VPI.VertecClasses.VertecOrganisations.Organisation();
-        org2.setName("Test org With VID");
-        org2.setVertecId(2L);
-        org2.setModified("2016-09-01T00:00:00");
-        org2.setModifier(SynchroniserState.SYNCHRONISER_VERTEC_USERID);
-
-        VPI.VertecClasses.VertecOrganisations.Organisation org3 = new VPI.VertecClasses.VertecOrganisations.Organisation();
-        org3.setName("TestOrg that should not be in any of the lists at the end of the test based on modifierID");
-        org3.setVertecId(3L);
-        org3.setModified("2016-09-01T00:00:00");
-        org3.setModifier(5295L);
-
-        VPI.VertecClasses.VertecOrganisations.Organisation org4 = new VPI.VertecClasses.VertecOrganisations.Organisation();
-        org4.setName("TestOrg that should not be in any of the lists at the end of the test based on modification date");
-        org4.setVertecId(4L);
-        org4.setModified("2016-03-09T00:00:00");
-        org4.setModifier(SynchroniserState.SYNCHRONISER_VERTEC_USERID);
-
-        synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithVIDs = new HashMap<>();
-        synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs = new HashSet<>();
-
-        synchroniser.getVertecState().getOrganisationState().dealWithVertecOrgModifiedBySynchroniser(org2);
-        synchroniser.getVertecState().getOrganisationState().dealWithVertecOrgModifiedBySynchroniser(org3);
-        synchroniser.getVertecState().getOrganisationState().dealWithVertecOrgModifiedBySynchroniser(org4);
-
-        assertEquals(0, synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithoutVIDs.size());
-        assertEquals(1, synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithVIDs.size());
-        assertEquals("Test org With VID", synchroniser.getVertecState().getOrganisationState().syncModifiedOrganisationsWithVIDs.get(2L).getName());
 
 
-    }
 
+    /**
+     * This test shows the intended behaviour of synchronisation
+     * @throws IOException
+     */
     @Test
     public void canDecideWhereToUpdate() throws IOException {
         when(pipedrive.getAllOrganisations()).thenReturn(getDummyPipedriveOrganisationsResponseTESTPIPE());
@@ -492,6 +396,10 @@ public class SynchroniserTest {
 
     }
 
+    /**
+     * This test was used to see how updating Organisations behaved
+     * @throws IOException
+     */
     @Test
     @Ignore
     public void upDateConflictingOrgs() throws IOException {
@@ -506,7 +414,10 @@ public class SynchroniserTest {
         updateOrganisationsOnVertec(synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts());
         System.out.println("Would have updated " + synchroniser.getStateDifference().getOrganisationDifferences().getUpdateConflicts().size() + "orgs");
     }
-
+    /**
+     * This test was used to see how updating Organisations behaved
+     * @throws IOException
+     */
     @Test
     @Ignore
     public void upDateVertecOrgs() throws IOException {
@@ -544,6 +455,10 @@ public class SynchroniserTest {
                 });
     }
 
+    /**
+     * This test was used to see how creating Organisations behaved
+     * @throws IOException
+     */
     @Test
     @Ignore
     public void createOrganisationsOnVertec() throws IOException {
@@ -593,6 +508,10 @@ public class SynchroniserTest {
         return orgIdMap;
     }
 
+    /**
+     * This test was used to see how deleting Organisations behaved
+     * @throws IOException
+     */
     @Test
     @Ignore
     public void DeleteVertecOrgs() throws IOException {
@@ -618,6 +537,10 @@ public class SynchroniserTest {
         return idsDeleted;
     }
 
+    /**
+     * This test was used to see how creating Organisations behaved
+     * @throws IOException
+     */
     @Test
     @Ignore
     public void createPDOrganisations() throws IOException {
@@ -643,7 +566,7 @@ public class SynchroniserTest {
     public Map<Long, Long> createPipedriveOrganisations() {
         Map<Long, Long> orgIdMap = new HashMap<>();
 
-        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
         TESTsynchroniser.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().stream()
                 .filter(org -> org.getPipedriveId() == null)
                 .filter(org -> org.getVertecId() != null)
@@ -661,6 +584,10 @@ public class SynchroniserTest {
         return orgIdMap;
     }
 
+    /**
+     * This test was used to see how updating Organisations behaved
+     * @throws IOException
+     */
     @Test @Ignore
     public void runUpdatePDOrganisations() throws IOException {
 
@@ -677,7 +604,7 @@ public class SynchroniserTest {
     }
 
     public void updatePdOrganisations(){
-        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
         TESTsynchroniser.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive().stream()
                 .filter(org -> org.getPipedriveId() != null)
                 .filter(org -> org.getVertecId() != null)
@@ -686,7 +613,10 @@ public class SynchroniserTest {
                     TESTsynchroniser.getSynchroniserState().getOrganisationIdMap().replace(org.getVertecId(), org.getPipedriveId());
                 });
     }
-
+    /**
+     * This test was used to see how deleting Organisations behaved
+     * @throws IOException
+     */
     @Test @Ignore
     public void runDeletePDOrganisations() throws IOException {
 
@@ -705,7 +635,7 @@ public class SynchroniserTest {
 
     }
     public List<Long> deletePipedriveOrganisations(){
-        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        PDService pipedrive = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
         List<Long> idsToDel = new ArrayList<>();
         TESTsynchroniser.getStateDifference().getOrganisationDifferences().getDeleteFromPipedrive().stream()
                 .filter(org -> org.getPipedriveId() != null)
@@ -719,6 +649,10 @@ public class SynchroniserTest {
 
 
     //=================================MOCKITO DUMMY RESPONSES==========================================================
+
+    /**
+     * These functions are used to load up mock data.
+     */
 
     public static ResponseEntity<PDUserItemsResponse> getDummyUsersResponse() throws IOException {
         ObjectMapper m = new ObjectMapper();
@@ -899,6 +833,20 @@ public class SynchroniserTest {
         };
     }
 
+    @Test
+    public void canGetDummyPipedriveOrganisationUpdateLog() throws IOException {
+        PDUpdateLog pul = getDummyPipedriveOrganisationUpdateLog(22L).getBody(); // example log in file
+        assertEquals(22L, pul.getOrgid().longValue());
+        System.out.println(pul);
+    }
+
+    //=======================================CODE SNIPPETS===============================================================
+    /**
+     * This function was used to investigate, how many Organisations are on pipedrive, that are not Owned by team members
+     * on Vertec. These might be parents of imported organisations, or some, that have been added to pipedrive and that
+     * already exist on Vertec
+     * @throws IOException
+     */
 
     @Test
     @Ignore
@@ -949,15 +897,13 @@ public class SynchroniserTest {
         }
     }
 
-    @Test
-    public void canGetDummyPipedriveOrganisationUpdateLog() throws IOException {
-        PDUpdateLog pul = getDummyPipedriveOrganisationUpdateLog(22L).getBody(); // example log in file
-        assertEquals(22L, pul.getOrgid().longValue());
-        System.out.println(pul);
-    }
 
 
-    //Test to post our test orgs to pipedrive (semi import sorta thing)
+
+    /**
+     * This test was used to see how creating Organisations behaved
+     * @throws IOException
+     */
     @Test
     @Ignore
     public void willPostProdctionORgsToTestPipedrive() throws IOException {
@@ -991,7 +937,7 @@ public class SynchroniserTest {
 
         Map<Long,Long> orgidmap = new HashMap<>();
 
-        PDService p = new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key);
+        PDService p = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
         orgs.forEach(org -> {
            Long id = p.postOrganisation(org).getBody().getData().getId();
             if(org.getV_id() != null){
@@ -1023,6 +969,10 @@ public class SynchroniserTest {
     }
 
     @Test
+    @Ignore("This function was used, to make data from the test pipedrive, conform to the Production data." +
+            "As the whole synchronisation process depends on the update times of the data, we needed to " +
+            "overwrite the update times of the data from the test Pipedrive, with the update times of the " +
+            "production data, so that the results of the tests are comparable.")
     public void setTestDataUpdateTimesToReflectProducationData() throws IOException {
         ResponseEntity<PDOrganisationItemsResponse> r = getDummyPipedriveOrganisationsResponseTESTPIPE();
         List<PDOrganisationReceived> testorgs = r.getBody().getData();
@@ -1048,10 +998,15 @@ public class SynchroniserTest {
 
     }
 
+    @Test
+    public void trial(){
 
-    @Test @Ignore
-    public void runTestOnProductionButPrintNotPropagate() throws IOException {
-        Synchroniser s = new Synchroniser(new PDService("https://api.pipedrive.com/v1/", ProductionKeys.key), new VertecService("localhost:9999"));
+    }
+
+    @Test @Ignore("This function actually runs the synchroniser, it might modify information on BOTH " +
+           "the instances of pipedrive and Vertec")
+    public void run() throws IOException {
+        Synchroniser s = new Synchroniser(new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key), new VertecService("localhost:9999"));
     }
 
 }

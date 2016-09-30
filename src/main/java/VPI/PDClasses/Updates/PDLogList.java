@@ -7,6 +7,7 @@ import java.util.List;
 /**
  * This class is used to contain update information from Pipedrive.
  * Sadly, not all updates make it into this list on pipedrive
+ * TODO all of these update classes anre unnecessary, DELETE
  */
 public class PDLogList {
     List<PDUpdateLog> logs;

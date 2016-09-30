@@ -1,6 +1,6 @@
 package VPI.SynchroniserClasses.VertecStateClasses;
 
-import VPI.Entities.OrganisationState;
+import VPI.SynchroniserClasses.OrganisationState;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.SynchroniserState;
 import VPI.VertecClasses.VertecService;

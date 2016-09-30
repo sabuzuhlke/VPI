@@ -100,10 +100,11 @@ public class VertecService {
 
     <RES> ResponseEntity<RES> deleteFromVertec(String uri, Class<RES> responseType) {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("Authorization", username + ':' + pwd);
-        return restTemplate.exchange(
-                new RequestEntity<>(headers, HttpMethod.DELETE, URI.create(uri)),
-                responseType);
+//        headers.add("Authorization", username + ':' + pwd);
+//        return restTemplate.exchange(
+//                new RequestEntity<>(headers, HttpMethod.DELETE, URI.create(uri)),
+//                responseType);
+        return null;
     }
 
     <REQ, RES> ResponseEntity<RES> postToVertec(REQ payload, String uri, Class<RES> responseType) {
@@ -189,14 +190,23 @@ public class VertecService {
         return getFromVertec("https://" + server + "/contacts/" + v_id, JSONContact.class);
     }
 
+    /**
+     * Gets either a contact or an organisation with the specified ID
+     */
     public ResponseEntity<String> getAddressEntry(Long v_id) {
         return getFromVertec("https://" + server + "/addressEntry/" + v_id, String.class);
     }
 
+    /**
+     * Gets the Details of the Users (aka sales team)
+     */
     public ResponseEntity<ZUKTeam> getTeamDetails() {
         return getFromVertec("https://" + server + "/ZUKTeam", ZUKTeam.class);
     }
 
+    /**
+     * Recuests @param mergeId to be merged into @param survivorId
+     */
     public ResponseEntity<String> mergeTwoOrganisations(Long mergeId, Long survivorId) {
         return getFromVertec("https://" + server + "/organisation/" + mergeId + "/mergeInto/" + survivorId, String.class);
     }
@@ -226,6 +236,10 @@ public class VertecService {
         return updated;
     }
 
+    /**
+     * Requests an organisation with the specified ID to be set to inactive
+     * @return the Id of the deleted organsiation
+     */
     public Long deleteOrganisation(Long vId){
         ResponseEntity<Long> res = deleteFromVertec("https://" + server + "/organisation/" + vId, Long.class);
         return res.getBody();

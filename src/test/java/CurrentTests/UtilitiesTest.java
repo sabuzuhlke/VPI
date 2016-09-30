@@ -27,8 +27,16 @@ public class UtilitiesTest {
 
     @Test
     public void canWriteLogToFile() throws IOException {
-        SyncLogList ll = new SyncLogList("logs/test");
+        SyncLogList ll = new SyncLogList("logs","test");
         ll.add("TEST", "TEST", "NAME", 2L, 12L);
         ll.save();
+    }
+
+    @Test
+    public void canLoadUpdatelog() throws IOException {
+        String logname = "/Usr/gebo/IdeaProjects/VRAPI/logs/VertecLog_2016-09-29T11-03-42.log";
+
+        SyncLogList logList = SyncLogList.load("/Users/gebo/IdeaProjects/VPI/logs/VertecLog_2016-09-29T11-03-42.log");
+        assertTrue(100 < logList.getLog().size());
     }
 }

@@ -1,6 +1,7 @@
 package VPI.SynchroniserClasses;
 
 import VPI.DefaultHashMap;
+import VPI.Entities.util.SyncLogList;
 import VPI.Entities.util.Utilities;
 import VPI.Keys.DevelopmentKeys;
 import VPI.Keys.ProductionKeys;
@@ -15,11 +16,14 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static VPI.Entities.util.Utilities.loadSingleLineFileToString;
 import static java.util.stream.Collectors.toSet;
 
 /**
  * Class for storing all maps of vertec_id <-> pipederive_id, posted previously
  * Also provides a mapping of the users across the systems
+ *
+ * TODO add functionality to persist and use lists of deleted, and updated items
  */
 public class SynchroniserState {
 
@@ -27,25 +31,20 @@ public class SynchroniserState {
     public static Long SYNCHRONISER_VERTEC_USERID = 23560788L;
 
 
-    //TODO get updateLogs to be able to decide who made the last change , needed for fault tolerance
-    /**
-     * Crash tolerant logic:
-     * If program ceases execution part of the way though applying changes to pipedrive/vertec
-     * On the next run we must not treat those changes as being made by Sales Team.
-     * We can do this by only including changes made between the previousCompleteSyncEndTime and the previousSyncStartTime
-     * and changes made between possibleCrashTime and the current time.
-     * If the application had not crashed in the previous sync then the previousCompleteSyncEndTime == possibleCrashTime == previousSyncStartTime
-     */
-    public String PATH_TO_FAULT_TOLERANCE_FILES = "/Users/gebo/IdeaProjects/VPI/src/main/resources/";
+
+    public String PATH_TO_FAULT_TOLERANCE_FILES = "src/main/resources/";//"/Users/gebo/IdeaProjects/VPI/src/main/resources/";
 
     //String representing the date/time at which the sync last finished running
+    //Updates are only going to be applied to objects that changed after this point in time
+    //However it does not get set if the synchronisation crashes, as it would prevent
+    //The updates that have not been applied yet, from being applied.
+    //So we track the changes made by the synchroniser. We are going to use these
+    //to determine whether updates were made by us or have to be propagated.
+    //The logs are read in, however it does not yet affect anything in the system.
     private String previousCompleteSyncEndTime;
-    //String representing the date/time at which the we last started applying changes, on Sync complete we set this equal to previousCompleteSyncStartTime == possibleCrashTime
-    private String previousSyncStartTime;
-    //String representing the last date/time at which we successfully applied a change
-    private String possibleCrashTime;
-    //List of TimeIntervals representing the times between which we started applying changes and the time the application ceased execution
-    private Set<TimeInterval> crashWindows;
+    public SyncLogList previousVertecLog;
+    public SyncLogList previousPipedriveLog;
+
 
     //Map of Pipedrive UserId -> User email
     private Map<String, Long> pipedriveOwnerMap;
@@ -59,17 +58,21 @@ public class SynchroniserState {
     //Map of Vertec_d <-> Pipedrive_Id for organisationState we have posted to pipedrive
     private DualHashBidiMap<Long, Long> organisationIdMap;
 
-    //List of Vertec Ids that we imported from vertec but are not owned by ZUK sales team members
-    private List<Long> vertecIdsOfNonZUKOrganisations;
+    public List<Long> organisationsDeletedFromVertec;
+    public List<Long> organisationsDeletedFromPipedrive;
+
+
 
 
     public SynchroniserState(VertecService vertec, PDService pipedrive) throws IOException {
         this.organisationIdMap = loadOrganisationIdMap();
         this.pipedriveOwnerMap = constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive));
         this.vertecOwnerMap = constructVertecUserEmailToIdMap(vertec.getSalesTeam());
-        this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
-        this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
-        this.crashWindows = new HashSet<>();
+        this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();;
+        this.organisationsDeletedFromPipedrive = new ArrayList<>();
+        this.organisationsDeletedFromVertec = new ArrayList<>();
+
+        loadPreviousLogs();
         //TODO: finish setting up times/ crashWindows -- or  not
     }
 
@@ -81,22 +84,44 @@ public class SynchroniserState {
         this.PATH_TO_FAULT_TOLERANCE_FILES = filepath;
         this.organisationIdMap = loadOrganisationIdMap();
         this.pipedriveOwnerMap = constructPipedriveUserEmailToIdMap(getVertecUserEmails(vertec), getPipedriveUsers(pipedrive));
-        this.vertecOwnerMap = constructVertecUserEmailToIdMap(vertec.getSalesTeam());
-        this.vertecIdsOfNonZUKOrganisations = loadExternalOrganisations();
         this.previousCompleteSyncEndTime = loadPreviousCompleteSyncEndTime();
-        this.crashWindows = new HashSet<>();
+        this.organisationsDeletedFromPipedrive = new ArrayList<>();
+        this.organisationsDeletedFromVertec = new ArrayList<>();
+
+        loadPreviousLogs();
         //TODO: finish setting up times/ crashWindows
+    }
+
+
+    /**
+     * This function reads in the previous logs. New logs are set after completion of every
+     * run of the synchroniser.
+     */
+    private void loadPreviousLogs() throws IOException {
+        String vertecLogPath = loadSingleLineFileToString("logs/latest_VertecLog_log");
+        if (vertecLogPath == null || vertecLogPath.isEmpty()) {
+            this.previousVertecLog = new SyncLogList();
+        } else {
+            this.previousVertecLog = SyncLogList.load("logs/" + vertecLogPath);
+        }
+
+        String pipedriveLogPath = loadSingleLineFileToString("logs/latest_PipedriveLog_log");
+        if(pipedriveLogPath == null || pipedriveLogPath.isEmpty()){
+            this.previousPipedriveLog = new SyncLogList();
+        }
+        else this.previousVertecLog = SyncLogList.load("logs/" + pipedriveLogPath);
     }
 
     /**
      * Loads latest organisation Id Map from file
      */
     private DualHashBidiMap<Long, Long> loadOrganisationIdMap() throws IOException {
-        return Utilities.loadIdMap(ProductionKeys.MAPSPATH + "/productionOrganisationMap");
+        return Utilities.loadIdMap("productionMaps/productionOrganisationMap");
     }
 
     /**
      * Loads latest list of external organisationState from file
+     * DEPRECATED
      */
     private List<Long> loadExternalOrganisations() throws IOException {
         return Utilities.loadIdList("productionMaps/productionMissingOrganisations15-07-16");
@@ -217,6 +242,8 @@ public class SynchroniserState {
         return map;
     }
 
+
+
     public Map<Long, Long> buildPipedriveProductionToTestUserIdMap() {
 
         Map<Long, Long> map = new HashMap<>();
@@ -272,114 +299,26 @@ public class SynchroniserState {
 
         return PATH_TO_FAULT_TOLERANCE_FILES;
     }
-    // FAULT TOLERANCE FUNCTIONS =======================================================================================
-    /**
-     * Called when synchroniser successfully completes applying changes
-     * Sets previousCompletionTime == possibleCrashTime == previousSyncStartTime == currentTime
-     * and clears Set of time intervals during which sync made changes then crashed
-     */
-    public void finishSync() throws IOException {
-        setPreviousCompleteSyncTime();
-        clearCrashWindows();
-        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
-        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
-    }
 
-    /**
-     * Function to test if a dateTime is within the any of the time intervals that the program was making modifications since the previousCompleteSync
-     * (These time intervals represent times at which the program was attempting a sync but failed)
-     */
-    public Boolean modificationMadeByCrashingSync(String time) {
-        String vertecFormat = Utilities.formatToVertecDate(time);
-        LocalDateTime ldt;
-        ldt = vertecFormat == null ? LocalDateTime.parse(time) :  LocalDateTime.parse(vertecFormat);
+    // FAULT TOLERANCE FUNCTIONS =======================================================
 
-        return crashWindows.stream().anyMatch(timeInterval -> timeInterval.isTimeWithinInterval(ldt));
-    }
 
-    public void addCrashWindow() throws IOException {
-        String previousStartTime = loadPreviousSyncStartTime();
-        String possibleCrashTime = loadPossibleCrashTime();
-
-        if(previousStartTime == null && possibleCrashTime == null) return; //Program did not crash previously, so we are fine.
-        TimeInterval crashWindow = new TimeInterval(previousStartTime, possibleCrashTime);
-
-        new File(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows").createNewFile();
-        FileWriter file = new FileWriter(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows", true); // do not overwrite
-        file.write(crashWindow.toString());
-        file.close();
-
-        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
-        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
-
-    }
-
-    public void clearCrashWindows() throws IOException {
-        crashWindows.clear();
-        Utilities.clearFile(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows");
-    }
-
-    /**
-     *
-     */
-    public void loadCrashWindows() throws IOException {
-        boolean emptyFileCreeated = new File(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows").createNewFile();
-        if(emptyFileCreeated) return; // file is empty as it has just been created
-
-        FileReader file = new FileReader(PATH_TO_FAULT_TOLERANCE_FILES + "crashWindows");
-        BufferedReader reader = new BufferedReader(file);
-        String line;
-
-        while((line = reader.readLine()) != null){
-            String[] times = line.split(" ");
-            String t1 = times[0];
-            String t2 = times[1];
-            crashWindows.add(new TimeInterval(t1, t2));
-        }
-        file.close();
-    }
 
     /**
      * Loads latest time that sync was run
      */
     private String loadPreviousCompleteSyncEndTime() throws IOException {
-        return Utilities.loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "previousCompleteSyncEndTime");
+        return loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "previousCompleteSyncEndTime");
         //return LocalDateTime previousFinishTime = LocalDateTime.parse(s);
     }
 
     /**
      * Set file: previousCompleteSyncEndTime to contain currentTime
      */
-    private void setPreviousCompleteSyncTime() throws IOException {
+    public void setPreviousCompleteSyncTime() throws IOException {
         setFileToCurrentTime(PATH_TO_FAULT_TOLERANCE_FILES + "previousCompleteSyncEndTime");
     }
 
-    /**
-     * Loads last time time that sync was started
-     */
-    private String loadPreviousSyncStartTime() throws IOException {
-        return Utilities.loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
-    }
-
-    /**
-     * Set file: previousSyncStartTime to contain currentTime
-     */
-    private void setPreviousSyncStartTime() throws IOException {
-        //TODO call when posting starts
-        setFileToCurrentTime(PATH_TO_FAULT_TOLERANCE_FILES + "previousSyncStartTime");
-    }
-
-    private String loadPossibleCrashTime() throws IOException {
-        return Utilities.loadSingleLineFileToString(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
-    }
-
-    /**
-     * Set file: possibleCrashTime to contain currentTime
-     */
-    private void setPossibleCrashTime() throws IOException {
-        //TODO call after each post
-        setFileToCurrentTime(PATH_TO_FAULT_TOLERANCE_FILES + "possibleCrashTime");
-    }
 
     /**
      * Given Filename, sets file to contain currentTime --> overwrites
@@ -404,9 +343,6 @@ public class SynchroniserState {
 
 
 
-    public Set<TimeInterval> getCrashWindows() {
-        return crashWindows;
-    }
 
     public void updateMapWith(Map<Long, Long> vertecIdsToPipedriveIds) {
         organisationIdMap.putAll(vertecIdsToPipedriveIds);

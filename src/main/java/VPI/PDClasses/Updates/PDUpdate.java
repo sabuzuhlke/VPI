@@ -3,6 +3,9 @@ package VPI.PDClasses.Updates;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ *  * TODO all of these update classes anre unnecessary, DELETE
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 public class PDUpdate {

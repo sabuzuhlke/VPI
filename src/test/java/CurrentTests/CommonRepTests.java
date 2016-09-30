@@ -27,6 +27,9 @@ import static VPI.Entities.util.Utilities.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * These tests test, whether we can correctly convert other container classes to the Common representation /Entities/
+ */
 public class CommonRepTests {
     @Test
     public void orgEqualsWorksCorrectly(){

@@ -24,6 +24,10 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 
+/**
+ * These tests test the functionality of Vertec Service
+ * WARNING !! Only use on the Test instance of Vertec, as tests are going to create new organisations
+ */
 
 public class VertecServiceTests {
 
@@ -213,7 +217,7 @@ public class VertecServiceTests {
     }
 
     @Test
-    public void canGetOrganisationsById() {//TODO make pass
+    public void canGetOrganisationsById() {
         List<Long> orgids = new ArrayList<>();
         orgids.add(28055040L);
         orgids.add(28055047L);

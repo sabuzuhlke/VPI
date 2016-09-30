@@ -1,12 +1,11 @@
 package VPI.SynchroniserClasses;
 
+import VPI.Entities.Organisation;
 import VPI.Entities.util.SyncLogList;
-import VPI.Entities.util.Utilities;
 import VPI.PDClasses.PDService;
 import VPI.StateDifference;
 import VPI.SynchroniserClasses.PipedriveStateClasses.PipedriveState;
 import VPI.SynchroniserClasses.VertecStateClasses.VertecState;
-import VPI.VertecClasses.VertecOrganisations.Organisation;
 import VPI.VertecClasses.VertecService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static VPI.Entities.util.Utilities.saveList;
 import static VPI.Entities.util.Utilities.saveMap;
 
     /**
@@ -58,13 +58,16 @@ public class Synchroniser {
      */
     public Synchroniser(PDService pipedrive, VertecService vertec) throws IOException {
 
-        this.vertecLog = new SyncLogList("logs/VertecLog");
-        this.pipedriveLog = new SyncLogList("logs/PipedriveLog");
+        this.vertecLog = new SyncLogList("logs/","VertecLog");
+        this.pipedriveLog = new SyncLogList("logs","/PipedriveLog");
         this.synchroniserState = new SynchroniserState(vertec, pipedrive);
+        System.out.println("Created Sync state");
+
 
         this.pipedriveState = new PipedriveState(pipedrive, this.synchroniserState);
+        System.out.println("Created PD state");
         this.vertecState = new VertecState(vertec, pipedriveState, this.synchroniserState);
-
+        System.out.println("Created Vertec state");
         this.stateDifference = new StateDifference(vertecState, pipedriveState, synchroniserState);
         performFirstSync();
         //TODO delete merged conact mappings from contact id map
@@ -83,39 +86,52 @@ public class Synchroniser {
         extractDifferencesAndApply();
     }
 
+        /**
+         * Called on construction
+         * @throws IOException if it could not write logs or maps to file
+         */
     public void performFirstSync() throws IOException {
+        System.out.println("Performing first sync");
         extractDifferencesAndApply();
     }
 
     public void extractDifferencesAndApply() throws IOException {
 
         printIntentions();
-       //extraractDifferencesAndApplyForOrganisatiozns();
-        saveLogs();
+        //extraractDifferencesAndApplyForOrganisatiozns();
+        //saveLogs();
+        //synchroniserState.setPreviousCompleteSyncTime();
     }
 
     private void extraractDifferencesAndApplyForOrganisatiozns() throws IOException {
 
         try {
 
-//            updateConflictiongOrganisationsOnVertec(); //update maps inline
-//            updatePdOrganisations(); //update maps inline
-//            updateVertecOrganisations(); //update maps inline
-//            Map<Long, Long> orgsCreatedOnVertec = createVertecOrganisations();
-//            Map<Long, Long> orgsCreatedOnPipedrive = createPipedriveOrganisations();
-            List<Long> orgsDeletedFromVertec = deleteVertecOrganisations();
-            //List<Long> orgsDeletedFromPipedrive = deletePipedriveOrganisations();
+            updateConflictiongOrganisationsOnVertec(); //update maps inline
+            updatePdOrganisations(); //update maps inline
+            updateVertecOrganisations(); //update maps inline
+            Map<Long, Long> orgsCreatedOnVertec = createVertecOrganisations();
+            Map<Long, Long> orgsCreatedOnPipedrive = createPipedriveOrganisations();
+            this.synchroniserState.organisationsDeletedFromVertec = deleteVertecOrganisations();
+            this.synchroniserState.organisationsDeletedFromPipedrive = deletePipedriveOrganisations();
+            this.synchroniserState.organisationsDeletedFromVertec.addAll(dealWithDeletionFromVertecConflicts());
+            dealWithDeletionFromPipedriveConflicts();
 
-//            synchroniserState.updateMapWith(orgsCreatedOnVertec);
-//            synchroniserState.updateMapWith(orgsCreatedOnPipedrive);
-//            synchroniserState.saveDeletedListToFile(orgsDeletedFromPipedrive, "pipedrive");
-            synchroniserState.saveDeletedListToFile(orgsDeletedFromVertec, "vertec");
+            synchroniserState.updateMapWith(orgsCreatedOnVertec);
+            synchroniserState.updateMapWith(orgsCreatedOnPipedrive);
+
+            saveList("TESTorgsDeletedFromPipedrive", this.synchroniserState.organisationsDeletedFromPipedrive , true);
+            saveList("TESTorgsDeletedFromVertec",  this.synchroniserState.organisationsDeletedFromVertec , true);
             saveMap(synchroniserState.getOrganisationIdMap(), "TESTorgIdMap");
 
         } catch (Exception e) {
             if (e instanceof IOException) throw e;
             else {
                 saveLogs();
+
+                saveList("TESTorgsDeletedFromPipedrive", this.synchroniserState.organisationsDeletedFromPipedrive , true);
+                saveList("TESTorgsDeletedFromVertec",  this.synchroniserState.organisationsDeletedFromVertec , true);
+                saveMap(synchroniserState.getOrganisationIdMap(), "TESTorgIdMap");
                 saveMap(synchroniserState.getOrganisationIdMap(), "TESTorgIdMap");
                 throw e;
             }
@@ -126,12 +142,14 @@ public class Synchroniser {
     private void printIntentions() {
         System.out.println(this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().size() + " organisations will be added to vertec:\n\n\n");
         this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
-            System.out.println(org.getName() + " created by " + org.getSupervisingEmail());
+            System.out.println(org.getName() + " created by " + org.getSupervisingEmail() + " PID: " + org.getPipedriveId());
         });
         System.out.println("\n\n=================================================\n\n");
         System.out.println(this.getStateDifference().getOrganisationDifferences().getUpdateOnVertec().size() + " organisations will be updated on vertec\n\n\n");
         this.getStateDifference().getOrganisationDifferences().getUpdateOnVertec().forEach(org -> {
-            System.out.println(org.toJSONString());
+            System.out.println(org.toJSONString() + "\n");
+
+            System.out.println("Modified by: \n" + this.getPipedriveState().getOrganisationState().organisationsWithVIDs.get(org.getVertecId()));
         });
         System.out.println("\n\n=================================================\n\n");
         System.out.println(this.getStateDifference().getOrganisationDifferences().getDeleteFromVertec().size() + " organisations will be deleted from vertec");
@@ -146,7 +164,7 @@ public class Synchroniser {
         System.out.println("\n\n=================================================\n\n");
         System.out.println(this.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().size() + " organisations will be posted to pipedrive");
         this.getStateDifference().getOrganisationDifferences().getCreateOnPipedrive().forEach(org -> {
-            System.out.println(org.getName() + " created by " + org.getSupervisingEmail());
+            System.out.println(org.getName() + " created by " + org.getSupervisingEmail() + " VID " + org.getVertecId());
         });
         System.out.println("\n\n=================================================\n\n");
         System.out.println(this.getStateDifference().getOrganisationDifferences().getUpdateOnPipedrive().size() + " organisations will be updated on pipedrive\n\n\n");
@@ -178,24 +196,6 @@ public class Synchroniser {
                     System.out.println(org.toJSONString());
                 }
             });
-        });
-
-        System.out.println("\n\n=====================JUSTIN============================\n\n");
-        this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
-            if(org.getSupervisingEmail().equals("justin.cowling@zuhlke.com"))
-            System.out.println(org.getName() + " pipedrive ID " + org.getPipedriveId());
-        });
-
-        System.out.println("\n\n=====================BREWSTER============================\n\n");
-        this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
-            if(org.getSupervisingEmail().equals("brewster.barclay@zuhlke.com"))
-                System.out.println(org.getName() + " pipedrive ID " + org.getPipedriveId());
-        });
-
-        System.out.println("\n\n=====================Everything else============================\n\n");
-        this.getStateDifference().getOrganisationDifferences().getCreateOnVertec().forEach(org -> {
-        if(! org.getSupervisingEmail().equals("brewster.barclay@zuhlke.com") && ! org.getSupervisingEmail().equals("justin.cowling@zuhlke.com"))
-                System.out.println(org.getName() + " pipedrive ID " + org.getPipedriveId());
         });
 
 
@@ -296,7 +296,7 @@ public class Synchroniser {
                             .get(org.getSupervisingEmail())))
                             .getBody().getData().getId();
                     orgIdMap.put(org.getVertecId(), pId);
-                    pipedriveLog.add("POST", "Organisation", org.getName(), org.getVertecId(), org.getPipedriveId());
+                    pipedriveLog.add("POST", "Organisation", org.getName(), org.getVertecId(), orgIdMap.get(org.getVertecId()));
                 });
         System.out.println("Posted:\n" + orgIdMap);
         return orgIdMap;
@@ -324,6 +324,33 @@ public class Synchroniser {
 
                 });
         return idsToDel;
+    }
+    
+    public void dealWithDeletionFromPipedriveConflicts(){
+        for(Organisation vOrg : this.getStateDifference().getOrganisationDifferences().getDeletionFromPipedriveConflicts()){
+            Organisation pOrg =  this.getPipedriveState().getOrganisationState().organisationsWithVIDs.
+                    get(this.synchroniserState.getOrganisationIdMap().get(vOrg.getVertecId()));
+            
+            if(pOrg == null) continue;
+
+            vOrg.updateOrganisationWithFreshValues(pOrg);
+
+            this.getVertecState().vertec.updateOrganisation(vOrg.getVertecId(), vOrg.toVertecRep(synchroniserState.getVertecOwnerMap().get(vOrg.getSupervisingEmail())));
+
+            vertecLog.add("PUT", "Organisation", vOrg.getName(), vOrg.getVertecId(), vOrg.getPipedriveId());
+            this.getSynchroniserState().getOrganisationIdMap().replace(vOrg.getVertecId(), vOrg.getPipedriveId());
+        }
+    }
+
+    public List<Long> dealWithDeletionFromVertecConflicts(){
+        List<Long> idsDeleted = new ArrayList<>();
+        this.getStateDifference().getOrganisationDifferences().getDeletionFromVertecConflicts()
+                .forEach(id -> {
+                    idsDeleted.add(this.synchroniserState.getOrganisationIdMap().getKey(id));
+                    vertecLog.add("DELETE", "Organisation", " ", id, -1L);
+                });
+        System.out.println("Deleted: " + idsDeleted);
+        return idsDeleted;
     }
 
 

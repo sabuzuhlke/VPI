@@ -1,4 +1,7 @@
 package OLDVertecSynchroniserTests;
+/**
+ * DEPRECATED!!!
+ */
 
 import VPI.PDClasses.*;
 import VPI.Entities.util.ContactDetail;

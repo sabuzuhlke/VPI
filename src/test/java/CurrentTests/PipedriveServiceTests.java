@@ -48,6 +48,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+
+/**
+ * These tests test the functionality of PDService.
+ * IMPORTANT!! run only on dev instance, as tests might leave some test data on the Pipedrive instance, should they fail
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest
@@ -64,7 +69,7 @@ public class PipedriveServiceTests {
     public void setUp() throws Exception {
         String server = "https://api.pipedrive.com/v1/";
         MyCredentials creds = new MyCredentials();
-        String apiKey = creds.getApiKey();
+        String apiKey = DevelopmentKeys.key;
         TestRestTemplate testRestTemplate = new TestRestTemplate();
         this.PS = new PDService(server, apiKey);
         this.idsDeleted = new ArrayList<>();
@@ -203,7 +208,7 @@ public class PipedriveServiceTests {
         deal.setUser_id(1692590L);
         deal.setPhase("Phase");
         deal.setProject_number("PROJ_1");
-        deal.setStage_id(ProductionKeys.STAGE_ID_EXPLORATORY);
+        deal.setStage_id(DevelopmentKeys.STAGE_ID_EXPLORATORY);
         deal.setStatus("open");
         deal.setTitle("TEST DEAL2");
         deal.setValue("10000");

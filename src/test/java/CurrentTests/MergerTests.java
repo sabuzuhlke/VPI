@@ -4,6 +4,8 @@ import VPI.Entities.Activity;
 import VPI.Entities.Contact;
 import VPI.Entities.util.ContactDetail;
 import VPI.Entities.util.Utilities;
+import VPI.Keys.DevelopmentKeys;
+import VPI.Keys.ProductionKeys;
 import VPI.MergerClasses.ContactMerger;
 import VPI.MergerClasses.OrganisationMerger;
 import VPI.MyCredentials;
@@ -12,6 +14,7 @@ import VPI.VertecClasses.VertecActivities.ActivitiesForAddressEntry;
 import VPI.VertecClasses.VertecProjects.JSONProject;
 import VPI.VertecClasses.VertecService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -35,14 +38,17 @@ public class MergerTests {
 
     private ContactMerger mockContactMerger;
 
-
+    /**
+     * These tests test and run the Merger.
+     * WARNING running these tests is going to modify the Vertec instance!!!
+     */
     @Before
     public void setup(){
         MockitoAnnotations.initMocks(this);
 //        pipedrive = mock(PDService.class);
 //        vertec = mock(VertecService.class);
         MyCredentials creds = new MyCredentials();
-        pipedrive = new PDService("https://api.pipedrive.com/v1/", creds.getApiKey());
+        pipedrive = new PDService("https://api.pipedrive.com/v1/", DevelopmentKeys.key);
         vertec = new VertecService("localhost:9999");
         organisationMerger = new OrganisationMerger(pipedrive, vertec);
         contactMerger = new ContactMerger(pipedrive, vertec);
@@ -252,12 +258,12 @@ public class MergerTests {
         assertTrue(mergedOrgs.isEmpty());
     }
 
-    @Test
+    @Test @Ignore
     public void testDoOrganisationMerge() throws IOException {
         organisationMerger.doMerge();
     }
 
-    @Test
+    @Test @Ignore
     public void testDoContactMerge() throws IOException {
         contactMerger.doMerge();
     }
